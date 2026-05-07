@@ -241,8 +241,8 @@ See [plan.md](./plan.md) for current progress.
 
 | Milestone | Status |
 |---|---|
-| M1 — Scaffolding & Auth | 🔄 In Progress |
-| M2 — Contacts Module | ⏳ Pending |
+| M1 — Scaffolding & Auth | ✅ Done |
+| M2 — Contacts Module | ✅ Done |
 | M3 — Pipeline & Kanban | ⏳ Pending |
 | M4 — Dashboard, Activities, Calendar | ⏳ Pending |
 | M5 — Reports, Export, Team | ⏳ Pending |

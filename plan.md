@@ -39,19 +39,19 @@
 **Goal**: Full CRUD contacts/leads with filtering, search, and CSV export.
 
 ### Backend
-- [ ] Migration: `contacts`
-- [ ] REST CRUD for `/contacts`
-- [ ] Filtering by type, owner, full-text search
-- [ ] Pagination (offset-based)
-- [ ] `requireRole` on delete (manager+)
-- [ ] `GET /contacts/export` — CSV
+- [x] Migration: `contacts`
+- [x] REST CRUD for `/contacts`
+- [x] Filtering by type, owner, full-text search
+- [x] Pagination (offset-based)
+- [x] `requireRole` on delete (manager+)
+- [x] `GET /contacts/export` — CSV
 
 ### Frontend
-- [ ] `ContactsPage` — table + search + filters
-- [ ] `ContactForm` modal — create/edit
-- [ ] `ContactDetailPage` — profile + deal placeholder
-- [ ] `useContacts` hook (TanStack Query)
-- [ ] Export button + CSV download
+- [x] `ContactsPage` — table + search + filters
+- [x] `ContactForm` modal — create/edit
+- [x] `ContactDetailPage` — profile + deal placeholder
+- [x] `useContacts` hook (TanStack Query)
+- [x] Export button + CSV download
 
 **Test**: Create/edit/search/filter/delete. Export CSV. Role-based delete restriction.
 

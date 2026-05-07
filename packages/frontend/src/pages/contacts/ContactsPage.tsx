@@ -1,0 +1,252 @@
+import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { Search, Plus, Download, Trash2, Pencil } from 'lucide-react';
+import { useContacts, useCreateContact, useUpdateContact, useDeleteContact } from '@/hooks/useContacts';
+import { contactsService, type Contact } from '@/services/contacts.service';
+import { Button } from '@/components/ui/Button';
+import { Badge } from '@/components/ui/Badge';
+import { Avatar } from '@/components/ui/Avatar';
+import { Spinner } from '@/components/ui/Spinner';
+import { Modal } from '@/components/ui/Modal';
+import { ContactForm } from '@/components/contacts/ContactForm';
+import { useAuthStore } from '@/store/authStore';
+import { toast } from 'sonner';
+import { useDebounce } from '@/hooks/useDebounce';
+
+const TYPE_FILTER_OPTIONS = [
+  { value: '', label: 'All' },
+  { value: 'lead', label: 'Leads' },
+  { value: 'contact', label: 'Contacts' },
+  { value: 'client', label: 'Clients' },
+];
+
+const typeBadgeVariant: Record<string, 'green' | 'blue' | 'default'> = {
+  lead: 'blue',
+  contact: 'default',
+  client: 'green',
+};
+
+export function ContactsPage() {
+  const navigate = useNavigate();
+  const user = useAuthStore((s) => s.user);
+  const canDelete = user?.role === 'admin' || user?.role === 'manager';
+
+  const [search, setSearch] = useState('');
+  const [typeFilter, setTypeFilter] = useState('');
+  const [modalOpen, setModalOpen] = useState(false);
+  const [editContact, setEditContact] = useState<Contact | null>(null);
+  const [exportLoading, setExportLoading] = useState(false);
+
+  const debouncedSearch = useDebounce(search, 300);
+
+  const { data, isLoading } = useContacts({
+    search: debouncedSearch || undefined,
+    type: typeFilter || undefined,
+  });
+
+  const createContact = useCreateContact();
+  const updateContact = useUpdateContact();
+  const deleteContact = useDeleteContact();
+
+  const contacts: Contact[] = data?.data ?? [];
+
+  const openCreate = () => { setEditContact(null); setModalOpen(true); };
+  const openEdit = (c: Contact) => { setEditContact(c); setModalOpen(true); };
+  const closeModal = () => { setModalOpen(false); setEditContact(null); };
+
+  const handleSubmit = async (formData: {
+    type: 'lead' | 'contact' | 'client';
+    fullName: string;
+    email?: string;
+    phone?: string;
+    companyName?: string;
+    jobTitle?: string;
+    source?: string;
+  }) => {
+    if (editContact) {
+      await updateContact.mutateAsync({ id: editContact.id, input: formData });
+    } else {
+      await createContact.mutateAsync(formData);
+    }
+    closeModal();
+  };
+
+  const handleDelete = async (id: string) => {
+    if (!confirm('Delete this contact? This cannot be undone.')) return;
+    await deleteContact.mutateAsync(id);
+  };
+
+  const handleExport = async () => {
+    setExportLoading(true);
+    try {
+      const blob = await contactsService.exportCsv();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'contacts.csv';
+      a.click();
+      URL.revokeObjectURL(url);
+    } catch {
+      toast.error('Export failed — upgrade to Pro to export contacts');
+    } finally {
+      setExportLoading(false);
+    }
+  };
+
+  return (
+    <div className="space-y-5">
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl font-semibold text-text-primary">Contacts</h1>
+          <p className="text-sm text-text-secondary mt-0.5">
+            {data?.meta?.total ?? 0} total
+          </p>
+        </div>
+        <div className="flex gap-2">
+          <Button variant="secondary" size="sm" onClick={handleExport} disabled={exportLoading}>
+            <Download size={14} />
+            {exportLoading ? 'Exporting…' : 'Export CSV'}
+          </Button>
+          <Button size="sm" onClick={openCreate}>
+            <Plus size={14} />
+            New contact
+          </Button>
+        </div>
+      </div>
+
+      {/* Filters */}
+      <div className="flex gap-3 items-center">
+        <div className="relative flex-1 max-w-xs">
+          <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-text-muted" />
+          <input
+            className="input-base pl-8"
+            placeholder="Search name, email, company…"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+          />
+        </div>
+        <div className="flex gap-1">
+          {TYPE_FILTER_OPTIONS.map((o) => (
+            <button
+              key={o.value}
+              onClick={() => setTypeFilter(o.value)}
+              className={`px-3 py-1.5 rounded text-xs font-medium transition-colors ${
+                typeFilter === o.value
+                  ? 'bg-accent-green text-bg-darker'
+                  : 'bg-bg-surface text-text-secondary border border-bg-border hover:text-text-primary'
+              }`}
+            >
+              {o.label}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Table */}
+      <div className="card overflow-hidden">
+        {isLoading ? (
+          <div className="flex items-center justify-center py-16">
+            <Spinner />
+          </div>
+        ) : contacts.length === 0 ? (
+          <div className="flex flex-col items-center justify-center py-16 gap-3">
+            <p className="text-text-muted text-sm">No contacts found</p>
+            <Button size="sm" onClick={openCreate}>
+              <Plus size={14} /> Add your first contact
+            </Button>
+          </div>
+        ) : (
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="border-b border-bg-border text-text-muted text-xs uppercase tracking-wide">
+                <th className="text-left px-4 py-3 font-medium">Name</th>
+                <th className="text-left px-4 py-3 font-medium hidden md:table-cell">Company</th>
+                <th className="text-left px-4 py-3 font-medium hidden lg:table-cell">Email</th>
+                <th className="text-left px-4 py-3 font-medium">Type</th>
+                <th className="text-left px-4 py-3 font-medium hidden sm:table-cell">Owner</th>
+                <th className="px-4 py-3 w-20" />
+              </tr>
+            </thead>
+            <tbody>
+              {contacts.map((c) => (
+                <tr
+                  key={c.id}
+                  className="border-b border-bg-border last:border-0 hover:bg-bg-surface/50 cursor-pointer transition-colors"
+                  onClick={() => navigate(`/contacts/${c.id}`)}
+                >
+                  <td className="px-4 py-3">
+                    <div className="flex items-center gap-3">
+                      <Avatar name={c.full_name} size="sm" />
+                      <div>
+                        <p className="font-medium text-text-primary">{c.full_name}</p>
+                        {c.job_title && (
+                          <p className="text-xs text-text-muted">{c.job_title}</p>
+                        )}
+                      </div>
+                    </div>
+                  </td>
+                  <td className="px-4 py-3 text-text-secondary hidden md:table-cell">
+                    {c.company_name ?? '—'}
+                  </td>
+                  <td className="px-4 py-3 text-text-secondary hidden lg:table-cell">
+                    {c.email ?? '—'}
+                  </td>
+                  <td className="px-4 py-3">
+                    <Badge variant={typeBadgeVariant[c.type] ?? 'default'}>{c.type}</Badge>
+                  </td>
+                  <td className="px-4 py-3 text-text-muted text-xs hidden sm:table-cell">
+                    {c.owner_name ?? '—'}
+                  </td>
+                  <td
+                    className="px-4 py-3"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    <div className="flex gap-1 justify-end">
+                      <button
+                        onClick={() => openEdit(c)}
+                        className="p-1.5 rounded text-text-muted hover:text-text-primary hover:bg-bg-border transition-colors"
+                        title="Edit"
+                      >
+                        <Pencil size={13} />
+                      </button>
+                      {canDelete && (
+                        <button
+                          onClick={() => handleDelete(c.id)}
+                          className="p-1.5 rounded text-text-muted hover:text-status-lost hover:bg-status-lost/10 transition-colors"
+                          title="Delete"
+                        >
+                          <Trash2 size={13} />
+                        </button>
+                      )}
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        )}
+      </div>
+
+      {/* Pagination hint */}
+      {data?.meta && data.meta.totalPages > 1 && (
+        <p className="text-xs text-text-muted text-center">
+          Page {data.meta.page} of {data.meta.totalPages}
+        </p>
+      )}
+
+      {/* Create / Edit Modal */}
+      <Modal
+        open={modalOpen}
+        onClose={closeModal}
+        title={editContact ? 'Edit contact' : 'New contact'}
+      >
+        <ContactForm
+          defaultValues={editContact ?? undefined}
+          onSubmit={handleSubmit}
+          onCancel={closeModal}
+          isSubmitting={createContact.isPending || updateContact.isPending}
+        />
+      </Modal>
+    </div>
+  );
+}
