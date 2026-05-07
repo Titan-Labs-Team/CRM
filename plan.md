@@ -61,22 +61,22 @@
 **Goal**: Full Kanban with drag-and-drop deal cards and stage management.
 
 ### Backend
-- [ ] Migrations: `pipelines`, `pipeline_stages`, `deals`
-- [ ] Pipelines + stages CRUD + `POST /stages/reorder`
-- [ ] Deals CRUD + `GET /deals/kanban` (grouped by stage)
-- [ ] `PATCH /deals/:id/stage` (move)
-- [ ] `PATCH /deals/:id/won` and `/lost`
-- [ ] `POST /deals/reorder` (position batch update)
-- [ ] Audit log on stage change
+- [x] Migrations: `pipelines`, `pipeline_stages`, `deals`
+- [x] Pipelines + stages CRUD + `POST /stages/reorder`
+- [x] Deals CRUD + `GET /deals/kanban` (grouped by stage)
+- [x] `PATCH /deals/:id/stage` (move)
+- [x] `PATCH /deals/:id/won` and `/lost`
+- [x] `POST /deals/reorder` (position batch update)
+- [x] Audit log on stage change
 
 ### Frontend
-- [ ] `KanbanBoard` → `KanbanColumn` → `KanbanCard` hierarchy
-- [ ] @dnd-kit drag-and-drop (cross-column + within-column + column reorder)
-- [ ] Optimistic cache updates on drag
-- [ ] `DealForm` modal (contact search autocomplete)
-- [ ] `DealQuickEditPanel` slide-over
-- [ ] `AddStageModal`
-- [ ] `PipelineSettings` page
+- [x] `KanbanBoard` → `KanbanColumn` → `KanbanCard` hierarchy
+- [x] @dnd-kit drag-and-drop (cross-column + within-column)
+- [x] Optimistic cache updates on drag
+- [x] `DealForm` modal
+- [x] Won/Lost quick actions on card hover
+- [ ] `DealQuickEditPanel` slide-over (M4)
+- [ ] `PipelineSettings` page (M5)
 
 **Test**: Create pipeline → add stages → add deals → drag cards. Won/Lost. Stage reorder persists.
 

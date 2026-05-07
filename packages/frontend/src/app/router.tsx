@@ -6,6 +6,7 @@ import { RegisterPage } from '@/pages/auth/RegisterPage';
 import { DashboardPage } from '@/pages/dashboard/DashboardPage';
 import { ContactsPage } from '@/pages/contacts/ContactsPage';
 import { ContactDetailPage } from '@/pages/contacts/ContactDetailPage';
+import { PipelinePage } from '@/pages/pipeline/PipelinePage';
 import { ComingSoonPage } from '@/pages/ComingSoonPage';
 import { NotFoundPage } from '@/pages/NotFoundPage';
 
@@ -30,10 +31,8 @@ export const router = createBrowserRouter([
     ),
     children: [
       { path: '/dashboard', element: <DashboardPage /> },
-      {
-        path: '/pipeline',
-        element: <ComingSoonPage title="Pipeline" milestone="Milestone 3" />,
-      },
+      { path: '/pipeline', element: <PipelinePage /> },
+      { path: '/pipeline/:pipelineId', element: <PipelinePage /> },
       { path: '/contacts', element: <ContactsPage /> },
       { path: '/contacts/:id', element: <ContactDetailPage /> },
       {
