@@ -128,7 +128,7 @@ export function PipelinePage() {
   };
 
   const handleCreateFirstPipeline = async () => {
-    const pipeline = await createPipeline.mutateAsync({ name: 'Sales Pipeline' });
+    const pipeline = await createPipeline.mutateAsync({ name: 'Pipeline de Vendas' });
     setActivePipelineId(pipeline.id);
   };
 
@@ -139,9 +139,9 @@ export function PipelinePage() {
       <div className="space-y-5">
         <h1 className="text-2xl font-semibold text-text-primary">Pipeline</h1>
         <div className="card p-12 flex flex-col items-center justify-center gap-4 text-center">
-          <p className="text-text-secondary text-sm">No pipeline yet. Create one to get started.</p>
+          <p className="text-text-secondary text-sm">Nenhum pipeline ainda. Crie um para começar.</p>
           <Button onClick={handleCreateFirstPipeline} disabled={createPipeline.isPending}>
-            <Plus size={14} /> Create pipeline
+            <Plus size={14} /> Criar pipeline
           </Button>
         </div>
       </div>
@@ -172,11 +172,11 @@ export function PipelinePage() {
           </div>
         </div>
         <div className="flex gap-2">
-          <Button variant="secondary" size="sm" onClick={() => toast.info('Pipeline settings coming soon')}>
-            <Settings size={14} /> Settings
+          <Button variant="secondary" size="sm" onClick={() => toast.info('Configurações de pipeline em breve')}>
+            <Settings size={14} /> Configurações
           </Button>
           <Button size="sm" onClick={() => openDealModal(allStages[0]?.id ?? '')}>
-            <Plus size={14} /> New deal
+            <Plus size={14} /> Novo negócio
           </Button>
         </div>
       </div>
@@ -205,7 +205,7 @@ export function PipelinePage() {
 
             {localStages.length === 0 && (
               <div className="flex-1 flex items-center justify-center text-text-muted text-sm">
-                No stages yet. Go to Pipeline Settings to add stages.
+                Nenhuma etapa ainda. Acesse as Configurações para adicionar etapas.
               </div>
             )}
           </div>
@@ -223,7 +223,7 @@ export function PipelinePage() {
         </DndContext>
       )}
 
-      <Modal open={dealModalOpen} onClose={() => setDealModalOpen(false)} title="New deal">
+      <Modal open={dealModalOpen} onClose={() => setDealModalOpen(false)} title="Novo negócio">
         <DealForm
           stages={allStages}
           defaultStageId={defaultStageId}

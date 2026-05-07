@@ -7,8 +7,8 @@ import type { Contact } from '@/services/contacts.service';
 
 const schema = z.object({
   type: z.enum(['lead', 'contact', 'client']).default('lead'),
-  fullName: z.string().min(1, 'Name is required'),
-  email: z.string().email('Invalid email').optional().or(z.literal('')),
+  fullName: z.string().min(1, 'Nome é obrigatório'),
+  email: z.string().email('E-mail inválido').optional().or(z.literal('')),
   phone: z.string().optional(),
   companyName: z.string().optional(),
   jobTitle: z.string().optional(),
@@ -26,17 +26,17 @@ interface ContactFormProps {
 
 const typeOptions = [
   { value: 'lead', label: 'Lead' },
-  { value: 'contact', label: 'Contact' },
-  { value: 'client', label: 'Client' },
+  { value: 'contact', label: 'Contato' },
+  { value: 'client', label: 'Cliente' },
 ];
 
 const sourceOptions = [
-  { value: '', label: 'None' },
-  { value: 'organic', label: 'Organic' },
-  { value: 'ads', label: 'Ads' },
-  { value: 'referral', label: 'Referral' },
-  { value: 'social', label: 'Social media' },
-  { value: 'event', label: 'Event' },
+  { value: '', label: 'Nenhuma' },
+  { value: 'organic', label: 'Orgânico' },
+  { value: 'ads', label: 'Anúncios' },
+  { value: 'referral', label: 'Indicação' },
+  { value: 'social', label: 'Redes sociais' },
+  { value: 'event', label: 'Evento' },
   { value: 'api', label: 'API' },
 ];
 
@@ -61,7 +61,7 @@ export function ContactForm({ defaultValues, onSubmit, onCancel, isSubmitting }:
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
       <div className="flex flex-col gap-1">
-        <label className="text-xs font-medium text-text-secondary">Type</label>
+        <label className="text-xs font-medium text-text-secondary">Tipo</label>
         <select
           {...register('type')}
           className="input-base"
@@ -75,8 +75,8 @@ export function ContactForm({ defaultValues, onSubmit, onCancel, isSubmitting }:
       <Input
         {...register('fullName')}
         id="fullName"
-        label="Full name *"
-        placeholder="Jane Smith"
+        label="Nome completo *"
+        placeholder="João Silva"
         error={errors.fullName?.message}
       />
 
@@ -85,14 +85,14 @@ export function ContactForm({ defaultValues, onSubmit, onCancel, isSubmitting }:
           {...register('email')}
           id="email"
           type="email"
-          label="Email"
-          placeholder="jane@company.com"
+          label="E-mail"
+          placeholder="joao@empresa.com"
           error={errors.email?.message}
         />
         <Input
           {...register('phone')}
           id="phone"
-          label="Phone"
+          label="Telefone"
           placeholder="+55 11 9xxxx-xxxx"
         />
       </div>
@@ -101,19 +101,19 @@ export function ContactForm({ defaultValues, onSubmit, onCancel, isSubmitting }:
         <Input
           {...register('companyName')}
           id="companyName"
-          label="Company"
+          label="Empresa"
           placeholder="Acme Corp"
         />
         <Input
           {...register('jobTitle')}
           id="jobTitle"
-          label="Job title"
+          label="Cargo"
           placeholder="CEO"
         />
       </div>
 
       <div className="flex flex-col gap-1">
-        <label className="text-xs font-medium text-text-secondary">Source</label>
+        <label className="text-xs font-medium text-text-secondary">Origem</label>
         <select {...register('source')} className="input-base">
           {sourceOptions.map((o) => (
             <option key={o.value} value={o.value}>{o.label}</option>
@@ -123,10 +123,10 @@ export function ContactForm({ defaultValues, onSubmit, onCancel, isSubmitting }:
 
       <div className="flex gap-2 pt-2 justify-end">
         <Button type="button" variant="ghost" onClick={onCancel}>
-          Cancel
+          Cancelar
         </Button>
         <Button type="submit" disabled={isSubmitting}>
-          {isSubmitting ? 'Saving…' : 'Save'}
+          {isSubmitting ? 'Salvando…' : 'Salvar'}
         </Button>
       </div>
     </form>

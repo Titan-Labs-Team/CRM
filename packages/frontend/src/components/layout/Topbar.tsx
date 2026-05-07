@@ -26,14 +26,14 @@ export function Topbar() {
       <div className="flex-1" />
 
       <div className="flex items-center gap-2">
-        <Button variant="ghost" size="icon" title="Notifications">
+        <Button variant="ghost" size="icon" title="Notificações">
           <Bell size={16} />
         </Button>
 
         {user && (
           <div className="flex items-center gap-2 pl-2 border-l border-bg-border">
             <Avatar name={user.full_name} size="sm" />
-            <Button variant="ghost" size="icon" onClick={handleLogout} title="Sign out">
+            <Button variant="ghost" size="icon" onClick={handleLogout} title="Sair">
               <LogOut size={14} />
             </Button>
           </div>

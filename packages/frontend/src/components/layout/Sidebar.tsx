@@ -19,10 +19,10 @@ import { Badge } from '@/components/ui/Badge';
 const navItems = [
   { to: '/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
   { to: '/pipeline', icon: Kanban, label: 'Pipeline' },
-  { to: '/contacts', icon: Users, label: 'Contacts' },
-  { to: '/deals', icon: Briefcase, label: 'Deals' },
-  { to: '/calendar', icon: Calendar, label: 'Calendar' },
-  { to: '/reports', icon: BarChart3, label: 'Reports' },
+  { to: '/contacts', icon: Users, label: 'Contatos' },
+  { to: '/deals', icon: Briefcase, label: 'Negócios' },
+  { to: '/calendar', icon: Calendar, label: 'Calendário' },
+  { to: '/reports', icon: BarChart3, label: 'Relatórios' },
 ];
 
 export function Sidebar() {
@@ -85,10 +85,10 @@ export function Sidebar() {
               sidebarCollapsed && 'justify-center',
             )
           }
-          title={sidebarCollapsed ? 'Settings' : undefined}
+          title={sidebarCollapsed ? 'Configurações' : undefined}
         >
           <Settings size={16} className="flex-shrink-0" />
-          {!sidebarCollapsed && <span>Settings</span>}
+          {!sidebarCollapsed && <span>Configurações</span>}
         </NavLink>
 
         {user && !sidebarCollapsed && (
@@ -100,7 +100,7 @@ export function Sidebar() {
                 variant={user.role as 'admin' | 'manager' | 'seller'}
                 className="mt-0.5"
               >
-                {user.role}
+                {{ admin: 'Admin', manager: 'Gerente', seller: 'Vendedor' }[user.role] ?? user.role}
               </Badge>
             </div>
           </div>

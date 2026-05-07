@@ -14,11 +14,17 @@ import { toast } from 'sonner';
 import { useDebounce } from '@/hooks/useDebounce';
 
 const TYPE_FILTER_OPTIONS = [
-  { value: '', label: 'All' },
+  { value: '', label: 'Todos' },
   { value: 'lead', label: 'Leads' },
-  { value: 'contact', label: 'Contacts' },
-  { value: 'client', label: 'Clients' },
+  { value: 'contact', label: 'Contatos' },
+  { value: 'client', label: 'Clientes' },
 ];
+
+const typeLabel: Record<string, string> = {
+  lead: 'Lead',
+  contact: 'Contato',
+  client: 'Cliente',
+};
 
 const typeBadgeVariant: Record<string, 'green' | 'blue' | 'default'> = {
   lead: 'blue',
@@ -72,7 +78,7 @@ export function ContactsPage() {
   };
 
   const handleDelete = async (id: string) => {
-    if (!confirm('Delete this contact? This cannot be undone.')) return;
+    if (!confirm('Excluir este contato? Esta ação não pode ser desfeita.')) return;
     await deleteContact.mutateAsync(id);
   };
 
@@ -87,7 +93,7 @@ export function ContactsPage() {
       a.click();
       URL.revokeObjectURL(url);
     } catch {
-      toast.error('Export failed — upgrade to Pro to export contacts');
+      toast.error('Exportação falhou — faça upgrade para Pro para exportar contatos');
     } finally {
       setExportLoading(false);
     }
@@ -97,19 +103,19 @@ export function ContactsPage() {
     <div className="space-y-5">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-semibold text-text-primary">Contacts</h1>
+          <h1 className="text-2xl font-semibold text-text-primary">Contatos</h1>
           <p className="text-sm text-text-secondary mt-0.5">
-            {data?.meta?.total ?? 0} total
+            {data?.meta?.total ?? 0} no total
           </p>
         </div>
         <div className="flex gap-2">
           <Button variant="secondary" size="sm" onClick={handleExport} disabled={exportLoading}>
             <Download size={14} />
-            {exportLoading ? 'Exporting…' : 'Export CSV'}
+            {exportLoading ? 'Exportando…' : 'Exportar CSV'}
           </Button>
           <Button size="sm" onClick={openCreate}>
             <Plus size={14} />
-            New contact
+            Novo contato
           </Button>
         </div>
       </div>
@@ -120,7 +126,7 @@ export function ContactsPage() {
           <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-text-muted" />
           <input
             className="input-base pl-8"
-            placeholder="Search name, email, company…"
+            placeholder="Buscar nome, e-mail, empresa…"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
           />
@@ -150,20 +156,20 @@ export function ContactsPage() {
           </div>
         ) : contacts.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-16 gap-3">
-            <p className="text-text-muted text-sm">No contacts found</p>
+            <p className="text-text-muted text-sm">Nenhum contato encontrado</p>
             <Button size="sm" onClick={openCreate}>
-              <Plus size={14} /> Add your first contact
+              <Plus size={14} /> Adicionar primeiro contato
             </Button>
           </div>
         ) : (
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-bg-border text-text-muted text-xs uppercase tracking-wide">
-                <th className="text-left px-4 py-3 font-medium">Name</th>
-                <th className="text-left px-4 py-3 font-medium hidden md:table-cell">Company</th>
-                <th className="text-left px-4 py-3 font-medium hidden lg:table-cell">Email</th>
-                <th className="text-left px-4 py-3 font-medium">Type</th>
-                <th className="text-left px-4 py-3 font-medium hidden sm:table-cell">Owner</th>
+                <th className="text-left px-4 py-3 font-medium">Nome</th>
+                <th className="text-left px-4 py-3 font-medium hidden md:table-cell">Empresa</th>
+                <th className="text-left px-4 py-3 font-medium hidden lg:table-cell">E-mail</th>
+                <th className="text-left px-4 py-3 font-medium">Tipo</th>
+                <th className="text-left px-4 py-3 font-medium hidden sm:table-cell">Responsável</th>
                 <th className="px-4 py-3 w-20" />
               </tr>
             </thead>
@@ -192,7 +198,7 @@ export function ContactsPage() {
                     {c.email ?? '—'}
                   </td>
                   <td className="px-4 py-3">
-                    <Badge variant={typeBadgeVariant[c.type] ?? 'default'}>{c.type}</Badge>
+                    <Badge variant={typeBadgeVariant[c.type] ?? 'default'}>{typeLabel[c.type] ?? c.type}</Badge>
                   </td>
                   <td className="px-4 py-3 text-text-muted text-xs hidden sm:table-cell">
                     {c.owner_name ?? '—'}
@@ -205,7 +211,7 @@ export function ContactsPage() {
                       <button
                         onClick={() => openEdit(c)}
                         className="p-1.5 rounded text-text-muted hover:text-text-primary hover:bg-bg-border transition-colors"
-                        title="Edit"
+                        title="Editar"
                       >
                         <Pencil size={13} />
                       </button>
@@ -213,7 +219,7 @@ export function ContactsPage() {
                         <button
                           onClick={() => handleDelete(c.id)}
                           className="p-1.5 rounded text-text-muted hover:text-status-lost hover:bg-status-lost/10 transition-colors"
-                          title="Delete"
+                          title="Excluir"
                         >
                           <Trash2 size={13} />
                         </button>
@@ -238,7 +244,7 @@ export function ContactsPage() {
       <Modal
         open={modalOpen}
         onClose={closeModal}
-        title={editContact ? 'Edit contact' : 'New contact'}
+        title={editContact ? 'Editar contato' : 'Novo contato'}
       >
         <ContactForm
           defaultValues={editContact ?? undefined}

@@ -58,7 +58,7 @@ export function KanbanColumn({ stage, onAddDeal, onWon, onLost, onDealClick }: K
           onClick={() => onAddDeal(stage.id)}
           className="w-full flex items-center gap-2 px-2 py-2 rounded text-xs text-text-muted hover:text-text-primary hover:bg-bg-surface transition-colors"
         >
-          <Plus size={12} /> Add deal
+          <Plus size={12} /> Novo negócio
         </button>
       </div>
     </div>

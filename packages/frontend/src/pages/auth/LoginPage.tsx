@@ -9,8 +9,8 @@ import { Button } from '@/components/ui/Button';
 import { useState } from 'react';
 
 const schema = z.object({
-  email: z.string().email('Enter a valid email'),
-  password: z.string().min(1, 'Password is required'),
+  email: z.string().email('Digite um e-mail válido'),
+  password: z.string().min(1, 'Senha é obrigatória'),
 });
 
 type FormData = z.infer<typeof schema>;
@@ -35,7 +35,7 @@ export function LoginPage() {
     } catch (err: unknown) {
       const msg =
         (err as { response?: { data?: { error?: string } } }).response?.data?.error ??
-        'Login failed';
+        'Falha no login';
       setServerError(msg);
     }
   };
@@ -50,8 +50,8 @@ export function LoginPage() {
 
         <div className="card p-6 space-y-5">
           <div>
-            <h1 className="text-lg font-semibold text-text-primary">Sign in</h1>
-            <p className="text-sm text-text-secondary mt-1">Welcome back to your workspace</p>
+            <h1 className="text-lg font-semibold text-text-primary">Entrar</h1>
+            <p className="text-sm text-text-secondary mt-1">Bem-vindo de volta ao seu workspace</p>
           </div>
 
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
@@ -59,8 +59,8 @@ export function LoginPage() {
               {...register('email')}
               id="email"
               type="email"
-              label="Email"
-              placeholder="you@company.com"
+              label="E-mail"
+              placeholder="voce@empresa.com"
               error={errors.email?.message}
               autoComplete="email"
             />
@@ -68,7 +68,7 @@ export function LoginPage() {
               {...register('password')}
               id="password"
               type="password"
-              label="Password"
+              label="Senha"
               placeholder="••••••••"
               error={errors.password?.message}
               autoComplete="current-password"
@@ -81,14 +81,14 @@ export function LoginPage() {
             )}
 
             <Button type="submit" className="w-full" disabled={isSubmitting}>
-              {isSubmitting ? 'Signing in…' : 'Sign in'}
+              {isSubmitting ? 'Entrando…' : 'Entrar'}
             </Button>
           </form>
 
           <p className="text-sm text-text-secondary text-center">
-            Don't have a workspace?{' '}
+            Não tem um workspace?{' '}
             <Link to="/register" className="text-accent-green hover:underline">
-              Create one
+              Criar um
             </Link>
           </p>
         </div>

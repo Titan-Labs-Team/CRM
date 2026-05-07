@@ -16,6 +16,12 @@ const typeBadgeVariant: Record<string, 'green' | 'blue' | 'default'> = {
   client: 'green',
 };
 
+const typeLabel: Record<string, string> = {
+  lead: 'Lead',
+  contact: 'Contato',
+  client: 'Cliente',
+};
+
 export function ContactDetailPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
@@ -68,7 +74,7 @@ export function ContactDetailPage() {
                 <p className="text-sm text-text-secondary">{contact.job_title}</p>
               )}
               <Badge variant={typeBadgeVariant[contact.type] ?? 'default'} className="mt-2">
-                {contact.type}
+                {typeLabel[contact.type] ?? contact.type}
               </Badge>
             </div>
           </div>
@@ -117,8 +123,8 @@ export function ContactDetailPage() {
           )}
 
           <div className="pt-2 border-t border-bg-border text-xs text-text-muted space-y-1">
-            <p>Owner: {contact.owner_name ?? '—'}</p>
-            <p>Added: {new Date(contact.created_at).toLocaleDateString()}</p>
+            <p>Responsável: {contact.owner_name ?? '—'}</p>
+            <p>Criado em: {new Date(contact.created_at).toLocaleDateString('pt-BR')}</p>
           </div>
         </div>
 

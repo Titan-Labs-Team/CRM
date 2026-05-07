@@ -6,8 +6,8 @@ import { Button } from '@/components/ui/Button';
 import type { Stage } from '@/services/pipeline.service';
 
 const schema = z.object({
-  title: z.string().min(1, 'Title is required'),
-  stageId: z.string().uuid('Select a stage'),
+  title: z.string().min(1, 'Título é obrigatório'),
+  stageId: z.string().uuid('Selecione uma etapa'),
   value: z.coerce.number().min(0).optional(),
   expectedClose: z.string().optional(),
 });
@@ -53,7 +53,7 @@ export function DealForm({ stages, defaultStageId, onSubmit, onCancel, isSubmitt
           {...register('value')}
           id="value"
           type="number"
-          label="Value (BRL)"
+          label="Valor (R$)"
           placeholder="0"
           min={0}
         />

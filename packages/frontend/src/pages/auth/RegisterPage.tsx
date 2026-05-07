@@ -9,15 +9,15 @@ import { Button } from '@/components/ui/Button';
 import { useState } from 'react';
 
 const schema = z.object({
-  workspaceName: z.string().min(2, 'Workspace name is required'),
+  workspaceName: z.string().min(2, 'Nome do workspace é obrigatório'),
   slug: z
     .string()
-    .min(2, 'Slug is required')
+    .min(2, 'URL é obrigatória')
     .max(50)
-    .regex(/^[a-z0-9-]+$/, 'Lowercase letters, numbers, and hyphens only'),
-  fullName: z.string().min(2, 'Full name is required'),
-  email: z.string().email('Enter a valid email'),
-  password: z.string().min(8, 'Password must be at least 8 characters'),
+    .regex(/^[a-z0-9-]+$/, 'Apenas letras minúsculas, números e hífens'),
+  fullName: z.string().min(2, 'Nome completo é obrigatório'),
+  email: z.string().email('Digite um e-mail válido'),
+  password: z.string().min(8, 'Senha deve ter pelo menos 8 caracteres'),
 });
 
 type FormData = z.infer<typeof schema>;
@@ -56,7 +56,7 @@ export function RegisterPage() {
     } catch (err: unknown) {
       const msg =
         (err as { response?: { data?: { error?: string } } }).response?.data?.error ??
-        'Registration failed';
+        'Falha no cadastro';
       setServerError(msg);
     }
   };
@@ -71,15 +71,15 @@ export function RegisterPage() {
 
         <div className="card p-6 space-y-5">
           <div>
-            <h1 className="text-lg font-semibold text-text-primary">Create your workspace</h1>
-            <p className="text-sm text-text-secondary mt-1">Get started in minutes</p>
+            <h1 className="text-lg font-semibold text-text-primary">Crie seu workspace</h1>
+            <p className="text-sm text-text-secondary mt-1">Comece em minutos</p>
           </div>
 
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
             <Input
               id="workspaceName"
-              label="Workspace name"
-              placeholder="Acme Corp"
+              label="Nome do workspace"
+              placeholder="Minha Empresa"
               error={errors.workspaceName?.message}
               onChange={handleWorkspaceNameChange}
               value={workspaceName}
@@ -87,24 +87,24 @@ export function RegisterPage() {
             <Input
               {...register('slug')}
               id="slug"
-              label="Workspace URL"
-              placeholder="acme-corp"
+              label="URL do workspace"
+              placeholder="minha-empresa"
               error={errors.slug?.message}
               className="font-mono text-xs"
             />
             <Input
               {...register('fullName')}
               id="fullName"
-              label="Your name"
-              placeholder="Jane Smith"
+              label="Seu nome"
+              placeholder="João Silva"
               error={errors.fullName?.message}
             />
             <Input
               {...register('email')}
               id="email"
               type="email"
-              label="Email"
-              placeholder="jane@acme.com"
+              label="E-mail"
+              placeholder="joao@empresa.com"
               error={errors.email?.message}
               autoComplete="email"
             />
@@ -112,8 +112,8 @@ export function RegisterPage() {
               {...register('password')}
               id="password"
               type="password"
-              label="Password"
-              placeholder="Min. 8 characters"
+              label="Senha"
+              placeholder="Mín. 8 caracteres"
               error={errors.password?.message}
               autoComplete="new-password"
             />
@@ -125,14 +125,14 @@ export function RegisterPage() {
             )}
 
             <Button type="submit" className="w-full" disabled={isSubmitting}>
-              {isSubmitting ? 'Creating workspace…' : 'Create workspace'}
+              {isSubmitting ? 'Criando workspace…' : 'Criar workspace'}
             </Button>
           </form>
 
           <p className="text-sm text-text-secondary text-center">
-            Already have a workspace?{' '}
+            Já tem um workspace?{' '}
             <Link to="/login" className="text-accent-green hover:underline">
-              Sign in
+              Entrar
             </Link>
           </p>
         </div>
