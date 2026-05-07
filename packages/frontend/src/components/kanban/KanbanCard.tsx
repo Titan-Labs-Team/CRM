@@ -67,13 +67,13 @@ export function KanbanCard({ deal, onWon, onLost, onClick }: KanbanCardProps) {
           onClick={() => onWon(deal.id)}
           className="flex items-center gap-1 text-xs px-2 py-0.5 rounded bg-status-won/10 text-status-won hover:bg-status-won/20 transition-colors"
         >
-          <Trophy size={10} /> Won
+          <Trophy size={10} /> Ganho
         </button>
         <button
           onClick={() => onLost(deal.id)}
           className="flex items-center gap-1 text-xs px-2 py-0.5 rounded bg-status-lost/10 text-status-lost hover:bg-status-lost/20 transition-colors"
         >
-          <X size={10} /> Lost
+          <X size={10} /> Perdido
         </button>
       </div>
     </div>

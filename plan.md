@@ -86,21 +86,21 @@
 **Goal**: KPI dashboard, activity tracking, calendar scheduling.
 
 ### Backend
-- [ ] Migrations: `activities`, `calendar_events`, `calendar_event_attendees`
-- [ ] `/activities` CRUD + `PATCH /activities/:id/done`
-- [ ] `/calendar/events` CRUD + attendee management
-- [ ] `GET /reports/kpis` — total open, won MTD, conversion rate, avg cycle
-- [ ] `GET /reports/funnel` — deals by stage
-- [ ] `GET /reports/revenue` — grouped by week/month
+- [x] Migrations: `activities`, `calendar_events`, `calendar_event_attendees`
+- [x] `/activities` CRUD + `PATCH /activities/:id/done`
+- [x] `/calendar/events` CRUD + attendee management
+- [x] `GET /reports/kpis` — total open, won MTD, conversion rate, avg cycle
+- [x] `GET /reports/funnel` — deals by stage
+- [x] `GET /reports/revenue` — grouped by week/month
 
 ### Frontend
-- [ ] `DashboardPage` — 4×KpiCard, FunnelChart, RevenueChart, ActivityFeed
-- [ ] `ContactDetailPage` — activity timeline
-- [ ] `DealDetailPage` — activity list + add activity
-- [ ] `CalendarPage` with FullCalendar (month/week/day)
-- [ ] `EventModal` — create/edit with deal/contact link + attendees
+- [x] `DashboardPage` — 4×KpiCard, FunnelChart, RevenueChart, ActivityFeed
+- [x] `ContactDetailPage` — activity timeline
+- [x] `DealDetailPage` — activity list + add activity
+- [x] `CalendarPage` with FullCalendar (month/week/day)
+- [x] `EventModal` — create/edit with deal/contact link + attendees
 
-**Test**: Dashboard shows real numbers. Log activities. Calendar shows events.
+**Test**: Dashboard shows real numbers. Log activities. Calendar shows events. ✅
 
 ---
 

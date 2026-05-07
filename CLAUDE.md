@@ -244,7 +244,7 @@ See [plan.md](./plan.md) for current progress.
 | M1 — Scaffolding & Auth | ✅ Done |
 | M2 — Contacts Module | ✅ Done |
 | M3 — Pipeline & Kanban | ✅ Done |
-| M4 — Dashboard, Activities, Calendar | ⏳ Pending |
+| M4 — Dashboard, Activities, Calendar | ✅ Done |
 | M5 — Reports, Export, Team | ⏳ Pending |
 | M6 — Integrations API & Webhooks | ⏳ Pending |
 | M7 — Billing & Premium Tiers | ⏳ Pending |

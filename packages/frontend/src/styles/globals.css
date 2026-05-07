@@ -38,3 +38,69 @@
     @apply w-full bg-bg-surface border border-bg-border rounded px-3 py-2 text-text-primary placeholder-text-muted text-sm focus:outline-none focus:ring-1 focus:ring-accent-green focus:border-accent-green transition-colors;
   }
 }
+
+/* FullCalendar dark theme overrides */
+.fullcalendar-dark .fc {
+  --fc-border-color: #1f2937;
+  --fc-button-bg-color: #111827;
+  --fc-button-border-color: #1f2937;
+  --fc-button-hover-bg-color: #1f2937;
+  --fc-button-hover-border-color: #4b5563;
+  --fc-button-active-bg-color: #72d296;
+  --fc-button-active-border-color: #72d296;
+  --fc-button-text-color: #9ca3af;
+  --fc-today-bg-color: rgba(114, 210, 150, 0.05);
+  --fc-page-bg-color: transparent;
+  --fc-neutral-bg-color: #111827;
+  --fc-list-event-hover-bg-color: #1f2937;
+  --fc-event-bg-color: #72d296;
+  --fc-event-border-color: #4a9b6f;
+  --fc-event-text-color: #04080f;
+  font-size: 13px;
+}
+
+.fullcalendar-dark .fc-toolbar-title {
+  color: #ffffff;
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.fullcalendar-dark .fc-col-header-cell-cushion,
+.fullcalendar-dark .fc-daygrid-day-number {
+  color: #9ca3af;
+  text-decoration: none;
+}
+
+.fullcalendar-dark .fc-daygrid-day-number:hover {
+  color: #ffffff;
+}
+
+.fullcalendar-dark .fc-button-primary {
+  text-transform: capitalize;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.fullcalendar-dark .fc-button-primary:not(:disabled).fc-button-active {
+  color: #04080f;
+  font-weight: 600;
+}
+
+.fullcalendar-dark .fc-daygrid-day.fc-day-today .fc-daygrid-day-frame {
+  background-color: rgba(114, 210, 150, 0.05);
+}
+
+.fullcalendar-dark .fc-event-title,
+.fullcalendar-dark .fc-event-time {
+  color: #04080f;
+  font-size: 11px;
+}
+
+.fullcalendar-dark .fc-more-link {
+  color: #9ca3af;
+}
+
+.fullcalendar-dark .fc-timegrid-slot-label {
+  color: #4b5563;
+  font-size: 11px;
+}

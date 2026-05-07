@@ -10,6 +10,9 @@ import userRoutes from './modules/users/users.routes';
 import contactRoutes from './modules/contacts/contacts.routes';
 import pipelineRoutes from './modules/pipeline/pipeline.routes';
 import dealRoutes from './modules/deals/deals.routes';
+import activityRoutes from './modules/activities/activities.routes';
+import calendarRoutes from './modules/calendar/calendar.routes';
+import reportRoutes from './modules/reports/reports.routes';
 
 const app = express();
 
@@ -26,6 +29,9 @@ app.use('/api/v1/users', userRoutes);
 app.use('/api/v1/contacts', contactRoutes);
 app.use('/api/v1/pipelines', pipelineRoutes);
 app.use('/api/v1/deals', dealRoutes);
+app.use('/api/v1/activities', activityRoutes);
+app.use('/api/v1/calendar/events', calendarRoutes);
+app.use('/api/v1/reports', reportRoutes);
 
 app.use(errorHandler);
 

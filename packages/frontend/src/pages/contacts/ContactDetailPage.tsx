@@ -1,6 +1,7 @@
 import { useParams, useNavigate } from 'react-router-dom';
 import { ArrowLeft, Pencil, Mail, Phone, Building2, Briefcase, Globe } from 'lucide-react';
 import { useContact, useUpdateContact } from '@/hooks/useContacts';
+import { ActivityTimeline } from '@/components/activities/ActivityTimeline';
 import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
 import { Avatar } from '@/components/ui/Avatar';
@@ -32,7 +33,7 @@ export function ContactDetailPage() {
 
   if (!contact) {
     return (
-      <div className="text-center py-24 text-text-muted">Contact not found.</div>
+      <div className="text-center py-24 text-text-muted">Contato não encontrado.</div>
     );
   }
 
@@ -52,7 +53,7 @@ export function ContactDetailPage() {
         </button>
         <h1 className="text-xl font-semibold text-text-primary flex-1">{contact.full_name}</h1>
         <Button variant="secondary" size="sm" onClick={() => setEditOpen(true)}>
-          <Pencil size={13} /> Edit
+          <Pencil size={13} /> Editar
         </Button>
       </div>
 
@@ -121,20 +122,13 @@ export function ContactDetailPage() {
           </div>
         </div>
 
-        {/* Right — deals & activity placeholder */}
-        <div className="lg:col-span-2 space-y-4">
-          <div className="card p-5">
-            <p className="text-sm font-medium text-text-primary mb-3">Deals</p>
-            <p className="text-sm text-text-muted">Deals will appear here in Milestone 3.</p>
-          </div>
-          <div className="card p-5">
-            <p className="text-sm font-medium text-text-primary mb-3">Activity</p>
-            <p className="text-sm text-text-muted">Activity timeline coming in Milestone 4.</p>
-          </div>
+        {/* Right — activity timeline */}
+        <div className="lg:col-span-2 card p-5">
+          <ActivityTimeline contactId={contact.id} />
         </div>
       </div>
 
-      <Modal open={editOpen} onClose={() => setEditOpen(false)} title="Edit contact">
+      <Modal open={editOpen} onClose={() => setEditOpen(false)} title="Editar contato">
         <ContactForm
           defaultValues={contact}
           onSubmit={handleUpdate}

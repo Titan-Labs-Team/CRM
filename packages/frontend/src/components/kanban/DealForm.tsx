@@ -33,13 +33,13 @@ export function DealForm({ stages, defaultStageId, onSubmit, onCancel, isSubmitt
       <Input
         {...register('title')}
         id="title"
-        label="Deal title *"
-        placeholder="e.g. Acme Corp — Enterprise plan"
+        label="Título do negócio *"
+        placeholder="Ex: Acme Corp — Plano Enterprise"
         error={errors.title?.message}
       />
 
       <div className="flex flex-col gap-1">
-        <label className="text-xs font-medium text-text-secondary">Stage *</label>
+        <label className="text-xs font-medium text-text-secondary">Etapa *</label>
         <select {...register('stageId')} className="input-base">
           {stages.map((s) => (
             <option key={s.id} value={s.id}>{s.name}</option>
@@ -61,14 +61,14 @@ export function DealForm({ stages, defaultStageId, onSubmit, onCancel, isSubmitt
           {...register('expectedClose')}
           id="expectedClose"
           type="date"
-          label="Expected close"
+          label="Previsão de fechamento"
         />
       </div>
 
       <div className="flex gap-2 pt-2 justify-end">
-        <Button type="button" variant="ghost" onClick={onCancel}>Cancel</Button>
+        <Button type="button" variant="ghost" onClick={onCancel}>Cancelar</Button>
         <Button type="submit" disabled={isSubmitting}>
-          {isSubmitting ? 'Saving…' : 'Create deal'}
+          {isSubmitting ? 'Salvando...' : 'Criar negócio'}
         </Button>
       </div>
     </form>

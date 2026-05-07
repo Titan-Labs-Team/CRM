@@ -27,8 +27,8 @@ export function useCreatePipeline() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: (input: { name: string }) => pipelineService.createPipeline(input),
-    onSuccess: () => { qc.invalidateQueries({ queryKey: pipelineKeys.all }); toast.success('Pipeline created'); },
-    onError: () => toast.error('Failed to create pipeline'),
+    onSuccess: () => { qc.invalidateQueries({ queryKey: pipelineKeys.all }); toast.success('Pipeline criado'); },
+    onError: () => toast.error('Erro ao criar pipeline'),
   });
 }
 
@@ -37,8 +37,8 @@ export function useCreateStage() {
   return useMutation({
     mutationFn: ({ pipelineId, input }: { pipelineId: string; input: { name: string; color?: string } }) =>
       pipelineService.createStage(pipelineId, input),
-    onSuccess: () => { qc.invalidateQueries({ queryKey: pipelineKeys.all }); toast.success('Stage added'); },
-    onError: () => toast.error('Failed to add stage'),
+    onSuccess: () => { qc.invalidateQueries({ queryKey: pipelineKeys.all }); toast.success('Etapa adicionada'); },
+    onError: () => toast.error('Erro ao adicionar etapa'),
   });
 }
 
@@ -56,8 +56,8 @@ export function useDeleteStage() {
   return useMutation({
     mutationFn: ({ pipelineId, stageId }: { pipelineId: string; stageId: string }) =>
       pipelineService.deleteStage(pipelineId, stageId),
-    onSuccess: () => { qc.invalidateQueries({ queryKey: pipelineKeys.all }); toast.success('Stage deleted'); },
-    onError: (e: unknown) => toast.error((e as { response?: { data?: { error?: string } } }).response?.data?.error ?? 'Failed to delete stage'),
+    onSuccess: () => { qc.invalidateQueries({ queryKey: pipelineKeys.all }); toast.success('Etapa removida'); },
+    onError: (e: unknown) => toast.error((e as { response?: { data?: { error?: string } } }).response?.data?.error ?? 'Erro ao remover etapa'),
   });
 }
 
@@ -74,8 +74,8 @@ export function useCreateDeal() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: dealsService.create,
-    onSuccess: () => { qc.invalidateQueries({ queryKey: pipelineKeys.all }); toast.success('Deal created'); },
-    onError: () => toast.error('Failed to create deal'),
+    onSuccess: () => { qc.invalidateQueries({ queryKey: pipelineKeys.all }); toast.success('Negócio criado'); },
+    onError: () => toast.error('Erro ao criar negócio'),
   });
 }
 
@@ -92,7 +92,7 @@ export function useMarkWon() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: (id: string) => dealsService.markWon(id),
-    onSuccess: () => { qc.invalidateQueries({ queryKey: pipelineKeys.all }); toast.success('Deal marked as Won!'); },
+    onSuccess: () => { qc.invalidateQueries({ queryKey: pipelineKeys.all }); toast.success('Negócio marcado como Ganho!'); },
   });
 }
 
@@ -100,6 +100,16 @@ export function useMarkLost() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: ({ id, reason }: { id: string; reason?: string }) => dealsService.markLost(id, reason),
-    onSuccess: () => { qc.invalidateQueries({ queryKey: pipelineKeys.all }); toast.success('Deal marked as Lost'); },
+    onSuccess: () => { qc.invalidateQueries({ queryKey: pipelineKeys.all }); toast.success('Negócio marcado como Perdido'); },
+  });
+}
+
+export function useUpdateDeal() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, input }: { id: string; input: Partial<{ title: string; value: number; expectedClose: string }> }) =>
+      dealsService.update(id, input),
+    onSuccess: () => { qc.invalidateQueries({ queryKey: pipelineKeys.all }); toast.success('Negócio atualizado'); },
+    onError: () => toast.error('Erro ao atualizar negócio'),
   });
 }

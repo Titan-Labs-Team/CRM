@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
   DndContext,
   DragEndEvent,
@@ -27,6 +28,7 @@ import { toast } from 'sonner';
 
 export function PipelinePage() {
   const qc = useQueryClient();
+  const navigate = useNavigate();
   const { data: pipelines, isLoading: loadingPipelines } = usePipelines();
   const [activePipelineId, setActivePipelineId] = useState<string>('');
   const [dealModalOpen, setDealModalOpen] = useState(false);
@@ -197,7 +199,7 @@ export function PipelinePage() {
                 onAddDeal={openDealModal}
                 onWon={(id) => markWon.mutate(id)}
                 onLost={(id) => markLost.mutate({ id })}
-                onDealClick={() => {}}
+                onDealClick={(deal) => navigate(`/deals/${deal.id}`)}
               />
             ))}
 

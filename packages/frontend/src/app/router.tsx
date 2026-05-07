@@ -7,6 +7,8 @@ import { DashboardPage } from '@/pages/dashboard/DashboardPage';
 import { ContactsPage } from '@/pages/contacts/ContactsPage';
 import { ContactDetailPage } from '@/pages/contacts/ContactDetailPage';
 import { PipelinePage } from '@/pages/pipeline/PipelinePage';
+import { DealDetailPage } from '@/pages/deals/DealDetailPage';
+import { CalendarPage } from '@/pages/calendar/CalendarPage';
 import { ComingSoonPage } from '@/pages/ComingSoonPage';
 import { NotFoundPage } from '@/pages/NotFoundPage';
 
@@ -35,21 +37,15 @@ export const router = createBrowserRouter([
       { path: '/pipeline/:pipelineId', element: <PipelinePage /> },
       { path: '/contacts', element: <ContactsPage /> },
       { path: '/contacts/:id', element: <ContactDetailPage /> },
-      {
-        path: '/deals',
-        element: <ComingSoonPage title="Deals" milestone="Milestone 3" />,
-      },
-      {
-        path: '/calendar',
-        element: <ComingSoonPage title="Calendar" milestone="Milestone 4" />,
-      },
+      { path: '/deals/:id', element: <DealDetailPage /> },
+      { path: '/calendar', element: <CalendarPage /> },
       {
         path: '/reports',
-        element: <ComingSoonPage title="Reports" milestone="Milestone 5" />,
+        element: <ComingSoonPage title="Relatórios" milestone="Milestone 5" />,
       },
       {
         path: '/settings',
-        element: <ComingSoonPage title="Settings" milestone="Milestone 5" />,
+        element: <ComingSoonPage title="Configurações" milestone="Milestone 5" />,
       },
     ],
   },
