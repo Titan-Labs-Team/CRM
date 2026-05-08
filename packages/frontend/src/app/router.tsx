@@ -9,7 +9,8 @@ import { ContactDetailPage } from '@/pages/contacts/ContactDetailPage';
 import { PipelinePage } from '@/pages/pipeline/PipelinePage';
 import { DealDetailPage } from '@/pages/deals/DealDetailPage';
 import { CalendarPage } from '@/pages/calendar/CalendarPage';
-import { ComingSoonPage } from '@/pages/ComingSoonPage';
+import { ReportsPage } from '@/pages/reports/ReportsPage';
+import { SettingsPage } from '@/pages/settings/SettingsPage';
 import { NotFoundPage } from '@/pages/NotFoundPage';
 
 export const router = createBrowserRouter([
@@ -37,16 +38,11 @@ export const router = createBrowserRouter([
       { path: '/pipeline/:pipelineId', element: <PipelinePage /> },
       { path: '/contacts', element: <ContactsPage /> },
       { path: '/contacts/:id', element: <ContactDetailPage /> },
+      { path: '/deals', element: <Navigate to="/pipeline" replace /> },
       { path: '/deals/:id', element: <DealDetailPage /> },
       { path: '/calendar', element: <CalendarPage /> },
-      {
-        path: '/reports',
-        element: <ComingSoonPage title="Relatórios" milestone="Milestone 5" />,
-      },
-      {
-        path: '/settings',
-        element: <ComingSoonPage title="Configurações" milestone="Milestone 5" />,
-      },
+      { path: '/reports', element: <ReportsPage /> },
+      { path: '/settings', element: <SettingsPage /> },
     ],
   },
   {

@@ -1,4 +1,4 @@
-import { useForm } from 'react-hook-form';
+import { useForm, useWatch } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { Input } from '@/components/ui/Input';
@@ -13,6 +13,7 @@ const schema = z.object({
   companyName: z.string().optional(),
   jobTitle: z.string().optional(),
   source: z.string().optional(),
+  customSource: z.string().optional(),
 });
 
 type FormData = z.infer<typeof schema>;
@@ -32,18 +33,23 @@ const typeOptions = [
 
 const sourceOptions = [
   { value: '', label: 'Nenhuma' },
-  { value: 'organic', label: 'Orgânico' },
-  { value: 'ads', label: 'Anúncios' },
-  { value: 'referral', label: 'Indicação' },
-  { value: 'social', label: 'Redes sociais' },
-  { value: 'event', label: 'Evento' },
-  { value: 'api', label: 'API' },
+  { value: 'paid_traffic', label: 'Tráfego pago' },
+  { value: 'landing_page', label: 'Landing Page' },
+  { value: 'ecommerce', label: 'E-commerce' },
+  { value: 'custom', label: 'Personalizado' },
 ];
 
+// Predefined source values — any other value stored is treated as custom
+const PREDEFINED_SOURCES = ['', 'paid_traffic', 'landing_page', 'ecommerce'];
+
 export function ContactForm({ defaultValues, onSubmit, onCancel, isSubmitting }: ContactFormProps) {
+  const existingSource = defaultValues?.source ?? '';
+  const isExistingCustom = !!existingSource && !PREDEFINED_SOURCES.includes(existingSource);
+
   const {
     register,
     handleSubmit,
+    control,
     formState: { errors },
   } = useForm<FormData>({
     resolver: zodResolver(schema),
@@ -54,12 +60,20 @@ export function ContactForm({ defaultValues, onSubmit, onCancel, isSubmitting }:
       phone: defaultValues?.phone ?? '',
       companyName: defaultValues?.company_name ?? '',
       jobTitle: defaultValues?.job_title ?? '',
-      source: defaultValues?.source ?? '',
+      source: isExistingCustom ? 'custom' : existingSource,
+      customSource: isExistingCustom ? existingSource : '',
     },
   });
 
+  const sourceValue = useWatch({ control, name: 'source' });
+
+  const handleFormSubmit = handleSubmit((data) => {
+    const resolvedSource = data.source === 'custom' ? (data.customSource || '') : data.source;
+    return onSubmit({ ...data, source: resolvedSource });
+  });
+
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+    <form onSubmit={handleFormSubmit} className="space-y-4">
       <div className="flex flex-col gap-1">
         <label className="text-xs font-medium text-text-secondary">Tipo</label>
         <select
@@ -119,6 +133,13 @@ export function ContactForm({ defaultValues, onSubmit, onCancel, isSubmitting }:
             <option key={o.value} value={o.value}>{o.label}</option>
           ))}
         </select>
+        {sourceValue === 'custom' && (
+          <input
+            {...register('customSource')}
+            className="input-base mt-2"
+            placeholder="Digite a origem personalizada"
+          />
+        )}
       </div>
 
       <div className="flex gap-2 pt-2 justify-end">
