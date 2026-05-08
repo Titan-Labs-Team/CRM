@@ -5,8 +5,8 @@
   "main": "dist/src/server.js",
   "scripts": {
     "dev": "tsx watch src/server.ts",
-    "build": "tsc",
-    "start": "node dist/src/server.js",
+    "build": "echo 'no build step needed'",
+    "start": "tsx src/server.ts",
     "migrate:latest": "knex --knexfile knexfile.ts migrate:latest",
     "migrate:rollback": "knex --knexfile knexfile.ts migrate:rollback",
     "migrate:make": "knex --knexfile knexfile.ts migrate:make",
