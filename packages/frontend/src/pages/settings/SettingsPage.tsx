@@ -64,8 +64,15 @@ export function SettingsPage() {
 
   const handleInvite = async (formData: InviteFormData) => {
     try {
-      await inviteUser.mutateAsync(formData);
-      toast.success('Convite enviado com sucesso');
+      const result = await inviteUser.mutateAsync(formData);
+      if (result?.data?.tempPassword) {
+        toast.success(
+          `Usuário criado! Senha temporária: ${result.data.tempPassword}`,
+          { duration: 15000 },
+        );
+      } else {
+        toast.success('Convite enviado por e-mail com sucesso');
+      }
       reset();
       setInviteOpen(false);
     } catch {
