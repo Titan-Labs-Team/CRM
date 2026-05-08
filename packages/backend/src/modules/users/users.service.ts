@@ -1,6 +1,7 @@
 import { db } from '../../db';
 import { z } from 'zod';
 import { getPaginationParams, paginatedResponse } from '../../shared/utils/paginate';
+import { env } from '../../config/env';
 
 export const updateUserSchema = z.object({
   role: z.enum(['admin', 'manager', 'seller']).optional(),
@@ -47,7 +48,34 @@ export async function inviteUser(tenantId: string, input: z.infer<typeof inviteU
     })
     .returning(['id', 'email', 'full_name', 'role', 'created_at']);
 
-  return user;
+  if (env.RESEND_API_KEY) {
+    const { Resend } = await import('resend');
+    const resend = new Resend(env.RESEND_API_KEY);
+    await resend.emails.send({
+      from: 'Titan Labs CRM <onboarding@resend.dev>',
+      to: input.email,
+      subject: 'Você foi convidado para o Titan Labs CRM',
+      html: `
+        <div style="font-family:sans-serif;max-width:480px;margin:0 auto;padding:32px">
+          <h2 style="color:#72d296;margin-bottom:8px">Bem-vindo ao Titan Labs CRM</h2>
+          <p style="color:#374151">Olá, <strong>${input.fullName}</strong>!</p>
+          <p style="color:#374151">Você foi convidado para acessar o CRM. Use as credenciais abaixo para entrar:</p>
+          <div style="background:#f3f4f6;border-radius:8px;padding:16px;margin:20px 0">
+            <p style="margin:0 0 8px;color:#6b7280;font-size:13px">E-mail</p>
+            <p style="margin:0 0 16px;font-weight:600;color:#111827">${input.email}</p>
+            <p style="margin:0 0 8px;color:#6b7280;font-size:13px">Senha temporária</p>
+            <p style="margin:0;font-weight:600;color:#111827;letter-spacing:2px">${tempPassword}</p>
+          </div>
+          <a href="${env.FRONTEND_URL}/login" style="display:inline-block;background:#72d296;color:#0c0f15;padding:12px 24px;border-radius:6px;text-decoration:none;font-weight:600">
+            Acessar CRM
+          </a>
+          <p style="color:#9ca3af;font-size:12px;margin-top:24px">Recomendamos trocar sua senha após o primeiro acesso.</p>
+        </div>
+      `,
+    });
+  }
+
+  return { ...user, tempPassword: env.RESEND_API_KEY ? undefined : tempPassword };
 }
 
 export async function updateUser(

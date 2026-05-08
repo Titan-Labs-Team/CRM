@@ -12,6 +12,7 @@ const schema = z.object({
   STRIPE_SECRET_KEY: z.string().optional(),
   STRIPE_WEBHOOK_SECRET: z.string().optional(),
   FRONTEND_URL: z.string().url().default('http://localhost:5173'),
+  RESEND_API_KEY: z.string().optional(),
 });
 
 const parsed = schema.safeParse(process.env);
