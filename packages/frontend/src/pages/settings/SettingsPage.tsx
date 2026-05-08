@@ -65,9 +65,9 @@ export function SettingsPage() {
   const handleInvite = async (formData: InviteFormData) => {
     try {
       const result = await inviteUser.mutateAsync(formData);
-      if (result?.data?.tempPassword) {
+      if (result?.tempPassword) {
         toast.success(
-          `Usuário criado! Senha temporária: ${result.data.tempPassword}`,
+          `Usuário criado! Senha temporária: ${result.tempPassword}`,
           { duration: 15000 },
         );
       } else {

@@ -28,8 +28,8 @@ export const usersService = {
     return data;
   },
 
-  async invite(input: InviteUserInput): Promise<TeamMember> {
-    const { data } = await api.post<{ data: TeamMember }>('/users/invite', input);
+  async invite(input: InviteUserInput): Promise<TeamMember & { tempPassword?: string }> {
+    const { data } = await api.post<{ data: TeamMember & { tempPassword?: string } }>('/users/invite', input);
     return data.data;
   },
 
