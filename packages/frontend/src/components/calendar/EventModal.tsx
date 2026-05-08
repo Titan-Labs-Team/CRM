@@ -9,7 +9,6 @@ const schema = z.object({
   title: z.string().min(1, 'Título obrigatório'),
   description: z.string().optional(),
   startAt: z.string().min(1, 'Data de início obrigatória'),
-  endAt: z.string().min(1, 'Data de fim obrigatória'),
   allDay: z.boolean().optional(),
 });
 
@@ -44,17 +43,18 @@ export function EventModal({
       title: event?.title ?? '',
       description: event?.description ?? '',
       startAt: event?.start_at ? toLocalInput(event.start_at) : defaultStart ?? '',
-      endAt: event?.end_at ? toLocalInput(event.end_at) : '',
       allDay: event?.all_day ?? false,
     },
   });
 
   const handleFormSubmit = (data: FormData) => {
+    const start = new Date(data.startAt);
+    const end = new Date(start.getTime() + 60 * 60 * 1000); // +1h padrão
     return onSubmit({
       title: data.title,
       description: data.description,
-      startAt: new Date(data.startAt).toISOString(),
-      endAt: new Date(data.endAt).toISOString(),
+      startAt: start.toISOString(),
+      endAt: end.toISOString(),
       allDay: data.allDay,
     });
   };
@@ -79,22 +79,13 @@ export function EventModal({
         />
       </div>
 
-      <div className="grid grid-cols-2 gap-3">
-        <Input
-          {...register('startAt')}
-          id="startAt"
-          type="datetime-local"
-          label="Início *"
-          error={errors.startAt?.message}
-        />
-        <Input
-          {...register('endAt')}
-          id="endAt"
-          type="datetime-local"
-          label="Fim *"
-          error={errors.endAt?.message}
-        />
-      </div>
+      <Input
+        {...register('startAt')}
+        id="startAt"
+        type="datetime-local"
+        label="Data e hora *"
+        error={errors.startAt?.message}
+      />
 
       <label className="flex items-center gap-2 text-sm text-text-secondary cursor-pointer">
         <input type="checkbox" {...register('allDay')} className="accent-accent-green" />

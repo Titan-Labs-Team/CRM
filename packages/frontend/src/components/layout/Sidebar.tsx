@@ -15,6 +15,7 @@ import { useUIStore } from '@/store/uiStore';
 import { useAuthStore } from '@/store/authStore';
 import { Avatar } from '@/components/ui/Avatar';
 import { Badge } from '@/components/ui/Badge';
+import { LogoIcon } from '@/components/ui/LogoIcon';
 
 const navItems = [
   { to: '/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
@@ -37,12 +38,12 @@ export function Sidebar() {
       )}
     >
       <div className="flex items-center justify-between p-3 border-b border-bg-border">
-        {!sidebarCollapsed && (
-          <div className="flex items-center gap-2 overflow-hidden">
-            <div className="h-6 w-6 rounded bg-accent-green flex-shrink-0" />
+        <div className="flex items-center gap-2 overflow-hidden">
+          <LogoIcon size={22} className="flex-shrink-0" />
+          {!sidebarCollapsed && (
             <span className="font-semibold text-sm text-text-primary truncate">Titan Labs</span>
-          </div>
-        )}
+          )}
+        </div>
         <button
           onClick={toggleSidebar}
           className="p-1 rounded text-text-muted hover:text-text-primary hover:bg-bg-surface transition-colors ml-auto"

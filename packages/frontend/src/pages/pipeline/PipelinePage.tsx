@@ -19,12 +19,12 @@ import { pipelineKeys } from '@/hooks/usePipeline';
 import { KanbanColumn } from '@/components/kanban/KanbanColumn';
 import { KanbanCard } from '@/components/kanban/KanbanCard';
 import { DealForm } from '@/components/kanban/DealForm';
+import { PipelineSettingsModal } from '@/components/pipeline/PipelineSettingsModal';
 import { Modal } from '@/components/ui/Modal';
 import { Button } from '@/components/ui/Button';
 import { Spinner } from '@/components/ui/Spinner';
 import type { StageWithDeals, Deal } from '@/services/pipeline.service';
-import { dealsService } from '@/services/pipeline.service';
-import { toast } from 'sonner';
+import { dealsService, pipelineService } from '@/services/pipeline.service';
 
 export function PipelinePage() {
   const qc = useQueryClient();
@@ -32,6 +32,7 @@ export function PipelinePage() {
   const { data: pipelines, isLoading: loadingPipelines } = usePipelines();
   const [activePipelineId, setActivePipelineId] = useState<string>('');
   const [dealModalOpen, setDealModalOpen] = useState(false);
+  const [settingsOpen, setSettingsOpen] = useState(false);
   const [defaultStageId, setDefaultStageId] = useState<string>('');
   const [activeDeal, setActiveDeal] = useState<Deal | null>(null);
   const [localStages, setLocalStages] = useState<StageWithDeals[]>([]);
@@ -129,6 +130,17 @@ export function PipelinePage() {
 
   const handleCreateFirstPipeline = async () => {
     const pipeline = await createPipeline.mutateAsync({ name: 'Pipeline de Vendas' });
+
+    const defaultStages = [
+      { name: 'Qualificação', color: '#6366f1' },
+      { name: 'Proposta',     color: '#f59e0b' },
+      { name: 'Negociação',   color: '#3b82f6' },
+      { name: 'Fechamento',   color: '#10b981' },
+    ];
+    for (const stage of defaultStages) {
+      await pipelineService.createStage(pipeline.id, stage);
+    }
+
     setActivePipelineId(pipeline.id);
   };
 
@@ -172,7 +184,7 @@ export function PipelinePage() {
           </div>
         </div>
         <div className="flex gap-2">
-          <Button variant="secondary" size="sm" onClick={() => toast.info('Configurações de pipeline em breve')}>
+          <Button variant="secondary" size="sm" onClick={() => setSettingsOpen(true)}>
             <Settings size={14} /> Configurações
           </Button>
           <Button size="sm" onClick={() => openDealModal(allStages[0]?.id ?? '')}>
@@ -204,8 +216,11 @@ export function PipelinePage() {
             ))}
 
             {localStages.length === 0 && (
-              <div className="flex-1 flex items-center justify-center text-text-muted text-sm">
-                Nenhuma etapa ainda. Acesse as Configurações para adicionar etapas.
+              <div className="flex-1 flex flex-col items-center justify-center gap-3 text-text-muted text-sm">
+                <p>Nenhuma etapa ainda.</p>
+                <Button size="sm" variant="secondary" onClick={() => setSettingsOpen(true)}>
+                  <Settings size={14} /> Adicionar etapas
+                </Button>
               </div>
             )}
           </div>
@@ -232,6 +247,16 @@ export function PipelinePage() {
           isSubmitting={createDeal.isPending}
         />
       </Modal>
+
+      {activePipelineId && (
+        <PipelineSettingsModal
+          open={settingsOpen}
+          onClose={() => setSettingsOpen(false)}
+          pipelineId={activePipelineId}
+          pipelineName={pipelines?.find((p) => p.id === activePipelineId)?.name ?? 'Pipeline'}
+          stages={localStages}
+        />
+      )}
     </div>
   );
 }

@@ -25,6 +25,7 @@ const config: { [env: string]: Knex.Config } = {
     migrations: {
       directory: './src/db/migrations',
       extension: 'ts',
+      loadExtensions: ['.ts'],
     },
     pool: { min: 2, max: 10 },
   },
