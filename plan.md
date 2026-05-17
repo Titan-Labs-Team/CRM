@@ -108,21 +108,21 @@
 **Goal**: Full reporting, data export, team administration + invite flow.
 
 ### Backend
-- [ ] `GET /reports/activities` — by type + by user
-- [ ] `GET /reports/leaderboard` — deals won + value per user
-- [ ] Streaming CSV export for deals + contacts
-- [ ] `POST /users/invite` — sends invitation email
-- [ ] `POST /contacts/import` — CSV bulk import
+- [x] `GET /reports/activities` — by type + by user
+- [x] `GET /reports/leaderboard` — deals won + value per user
+- [x] CSV export for deals (`GET /deals/export`, requires pro)
+- [x] `POST /users/invite` — sends invitation email (Resend, fallback temp password)
+- [x] `POST /contacts/import` — CSV bulk import (multer + csv-parse, requires pro)
+- [x] `must_change_password` migration + auth flow (forced password change on first login)
 
 ### Frontend
-- [ ] `ReportsPage` — tabs: Overview / Activities / Leaderboard / Export
-- [ ] `ReportFilters` — date range, user, pipeline selectors
-- [ ] `ReportTable` — sortable columns
-- [ ] `ExportButton` with streaming download
-- [ ] `TeamSettings` — user list, role change, invite form, deactivate
-- [ ] Invite → set password flow
+- [x] `ReportsPage` — tabs: Overview / Activities / Leaderboard / Export
+- [x] Export buttons (contacts + deals CSV download)
+- [x] CSV import for contacts (file picker + progress feedback)
+- [x] `SettingsPage` — user list, role change, invite form, deactivate
+- [x] `ChangePasswordModal` — force password change on first login after invite
 
-**Test**: Leaderboard accurate. CSV exports open in Excel. Invite email → new user logs in.
+**Test**: Leaderboard accurate. CSV exports open in Excel. Invite email → new user logs in → forced password change modal.
 
 ---
 
@@ -150,16 +150,16 @@
 **Goal**: Stripe billing, feature gating by plan, production hardening.
 
 ### Backend
-- [ ] Migration: `subscriptions`
-- [ ] Stripe Checkout + Customer Portal + webhook handler
-- [ ] `requireTier` middleware on gated routes
-- [ ] Rate limiting by tier (free: 100/day, starter: 1000/day, pro: 10000/day)
+- [x] Migration: `subscriptions`
+- [x] Stripe Checkout + Customer Portal + webhook handler
+- [x] `requireTier` middleware on gated routes
+- [x] Rate limiting by tier (free: 100/day, starter: 1000/day, pro: 10000/day)
 - [ ] Audit logs fully populated
 
 ### Frontend
-- [ ] `BillingSettings` — plan display, usage bars, upgrade CTA
-- [ ] `UpgradeModal` — plan comparison, triggered by gated features
-- [ ] Plan badge in Sidebar (`FREE`, `STARTER`, `PRO`)
+- [x] `BillingSection` in SettingsPage — plan display, upgrade CTA, portal link
+- [x] `UpgradeModal` — plan comparison, triggered automatically on HTTP 402
+- [x] Plan badge in Sidebar (`FREE`, `STARTER`, `PRO`)
 - [ ] Lock icons + tooltips on gated items
 
 **Test**: Free user blocked from CSV export with upgrade modal. Stripe Checkout upgrades plan. Webhook cancels subscription.

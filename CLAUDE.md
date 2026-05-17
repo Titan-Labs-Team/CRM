@@ -235,6 +235,15 @@ VITE_API_URL=http://localhost:3001/api/v1
 
 ---
 
+## Standing instruction — end of every milestone
+
+When a milestone is fully implemented, immediately update this file:
+1. Mark the milestone `✅ Done` in the table below
+2. Update the **Next** section to point to the next milestone
+3. Replace the **Key implementation notes** bullet points with fresh notes reflecting the current state — remove stale notes, add anything a new session needs to know to continue without re-reading the code
+
+---
+
 ## Milestone Status
 
 See [plan.md](./plan.md) for current progress.
@@ -245,7 +254,31 @@ See [plan.md](./plan.md) for current progress.
 | M2 — Contacts Module | ✅ Done |
 | M3 — Pipeline & Kanban | ✅ Done |
 | M4 — Dashboard, Activities, Calendar | ✅ Done |
-| M5 — Reports, Export, Team | ⏳ Pending |
+| M5 — Reports, Export, Team | ✅ Done |
 | M6 — Integrations API & Webhooks | ⏳ Pending |
-| M7 — Billing & Premium Tiers | ⏳ Pending |
+| M7 — Billing & Premium Tiers | ✅ Done |
 | M8 — Polish, Search, Deployment | ⏳ Pending |
+
+## Next: M6
+
+M7 is complete. Recommended order going forward:
+
+1. **M6** — API keys + webhooks (gated by `requireTier('starter')`)
+2. **M8** — Polish, global search, notifications, deployment
+
+## Key implementation notes (context for next session)
+
+- `packages/backend/src/db/migrations/` has 11 migrations (latest: `20240011_create_subscriptions`)
+- `must_change_password` field exists on `users` table — set `true` on invite, cleared when user changes password via `PATCH /auth/me`
+- `ChangePasswordModal` mounted in `AppShell` — auto-shows when `user.must_change_password === true`
+- Deals and contacts CSV export gated at `requireTier('pro')` — returns HTTP 402 if below tier
+- Contacts CSV import: `POST /contacts/import` (multipart/form-data, field name `file`), also requires `pro`
+- `GET /reports/activities` and `GET /reports/leaderboard` — both accept optional query filters (`?user=`, `?from=`, `?to=`, `?pipeline=`)
+- ReportsPage has 4 tabs: Overview, Atividades, Ranking, Exportar
+- Column drag-to-reorder on Kanban: grip handle on column header, uses `useSortable` + `horizontalListSortingStrategy`
+- Billing routes: `GET /billing/subscription`, `POST /billing/checkout`, `POST /billing/portal`, `POST /billing/webhook`
+- Stripe webhook uses raw body — registered before `express.json()` in `server.ts`
+- `UpgradeModal` is mounted in `AppShell`; triggered automatically when any API call returns HTTP 402 via Axios interceptor in `api.ts`
+- `upgradeStore` (Zustand) holds `{ open, requiredPlan, showUpgrade, closeUpgrade }`
+- Rate limiting: `tierRateLimiter` middleware applied to all `/api/v1/*` routes (100/1000/10000 req/day by plan)
+- Required Stripe env vars in `packages/backend/.env`: `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`, `STRIPE_PRICE_STARTER`, `STRIPE_PRICE_PRO`

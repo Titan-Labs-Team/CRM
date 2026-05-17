@@ -20,4 +20,6 @@ export const authService = {
     api.post('/auth/refresh', { refreshToken }).then((r) => r.data.data),
   logout: (refreshToken: string) => api.post('/auth/logout', { refreshToken }),
   getMe: () => api.get('/auth/me').then((r) => r.data.data),
+  updateMe: (input: { fullName?: string; password?: string }) =>
+    api.patch('/auth/me', input).then((r) => r.data.data),
 };

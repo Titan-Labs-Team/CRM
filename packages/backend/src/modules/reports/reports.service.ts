@@ -1,5 +1,73 @@
 import { db } from '../../db';
 
+export async function getActivitiesReport(
+  tenantId: string,
+  filters: { userId?: string; from?: string; to?: string } = {},
+) {
+  let base = db('activities as a')
+    .leftJoin('users as u', 'a.owner_id', 'u.id')
+    .where('a.tenant_id', tenantId);
+
+  if (filters.userId) base = base.where('a.owner_id', filters.userId);
+  if (filters.from) base = base.where('a.created_at', '>=', new Date(filters.from));
+  if (filters.to) base = base.where('a.created_at', '<=', new Date(filters.to));
+
+  const byType = await base.clone()
+    .groupBy('a.type')
+    .select('a.type')
+    .count('a.id as total')
+    .sum(db.raw("CASE WHEN a.is_done THEN 1 ELSE 0 END as done"));
+
+  const byUser = await base.clone()
+    .groupBy('a.owner_id', 'u.full_name')
+    .select('a.owner_id', db.raw("u.full_name as owner_name"))
+    .count('a.id as total')
+    .sum(db.raw("CASE WHEN a.is_done THEN 1 ELSE 0 END as done"));
+
+  return {
+    byType: byType.map((r) => ({
+      type: r.type as string,
+      total: Number(r.total),
+      done: Number(r.done),
+    })),
+    byUser: byUser.map((r) => ({
+      userId: r.owner_id as string,
+      name: (r.owner_name as string) ?? 'Sem responsável',
+      total: Number(r.total),
+      done: Number(r.done),
+    })),
+  };
+}
+
+export async function getLeaderboard(
+  tenantId: string,
+  filters: { pipelineId?: string; from?: string; to?: string } = {},
+) {
+  let base = db('deals as d')
+    .join('users as u', 'd.owner_id', 'u.id')
+    .where({ 'd.tenant_id': tenantId, 'd.status': 'won' })
+    .whereNotNull('d.owner_id');
+
+  if (filters.pipelineId) base = base.where('d.pipeline_id', filters.pipelineId);
+  if (filters.from) base = base.where('d.closed_at', '>=', new Date(filters.from));
+  if (filters.to) base = base.where('d.closed_at', '<=', new Date(filters.to));
+
+  const rows = await base
+    .groupBy('d.owner_id', 'u.full_name')
+    .select('d.owner_id', db.raw("u.full_name as owner_name"))
+    .count('d.id as deals_won')
+    .sum('d.value as total_value')
+    .orderBy('total_value', 'desc');
+
+  return rows.map((r, idx) => ({
+    rank: idx + 1,
+    userId: r.owner_id as string,
+    name: r.owner_name as string,
+    dealsWon: Number(r.deals_won),
+    totalValue: Number(r.total_value ?? 0),
+  }));
+}
+
 export async function getKpis(tenantId: string) {
   const now = new Date();
   const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);

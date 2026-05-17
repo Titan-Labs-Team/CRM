@@ -7,6 +7,7 @@ interface User {
   full_name: string;
   role: 'admin' | 'manager' | 'seller';
   tenant_id: string;
+  must_change_password?: boolean;
 }
 
 interface AuthState {

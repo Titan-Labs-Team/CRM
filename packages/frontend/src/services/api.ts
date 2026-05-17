@@ -1,6 +1,7 @@
 import axios from 'axios';
 import { API_URL } from '@/lib/constants';
 import { useAuthStore } from '@/store/authStore';
+import { useUpgradeStore } from '@/store/upgradeStore';
 
 export const api = axios.create({
   baseURL: API_URL,
@@ -27,6 +28,12 @@ api.interceptors.response.use(
   (res) => res,
   async (error) => {
     const originalRequest = error.config;
+
+    if (error.response?.status === 402) {
+      const requiredPlan = error.response.data?.requiredPlan ?? 'pro';
+      useUpgradeStore.getState().showUpgrade(requiredPlan);
+      return Promise.reject(error);
+    }
 
     if (error.response?.status !== 401 || originalRequest._retry) {
       return Promise.reject(error);

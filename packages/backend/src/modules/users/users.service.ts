@@ -45,6 +45,7 @@ export async function inviteUser(tenantId: string, input: z.infer<typeof inviteU
       full_name: input.fullName,
       role: input.role,
       password_hash: passwordHash,
+      must_change_password: true,
     })
     .returning(['id', 'email', 'full_name', 'role', 'created_at']);
 

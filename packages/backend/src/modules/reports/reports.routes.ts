@@ -7,5 +7,7 @@ const router = Router();
 router.get('/kpis', requireAuth, ReportsController.getKpis);
 router.get('/funnel', requireAuth, ReportsController.getFunnel);
 router.get('/revenue', requireAuth, ReportsController.getRevenue);
+router.get('/activities', requireAuth, ReportsController.getActivitiesReport);
+router.get('/leaderboard', requireAuth, ReportsController.getLeaderboard);
 
 export default router;

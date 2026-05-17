@@ -48,4 +48,11 @@ export const contactsService = {
   delete: (id: string) => api.delete(`/contacts/${id}`),
   exportCsv: () =>
     api.get('/contacts/export', { responseType: 'blob' }).then((r) => r.data as Blob),
+  importCsv: (file: File) => {
+    const form = new FormData();
+    form.append('file', file);
+    return api.post<{ data: { imported: number; skipped: number; errors: string[] } }>(
+      '/contacts/import', form, { headers: { 'Content-Type': 'multipart/form-data' } },
+    ).then((r) => r.data.data);
+  },
 };

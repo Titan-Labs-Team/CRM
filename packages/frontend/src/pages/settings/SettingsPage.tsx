@@ -2,8 +2,9 @@ import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { UserPlus, Shield, ShieldCheck, Briefcase, ToggleLeft, ToggleRight } from 'lucide-react';
+import { UserPlus, Shield, ShieldCheck, Briefcase, ToggleLeft, ToggleRight, Zap, ExternalLink, CreditCard } from 'lucide-react';
 import { useUsers, useInviteUser, useUpdateUser } from '@/hooks/useUsers';
+import { useBilling, useCreateCheckoutSession, useCreatePortalSession } from '@/hooks/useBilling';
 import { useAuthStore } from '@/store/authStore';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
@@ -13,6 +14,107 @@ import { Modal } from '@/components/ui/Modal';
 import { Spinner } from '@/components/ui/Spinner';
 import { toast } from 'sonner';
 import type { TeamMember } from '@/services/users.service';
+
+const PLAN_LABEL: Record<string, string> = {
+  free: 'FREE',
+  starter: 'STARTER',
+  pro: 'PRO',
+  enterprise: 'ENTERPRISE',
+};
+
+const PLAN_COLOR: Record<string, string> = {
+  free: 'text-text-muted bg-bg-border',
+  starter: 'text-status-open bg-status-open/20',
+  pro: 'text-accent-green bg-accent-green/20',
+  enterprise: 'text-purple-400 bg-purple-500/20',
+};
+
+function BillingSection({ isAdmin }: { isAdmin: boolean }) {
+  const { data, isLoading } = useBilling();
+  const checkout = useCreateCheckoutSession();
+  const portal = useCreatePortalSession();
+
+  if (isLoading) {
+    return (
+      <div className="card px-5 py-6 flex justify-center">
+        <Spinner />
+      </div>
+    );
+  }
+
+  const plan = data?.plan ?? 'free';
+  const hasPaidPlan = plan !== 'free';
+  const periodEnd = data?.subscription?.current_period_end;
+
+  return (
+    <div className="card overflow-hidden">
+      <div className="px-5 py-4 border-b border-bg-border flex items-center justify-between">
+        <div>
+          <p className="text-sm font-medium text-text-primary">Plano & Faturamento</p>
+          <p className="text-xs text-text-muted mt-0.5">Gerencie sua assinatura</p>
+        </div>
+        <span className={`text-xs font-bold px-2.5 py-1 rounded-full ${PLAN_COLOR[plan] ?? PLAN_COLOR.free}`}>
+          {PLAN_LABEL[plan] ?? plan.toUpperCase()}
+        </span>
+      </div>
+
+      <div className="px-5 py-5 space-y-4">
+        <div className="flex items-center justify-between text-sm">
+          <span className="text-text-secondary">Usuários incluídos</span>
+          <span className="font-medium text-text-primary">{data?.maxUsers ?? 3}</span>
+        </div>
+
+        {periodEnd && (
+          <div className="flex items-center justify-between text-sm">
+            <span className="text-text-secondary">Próxima renovação</span>
+            <span className="font-medium text-text-primary">
+              {new Date(periodEnd).toLocaleDateString('pt-BR')}
+            </span>
+          </div>
+        )}
+
+        {isAdmin && (
+          <div className="flex flex-wrap gap-2 pt-1">
+            {hasPaidPlan ? (
+              <Button
+                size="sm"
+                variant="ghost"
+                disabled={portal.isPending}
+                onClick={() => portal.mutate()}
+                className="flex items-center gap-1.5"
+              >
+                <ExternalLink size={13} />
+                {portal.isPending ? 'Redirecionando…' : 'Gerenciar assinatura'}
+              </Button>
+            ) : (
+              <>
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  disabled={checkout.isPending}
+                  onClick={() => checkout.mutate('starter')}
+                  className="flex items-center gap-1.5"
+                >
+                  <CreditCard size={13} />
+                  Starter
+                </Button>
+                <Button
+                  size="sm"
+                  disabled={checkout.isPending}
+                  onClick={() => checkout.mutate('pro')}
+                  className="flex items-center gap-1.5"
+                >
+                  <Zap size={13} />
+                  {checkout.isPending ? 'Redirecionando…' : 'Upgrade para Pro'}
+                </Button>
+              </>
+            )}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
 
 const roleLabel: Record<string, string> = {
   admin: 'Admin',
@@ -113,6 +215,9 @@ export function SettingsPage() {
           </Button>
         )}
       </div>
+
+      {/* Billing section */}
+      <BillingSection isAdmin={isAdmin} />
 
       {/* Team section */}
       <div className="card overflow-hidden">

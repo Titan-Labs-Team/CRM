@@ -1,5 +1,14 @@
 import { Request, Response, NextFunction } from 'express';
+import multer from 'multer';
 import * as ContactsService from './contacts.service';
+
+export const csvUpload = multer({
+  storage: multer.memoryStorage(),
+  limits: { fileSize: 5 * 1024 * 1024 },
+  fileFilter: (_req, file, cb) => {
+    cb(null, file.mimetype === 'text/csv' || file.originalname.endsWith('.csv'));
+  },
+});
 import {
   createContactSchema,
   updateContactSchema,
@@ -52,6 +61,14 @@ export async function deleteContact(req: Request, res: Response, next: NextFunct
   } catch (err) {
     next(err);
   }
+}
+
+export async function importContacts(req: Request, res: Response, next: NextFunction) {
+  try {
+    if (!req.file) { res.status(400).json({ error: 'CSV file required' }); return; }
+    const result = await ContactsService.importContactsCsv(req.user!.tenantId, req.file.buffer);
+    res.status(201).json({ data: result });
+  } catch (err) { next(err); }
 }
 
 export async function exportContacts(req: Request, res: Response, next: NextFunction) {

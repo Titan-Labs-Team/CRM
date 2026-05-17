@@ -9,13 +9,22 @@ import {
   Settings,
   ChevronLeft,
   ChevronRight,
+  Zap,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useUIStore } from '@/store/uiStore';
 import { useAuthStore } from '@/store/authStore';
+import { useBilling } from '@/hooks/useBilling';
 import { Avatar } from '@/components/ui/Avatar';
 import { Badge } from '@/components/ui/Badge';
 import { LogoIcon } from '@/components/ui/LogoIcon';
+
+const PLAN_BADGE: Record<string, { label: string; className: string }> = {
+  free: { label: 'FREE', className: 'text-text-muted bg-bg-border' },
+  starter: { label: 'STARTER', className: 'text-status-open bg-status-open/20' },
+  pro: { label: 'PRO', className: 'text-accent-green bg-accent-green/20' },
+  enterprise: { label: 'ENTERPRISE', className: 'text-purple-400 bg-purple-500/20' },
+};
 
 const navItems = [
   { to: '/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
@@ -29,6 +38,9 @@ const navItems = [
 export function Sidebar() {
   const { sidebarCollapsed, toggleSidebar } = useUIStore();
   const { user } = useAuthStore();
+  const { data: billing } = useBilling();
+  const plan = billing?.plan ?? 'free';
+  const planBadge = PLAN_BADGE[plan] ?? PLAN_BADGE.free;
 
   return (
     <aside
@@ -97,12 +109,16 @@ export function Sidebar() {
             <Avatar name={user.full_name} size="sm" />
             <div className="flex-1 min-w-0">
               <p className="text-xs font-medium text-text-primary truncate">{user.full_name}</p>
-              <Badge
-                variant={user.role as 'admin' | 'manager' | 'seller'}
-                className="mt-0.5"
-              >
-                {{ admin: 'Admin', manager: 'Gerente', seller: 'Vendedor' }[user.role] ?? user.role}
-              </Badge>
+              <div className="flex items-center gap-1.5 mt-0.5">
+                <Badge
+                  variant={user.role as 'admin' | 'manager' | 'seller'}
+                >
+                  {{ admin: 'Admin', manager: 'Gerente', seller: 'Vendedor' }[user.role] ?? user.role}
+                </Badge>
+                <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full ${planBadge.className}`}>
+                  {plan === 'free' ? <span className="flex items-center gap-0.5"><Zap size={9} />{planBadge.label}</span> : planBadge.label}
+                </span>
+              </div>
             </div>
           </div>
         )}

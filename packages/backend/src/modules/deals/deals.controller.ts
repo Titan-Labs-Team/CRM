@@ -84,6 +84,15 @@ export async function reorderDeals(req: Request, res: Response, next: NextFuncti
   } catch (err) { next(err); }
 }
 
+export async function exportDeals(req: Request, res: Response, next: NextFunction) {
+  try {
+    const csv = await DealsService.exportDealsCsv(req.user!.tenantId);
+    res.setHeader('Content-Type', 'text/csv');
+    res.setHeader('Content-Disposition', 'attachment; filename="deals.csv"');
+    res.send(csv);
+  } catch (err) { next(err); }
+}
+
 export async function deleteDeal(req: Request, res: Response, next: NextFunction) {
   try {
     await DealsService.deleteDeal(req.user!.tenantId, req.params.id);

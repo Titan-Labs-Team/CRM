@@ -109,7 +109,10 @@ export async function getMe(userId: string) {
 export async function updateMe(userId: string, input: UpdateMeInput) {
   const updates: Record<string, unknown> = { updated_at: new Date() };
   if (input.fullName) updates.full_name = input.fullName;
-  if (input.password) updates.password_hash = await bcrypt.hash(input.password, 12);
+  if (input.password) {
+    updates.password_hash = await bcrypt.hash(input.password, 12);
+    updates.must_change_password = false;
+  }
 
   const [user] = await db('users').where({ id: userId }).update(updates).returning('*');
   return sanitizeUser(user);

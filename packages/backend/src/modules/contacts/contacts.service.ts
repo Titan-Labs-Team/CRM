@@ -121,6 +121,55 @@ export async function deleteContact(tenantId: string, id: string) {
   if (!deleted) throw Object.assign(new Error('Contact not found'), { status: 404 });
 }
 
+export async function importContactsCsv(
+  tenantId: string,
+  buffer: Buffer,
+): Promise<{ imported: number; skipped: number; errors: string[] }> {
+  const { parse } = await import('csv-parse/sync');
+
+  const rows = parse(buffer, {
+    columns: true,
+    skip_empty_lines: true,
+    trim: true,
+  }) as Record<string, string>[];
+
+  let imported = 0;
+  let skipped = 0;
+  const errors: string[] = [];
+
+  for (let i = 0; i < rows.length; i++) {
+    const row = rows[i];
+    const fullName = row['Name'] || row['full_name'] || row['nome'];
+    if (!fullName) { skipped++; continue; }
+
+    const email = row['Email'] || row['email'] || null;
+    if (email) {
+      const existing = await db('contacts').where({ tenant_id: tenantId, email }).first();
+      if (existing) { skipped++; continue; }
+    }
+
+    try {
+      await db('contacts').insert({
+        tenant_id: tenantId,
+        full_name: fullName,
+        email: email || null,
+        phone: row['Phone'] || row['phone'] || row['telefone'] || null,
+        company_name: row['Company'] || row['company_name'] || row['empresa'] || null,
+        job_title: row['Job Title'] || row['job_title'] || row['cargo'] || null,
+        type: (row['Type'] || row['type'] || 'lead') as 'lead' | 'contact' | 'client',
+        source: row['Source'] || row['source'] || null,
+        tags: '{}',
+        custom_fields: '{}',
+      });
+      imported++;
+    } catch {
+      errors.push(`Linha ${i + 2}: erro ao importar "${fullName}"`);
+    }
+  }
+
+  return { imported, skipped, errors };
+}
+
 export async function exportContactsCsv(tenantId: string): Promise<string> {
   const contacts = await db('contacts')
     .where({ tenant_id: tenantId })

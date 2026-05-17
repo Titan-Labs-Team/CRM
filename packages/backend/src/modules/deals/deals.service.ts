@@ -205,6 +205,43 @@ export async function reorderDeals(tenantId: string, stageId: string, dealIds: s
   });
 }
 
+export async function exportDealsCsv(tenantId: string): Promise<string> {
+  const deals = await db('deals as d')
+    .leftJoin('contacts as c', 'd.contact_id', 'c.id')
+    .leftJoin('users as u', 'd.owner_id', 'u.id')
+    .leftJoin('pipeline_stages as ps', 'd.stage_id', 'ps.id')
+    .leftJoin('pipelines as p', 'd.pipeline_id', 'p.id')
+    .where('d.tenant_id', tenantId)
+    .orderBy('d.created_at', 'desc')
+    .select(
+      'd.title', 'd.value', 'd.currency', 'd.status', 'd.expected_close',
+      'd.closed_at', 'd.lost_reason', 'd.created_at',
+      db.raw("c.full_name as contact_name"),
+      db.raw("u.full_name as owner_name"),
+      db.raw("ps.name as stage_name"),
+      db.raw("p.name as pipeline_name"),
+    );
+
+  const { stringify } = await import('csv-stringify/sync');
+  return stringify(deals, {
+    header: true,
+    columns: [
+      { key: 'title', header: 'Title' },
+      { key: 'value', header: 'Value' },
+      { key: 'currency', header: 'Currency' },
+      { key: 'status', header: 'Status' },
+      { key: 'pipeline_name', header: 'Pipeline' },
+      { key: 'stage_name', header: 'Stage' },
+      { key: 'contact_name', header: 'Contact' },
+      { key: 'owner_name', header: 'Owner' },
+      { key: 'expected_close', header: 'Expected Close' },
+      { key: 'closed_at', header: 'Closed At' },
+      { key: 'lost_reason', header: 'Lost Reason' },
+      { key: 'created_at', header: 'Created At' },
+    ],
+  });
+}
+
 export async function deleteDeal(tenantId: string, id: string) {
   const deleted = await db('deals').where({ id, tenant_id: tenantId }).delete();
   if (!deleted) throw Object.assign(new Error('Deal not found'), { status: 404 });

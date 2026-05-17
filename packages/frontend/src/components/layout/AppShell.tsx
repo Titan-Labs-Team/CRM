@@ -1,6 +1,8 @@
 import { Outlet } from 'react-router-dom';
 import { Sidebar } from './Sidebar';
 import { Topbar } from './Topbar';
+import { ChangePasswordModal } from '@/components/auth/ChangePasswordModal';
+import { UpgradeModal } from '@/components/billing/UpgradeModal';
 
 export function AppShell() {
   return (
@@ -12,6 +14,8 @@ export function AppShell() {
           <Outlet />
         </main>
       </div>
+      <ChangePasswordModal />
+      <UpgradeModal />
     </div>
   );
 }

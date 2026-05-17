@@ -13,11 +13,16 @@ import dealRoutes from './modules/deals/deals.routes';
 import activityRoutes from './modules/activities/activities.routes';
 import calendarRoutes from './modules/calendar/calendar.routes';
 import reportRoutes from './modules/reports/reports.routes';
+import billingRoutes from './modules/billing/billing.routes';
+import { tierRateLimiter } from './shared/middleware/rateLimiter';
 
 const app = express();
 
 app.use(corsMiddleware);
+// Webhook route needs raw body — must be registered before express.json()
+app.use('/api/v1/billing/webhook', express.raw({ type: 'application/json' }));
 app.use(express.json());
+app.use('/api/v1', tierRateLimiter);
 
 app.get('/health', (_req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
@@ -32,6 +37,7 @@ app.use('/api/v1/deals', dealRoutes);
 app.use('/api/v1/activities', activityRoutes);
 app.use('/api/v1/calendar/events', calendarRoutes);
 app.use('/api/v1/reports', reportRoutes);
+app.use('/api/v1/billing', billingRoutes);
 
 app.use(errorHandler);
 

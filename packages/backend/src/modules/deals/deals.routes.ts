@@ -1,10 +1,12 @@
 import { Router } from 'express';
 import { requireAuth } from '../../shared/middleware/requireAuth';
 import { requireRole } from '../../shared/middleware/requireRole';
+import { requireTier } from '../../shared/middleware/requireTier';
 import * as DealsController from './deals.controller';
 
 const router = Router();
 
+router.get('/export', requireAuth, requireTier('pro'), DealsController.exportDeals);
 router.get('/kanban', requireAuth, DealsController.getKanban);
 router.post('/reorder', requireAuth, DealsController.reorderDeals);
 router.get('/', requireAuth, DealsController.listDeals);
