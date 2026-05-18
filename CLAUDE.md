@@ -259,7 +259,18 @@ See [plan.md](./plan.md) for current progress.
 | M7 — Billing & Premium Tiers | ✅ Done |
 | M8 — Polish, Search, Deployment | ✅ Done |
 
-## All milestones complete — project is production-ready.
+## Next: M9 (tasks T1–T6)
+
+Ver detalhes completos em [plan.md](./plan.md) — seção M9.
+
+| Task | Descrição | Status |
+|---|---|---|
+| T1 | Stripe: Price IDs + webhook em produção | ⏳ Pending |
+| T2 | Acesso ao banco PostgreSQL em produção (Docker) | ⏳ Pending |
+| T3 | Landing page de apresentação e venda | ⏳ Pending |
+| T4 | Navbar: exibir nome da empresa do tenant | ⏳ Pending |
+| T5 | Pipeline: editar nome das etapas (inline edit) | ⏳ Pending |
+| T6 | Contatos: campo "Responsável" com select de membros | ⏳ Pending |
 
 ## Key implementation notes (context for future sessions)
 

@@ -191,3 +191,154 @@
 - [x] GitHub Actions CD (Docker build + push on merge to main — `.github/workflows/cd.yml`)
 
 **Test**: Global search accurate. Notifications appear on stage change. CI passes. `docker compose -f docker-compose.prod.yml up` starts full system. Mobile layout usable. ✅
+
+---
+
+## M9 — Stripe Live, Admin DB Access, Landing Page, UX Fixes
+
+> Itens pós-lançamento: configuração de produção Stripe, acesso ao banco em produção, landing page de vendas e correções de UX identificadas no uso real.
+
+---
+
+### T1 — Stripe: variáveis de ambiente e fluxo de pagamento em produção
+
+**Problema**: Os Price IDs do Stripe (`STRIPE_PRICE_STARTER`, `STRIPE_PRICE_PRO`) não estão configurados, portanto o botão de upgrade leva a erro. Além disso, falta clareza sobre como o webhook confirma o upgrade de plano.
+
+**O que fazer**:
+
+- [ ] No dashboard Stripe (modo live), criar os produtos **Starter** e **Pro** com seus respectivos preços recorrentes e copiar os Price IDs
+- [ ] Adicionar ao `.env` de produção (e ao `docker-compose.prod.yml` → variável de ambiente do serviço `backend`):
+  ```
+  STRIPE_SECRET_KEY=sk_live_...
+  STRIPE_WEBHOOK_SECRET=whsec_...
+  STRIPE_PRICE_STARTER=price_...
+  STRIPE_PRICE_PRO=price_...
+  ```
+- [ ] No dashboard Stripe → Webhooks, apontar para `https://<seu-dominio>/api/v1/billing/webhook` e habilitar os eventos: `checkout.session.completed`, `customer.subscription.updated`, `customer.subscription.deleted`
+- [ ] Verificar no `billing.service.ts` que `subscription.plan` é atualizado corretamente no webhook `checkout.session.completed` (campo `metadata.tenantId` deve ser passado na criação da sessão)
+- [ ] Testar com Stripe CLI localmente: `stripe listen --forward-to localhost:3001/api/v1/billing/webhook`
+
+**Arquivo-chave**: `packages/backend/src/modules/billing/billing.service.ts`
+
+---
+
+### T2 — Acesso ao banco de dados PostgreSQL em produção (Docker)
+
+**Problema**: Em produção com Docker, o banco roda em container isolado. É necessário saber como conectar para operações manuais (conceder plano manualmente, debugar dados, etc.).
+
+**Como acessar o banco em produção**:
+
+#### Opção A — `docker exec` direto (sem expor porta)
+```bash
+# Listar containers rodando
+docker compose -f docker-compose.prod.yml ps
+
+# Abrir psql dentro do container do banco
+docker compose -f docker-compose.prod.yml exec db psql -U postgres -d titancrm
+```
+
+#### Opção B — Expor porta temporariamente (só quando necessário)
+Adicionar ao serviço `db` no `docker-compose.prod.yml`:
+```yaml
+ports:
+  - "5432:5432"   # remover após uso — nunca deixar exposto em produção
+```
+Depois conectar com qualquer client (DBeaver, TablePlus, psql local).
+
+#### Conceder plano manualmente a um tenant
+```sql
+-- Ver tenants cadastrados
+SELECT id, name, plan FROM tenants;
+
+-- Promover tenant para 'pro' ou 'starter'
+UPDATE tenants SET plan = 'pro' WHERE id = '<tenant-uuid>';
+
+-- Ver subscriptions
+SELECT * FROM subscriptions WHERE tenant_id = '<tenant-uuid>';
+
+-- Inserir/atualizar subscription manualmente (se necessário)
+INSERT INTO subscriptions (tenant_id, plan, status, current_period_end)
+VALUES ('<tenant-uuid>', 'pro', 'active', NOW() + INTERVAL '1 year')
+ON CONFLICT (tenant_id) DO UPDATE
+  SET plan = 'pro', status = 'active', current_period_end = NOW() + INTERVAL '1 year';
+```
+
+**Rodar migrations em produção**:
+```bash
+docker compose -f docker-compose.prod.yml exec backend \
+  npx knex --knexfile knexfile.ts migrate:latest
+```
+
+- [ ] Documentar esse fluxo no README do projeto
+- [ ] Avaliar adicionar rota `POST /admin/grant-plan` protegida por segredo de admin para operações self-service sem psql
+
+---
+
+### T3 — Landing Page de apresentação e venda
+
+**Objetivo**: Página pública em `/` (ou domínio separado) que convença visitantes a criar conta. Deve comunicar o produto, mostrar os planos e ter CTAs claros para cadastro.
+
+**Seções obrigatórias**:
+
+- [ ] **Hero** — headline forte + subheadline + CTA primário ("Começar grátis") + screenshot/mockup do produto
+- [ ] **Dor / Solução** — 3 bullets curtos: problema atual (WhatsApp, planilhas) → como o Titan Labs resolve
+- [ ] **Features** — 4–6 cards com ícone: Pipeline Kanban, Contatos, Relatórios, Automações/Webhooks, API, Multi-usuário
+- [ ] **Social proof** — depoimentos placeholder ou logos de clientes (pode ser fictício no MVP)
+- [ ] **Pricing** — tabela de planos FREE / STARTER / PRO com features por tier e botões de CTA
+- [ ] **FAQ** — 4–6 perguntas frequentes sobre planos, cancelamento, dados
+- [ ] **Footer** — links: Termos, Privacidade, Contato, redes sociais
+
+**Decisões técnicas**:
+- Criar como página React em `packages/frontend/src/pages/landing/LandingPage.tsx`
+- Rota pública `/` no router (sem `ProtectedRoute`)
+- Redirecionar `/` para `/dashboard` quando o usuário já estiver autenticado
+- Usar o design system existente (tokens de cor, fontes) mas com layout de marketing (full-width, seções alternadas)
+- O botão de plano pago na seção Pricing deve chamar `POST /billing/checkout` passando o plano selecionado — se não autenticado, redireciona para `/register?plan=pro`
+
+**Arquivo-chave**: `packages/frontend/src/app/router.tsx` (adicionar rota `/`), `packages/frontend/src/pages/landing/LandingPage.tsx` (criar)
+
+---
+
+### T4 — Navbar: nome do workspace no lugar de "Titan Labs"
+
+**Problema**: O nome fixo "Titan Labs" aparece na sidebar. Deve ser substituído pelo nome da empresa que o admin cadastrou no momento do registro (campo `tenants.name`).
+
+**O que fazer**:
+
+- [ ] No `Sidebar.tsx`, buscar o nome do tenant via `GET /api/v1/tenant` (já existe endpoint + hook `useBilling` retorna subscription, mas o tenant name vem de `PATCH /tenant`)
+- [ ] Criar (ou reutilizar) hook `useTenant()` que chama `GET /api/v1/tenant` e retorna `{ name, plan, ... }`
+- [ ] Substituir o texto `"Titan Labs"` no `Sidebar.tsx` pelo `tenant.name` (com fallback `"Titan Labs"` enquanto carrega)
+- [ ] Garantir que `RegisterPage` já salva o `companyName` como `tenants.name` — verificar `POST /auth/register`
+
+**Arquivo-chave**: `packages/frontend/src/components/layout/Sidebar.tsx`
+
+---
+
+### T5 — Pipeline: editar nome das etapas (stages)
+
+**Problema**: Na modal de configurações do pipeline (`PipelineSettingsModal`), é possível excluir etapas mas não renomeá-las. O endpoint `PATCH /pipelines/:pipelineId/stages/:stageId` já existe no backend.
+
+**O que fazer**:
+
+- [ ] Em `PipelineSettingsModal.tsx`, adicionar modo de edição inline nas etapas: clicar no nome da etapa transforma em `<input>`, confirmar com Enter ou botão ✓, cancelar com Escape
+- [ ] Chamar `PATCH /pipelines/:pipelineId/stages/:stageId` com `{ name }` ao confirmar
+- [ ] Usar `useUpdateStage` (hook já existe em `usePipeline.ts`) para a mutation
+- [ ] Adicionar toast de sucesso/erro (já no hook)
+
+**Arquivo-chave**: `packages/frontend/src/components/pipeline/PipelineSettingsModal.tsx`
+
+---
+
+### T6 — Contatos: campo "Responsável" funcional com select de membros
+
+**Problema**: A tabela de contatos exibe a coluna "Responsável" e o filtro por owner existe no backend, mas o formulário de criação/edição de contato (`ContactForm.tsx`) não tem campo para selecionar o responsável — o `owner_id` nunca é preenchido.
+
+**O que fazer**:
+
+- [ ] Em `ContactForm.tsx`, adicionar campo `<select>` (ou combobox) "Responsável" que lista os usuários ativos do tenant
+- [ ] Buscar usuários via `useUsers()` (hook já existe) e popular as opções com `{ value: user.id, label: user.full_name }`
+- [ ] Incluir `ownerId` no schema Zod do formulário e no `CreateContactInput`
+- [ ] Verificar que o backend já aceita `owner_id` no `POST /contacts` e `PATCH /contacts/:id` — se não, adicionar ao service/controller
+- [ ] Exibir avatar + nome do responsável na `ContactDetailPage` (já consome `owner_name` do backend)
+
+**Arquivo-chave**: `packages/frontend/src/components/contacts/ContactForm.tsx`
