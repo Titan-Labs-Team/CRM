@@ -9,18 +9,23 @@ import { Button } from '@/components/ui/Button';
 import { useState } from 'react';
 
 const schema = z.object({
-  workspaceName: z.string().min(2, 'Nome do workspace é obrigatório'),
-  slug: z
-    .string()
-    .min(2, 'URL é obrigatória')
-    .max(50)
-    .regex(/^[a-z0-9-]+$/, 'Apenas letras minúsculas, números e hífens'),
-  fullName: z.string().min(2, 'Nome completo é obrigatório'),
+  workspaceName: z.string().min(2, 'Nome da empresa é obrigatório'),
+  fullName: z.string().min(2, 'Seu nome é obrigatório'),
   email: z.string().email('Digite um e-mail válido'),
   password: z.string().min(8, 'Senha deve ter pelo menos 8 caracteres'),
 });
 
 type FormData = z.infer<typeof schema>;
+
+function generateSlug(name: string) {
+  return name
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[̀-ͯ]/g, '')
+    .replace(/\s+/g, '-')
+    .replace(/[^a-z0-9-]/g, '')
+    .slice(0, 50) || 'workspace';
+}
 
 export function RegisterPage() {
   const navigate = useNavigate();
@@ -30,27 +35,19 @@ export function RegisterPage() {
   const {
     register,
     handleSubmit,
-    setValue,
-    watch,
     formState: { errors, isSubmitting },
   } = useForm<FormData>({ resolver: zodResolver(schema) });
-
-  const workspaceName = watch('workspaceName', '');
-
-  const handleWorkspaceNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const name = e.target.value;
-    setValue('workspaceName', name);
-    const slug = name
-      .toLowerCase()
-      .replace(/\s+/g, '-')
-      .replace(/[^a-z0-9-]/g, '');
-    setValue('slug', slug);
-  };
 
   const onSubmit = async (data: FormData) => {
     setServerError('');
     try {
-      const result = await authService.register(data);
+      const result = await authService.register({
+        workspaceName: data.workspaceName,
+        slug: generateSlug(data.workspaceName),
+        fullName: data.fullName,
+        email: data.email,
+        password: data.password,
+      });
       setAuth(result.user, result.accessToken, result.refreshToken);
       navigate('/dashboard');
     } catch (err: unknown) {
@@ -72,25 +69,17 @@ export function RegisterPage() {
         <div className="card p-6 space-y-5">
           <div>
             <h1 className="text-lg font-semibold text-text-primary">Crie seu workspace</h1>
-            <p className="text-sm text-text-secondary mt-1">Comece em minutos</p>
+            <p className="text-sm text-text-secondary mt-1">Comece em minutos, grátis</p>
           </div>
 
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
             <Input
+              {...register('workspaceName')}
               id="workspaceName"
-              label="Nome do workspace"
+              label="Nome da empresa"
               placeholder="Minha Empresa"
               error={errors.workspaceName?.message}
-              onChange={handleWorkspaceNameChange}
-              value={workspaceName}
-            />
-            <Input
-              {...register('slug')}
-              id="slug"
-              label="URL do workspace"
-              placeholder="minha-empresa"
-              error={errors.slug?.message}
-              className="font-mono text-xs"
+              autoComplete="organization"
             />
             <Input
               {...register('fullName')}
@@ -98,6 +87,7 @@ export function RegisterPage() {
               label="Seu nome"
               placeholder="João Silva"
               error={errors.fullName?.message}
+              autoComplete="name"
             />
             <Input
               {...register('email')}
@@ -125,7 +115,7 @@ export function RegisterPage() {
             )}
 
             <Button type="submit" className="w-full" disabled={isSubmitting}>
-              {isSubmitting ? 'Criando workspace…' : 'Criar workspace'}
+              {isSubmitting ? 'Criando workspace…' : 'Começar grátis'}
             </Button>
           </form>
 

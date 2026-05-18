@@ -11,6 +11,14 @@ export function errorHandler(err: unknown, _req: Request, res: Response, _next: 
   }
 
   if (err instanceof Error) {
+    const status = (err as any).status as number | undefined;
+    if (status && status < 500) {
+      const body: Record<string, unknown> = { error: err.message };
+      if ((err as any).code) body.code = (err as any).code;
+      if ((err as any).requiredPlan) body.requiredPlan = (err as any).requiredPlan;
+      res.status(status).json(body);
+      return;
+    }
     console.error(err);
     res.status(500).json({ error: err.message });
     return;

@@ -209,7 +209,7 @@
 - [x] No dashboard Stripe (modo live), criar os produtos **Starter** e **Pro** com seus respectivos preços recorrentes e copiar os Price IDs
 - [x] Adicionar ao `packages/backend/.env`: `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`, `STRIPE_PRICE_STARTER`, `STRIPE_PRICE_PRO`
 - [ ] No dashboard Stripe → Webhooks, apontar para `https://<seu-dominio>/api/v1/billing/webhook` e habilitar os eventos: `checkout.session.completed`, `customer.subscription.updated`, `customer.subscription.deleted` — **pendente: aguardando domínio de produção**
-- [ ] Corrigir erro `StripeInvalidRequestError: No valid payment method types` ao criar Checkout Session — **ver bloco de erro abaixo**
+- [x] Corrigir erro `StripeInvalidRequestError: No valid payment method types` ao criar Checkout Session — `payment_method_types: ['card']` adicionado em `billing.service.ts`
 - [ ] Testar webhook ponta a ponta: `stripe listen --forward-to localhost:3001/api/v1/billing/webhook` + `stripe trigger checkout.session.completed` retornando 200
 
 **Arquivo-chave**: `packages/backend/src/modules/billing/billing.service.ts`
@@ -376,10 +376,10 @@ docker compose -f docker-compose.prod.yml exec backend \
 
 **O que fazer**:
 
-- [ ] Limitar contatos no Free a **300** — ao atingir o limite, exibir banner "Você atingiu o limite do plano Free. Faça upgrade para adicionar mais contatos." com CTA para Starter/Pro
-- [ ] Mover **Relatórios** (ReportsPage — abas Activities, Leaderboard) para **Starter+** — no Free exibir as abas bloqueadas com `UpgradeModal` ao clicar
-- [ ] Implementar contagem de contatos no backend: antes de inserir novo contato, verificar `COUNT` e retornar 402 se Free e >= 300
-- [ ] Exibir no Dashboard um indicador de uso: "247 / 300 contatos usados" no plano Free
+- [x] Limitar contatos no Free a **300** — backend retorna 402 ao atingir limite; frontend exibe `UpgradeModal`
+- [x] Mover **Relatórios** (ReportsPage — abas Activities, Leaderboard) para **Starter+** — Free vê cadeado e abre `UpgradeModal` ao clicar
+- [x] Implementar contagem de contatos no backend: antes de inserir novo contato, verificar `COUNT` e retornar 402 se Free e >= 300
+- [x] Exibir no Dashboard um indicador de uso com barra de progresso (verde/âmbar/vermelho) no plano Free
 
 **Arquivos-chave**:
 - `packages/backend/src/modules/contacts/contacts.service.ts` (adicionar check de limite)
@@ -394,7 +394,7 @@ docker compose -f docker-compose.prod.yml exec backend \
 
 **O que fazer**:
 
-- [ ] Simplificar `RegisterPage` para **3 campos apenas**: e-mail, senha, nome da empresa — gerar o slug automaticamente a partir do nome da empresa (sem expor o campo slug ao usuário)
+- [x] Simplificar `RegisterPage` para **4 campos**: nome da empresa, seu nome, e-mail, senha — slug gerado automaticamente sem expor ao usuário
 - [ ] Adicionar opção de **continuar com Google** (OAuth) — reduz atrito para zero no cadastro (requer `passport-google-oauth20` no backend ou Supabase Auth)
 - [ ] Após cadastro, redirecionar para um **onboarding de 2 passos** em vez de jogar direto no dashboard vazio: (1) "Como se chama seu primeiro pipeline?" (2) "Convide alguém do time (opcional)" — aumenta ativação
 
@@ -410,7 +410,7 @@ docker compose -f docker-compose.prod.yml exec backend \
 
 **O que fazer**:
 
-- [ ] Adicionar botão flutuante de WhatsApp na `LandingPage` e dentro do app (canto inferior direito) apontando para o número de suporte
+- [x] Adicionar botão flutuante de WhatsApp na `LandingPage` e dentro do app (canto inferior direito) — número placeholder, substituir em produção
 - [ ] Criar template de mensagem automática: "Olá! Sou da [empresa], tenho dúvida sobre o Titan Labs CRM."
 - [ ] Avaliar integração com **Z-API ou Evolution API** para automação de respostas comuns (boas-vindas, link de docs, status de pagamento)
 

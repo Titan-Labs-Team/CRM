@@ -1,5 +1,5 @@
 import { useState, useRef } from 'react';
-import { Download, Upload, Trophy, Activity, BarChart3, FileDown } from 'lucide-react';
+import { Download, Upload, Trophy, Activity, BarChart3, FileDown, Lock } from 'lucide-react';
 import { useKpis, useFunnel, useRevenue, useActivitiesReport, useLeaderboard } from '@/hooks/useReports';
 import { useQueryClient } from '@tanstack/react-query';
 import { KpiCard } from '@/components/dashboard/KpiCard';
@@ -9,6 +9,8 @@ import { Button } from '@/components/ui/Button';
 import { Spinner } from '@/components/ui/Spinner';
 import { api } from '@/services/api';
 import { contactsService } from '@/services/contacts.service';
+import { useTenant } from '@/hooks/useTenant';
+import { useUpgradeStore } from '@/store/upgradeStore';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 
@@ -43,12 +45,23 @@ const tabs: { id: Tab; label: string; icon: React.ReactNode }[] = [
   { id: 'export', label: 'Exportar', icon: <FileDown size={14} /> },
 ];
 
+const GATED_TABS: Tab[] = ['activities', 'leaderboard'];
+
+function isPlanAtLeast(plan: string, required: string) {
+  const order = ['free', 'starter', 'pro', 'enterprise'];
+  return order.indexOf(plan) >= order.indexOf(required);
+}
+
 export function ReportsPage() {
   const [activeTab, setActiveTab] = useState<Tab>('overview');
   const [period, setPeriod] = useState<'month' | 'week'>('month');
   const [downloading, setDownloading] = useState<string | null>(null);
   const importRef = useRef<HTMLInputElement>(null);
   const qc = useQueryClient();
+  const { data: tenant } = useTenant();
+  const showUpgrade = useUpgradeStore((s) => s.showUpgrade);
+  const plan = tenant?.plan ?? 'free';
+  const hasStarterPlus = isPlanAtLeast(plan, 'starter');
 
   const { data: kpis, isLoading: kpisLoading } = useKpis();
   const { data: funnel, isLoading: funnelLoading } = useFunnel();
@@ -103,21 +116,29 @@ export function ReportsPage() {
 
       {/* Tabs */}
       <div className="flex gap-1 border-b border-bg-border">
-        {tabs.map((tab) => (
-          <button
-            key={tab.id}
-            onClick={() => setActiveTab(tab.id)}
-            className={cn(
-              'flex items-center gap-1.5 px-4 py-2.5 text-sm font-medium border-b-2 transition-colors -mb-px',
-              activeTab === tab.id
-                ? 'border-accent-green text-text-primary'
-                : 'border-transparent text-text-secondary hover:text-text-primary',
-            )}
-          >
-            {tab.icon}
-            {tab.label}
-          </button>
-        ))}
+        {tabs.map((tab) => {
+          const isGated = GATED_TABS.includes(tab.id) && !hasStarterPlus;
+          return (
+            <button
+              key={tab.id}
+              onClick={() => {
+                if (isGated) { showUpgrade('starter'); return; }
+                setActiveTab(tab.id);
+              }}
+              className={cn(
+                'flex items-center gap-1.5 px-4 py-2.5 text-sm font-medium border-b-2 transition-colors -mb-px',
+                activeTab === tab.id
+                  ? 'border-accent-green text-text-primary'
+                  : 'border-transparent text-text-secondary hover:text-text-primary',
+                isGated && 'opacity-60',
+              )}
+            >
+              {tab.icon}
+              {tab.label}
+              {isGated && <Lock size={11} className="ml-0.5 text-text-muted" />}
+            </button>
+          );
+        })}
       </div>
 
       {/* Overview Tab */}

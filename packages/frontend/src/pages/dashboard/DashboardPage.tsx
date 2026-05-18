@@ -1,5 +1,8 @@
 import { useKpis, useFunnel, useRevenue } from '@/hooks/useReports';
 import { useActivities } from '@/hooks/useActivities';
+import { useContacts } from '@/hooks/useContacts';
+import { useTenant } from '@/hooks/useTenant';
+import { useUpgradeStore } from '@/store/upgradeStore';
 import { useAuthStore } from '@/store/authStore';
 import { KpiCard } from '@/components/dashboard/KpiCard';
 import { FunnelChart } from '@/components/dashboard/FunnelChart';
@@ -15,12 +18,19 @@ function formatCurrency(v: number) {
   }).format(v);
 }
 
+const FREE_CONTACT_LIMIT = 300;
+
 export function DashboardPage() {
   const user = useAuthStore((s) => s.user);
   const { data: kpis, isLoading: kpisLoading } = useKpis();
   const { data: funnel } = useFunnel();
   const { data: revenue } = useRevenue();
   const { data: activitiesData } = useActivities({ limit: 8 });
+  const { data: tenant } = useTenant();
+  const showUpgrade = useUpgradeStore((s) => s.showUpgrade);
+  const isFree = tenant?.plan === 'free';
+  const { data: contactsData } = useContacts({ limit: 1 });
+  const contactCount = isFree ? (contactsData?.meta?.total ?? 0) : 0;
 
   return (
     <div className="space-y-6">
@@ -32,6 +42,38 @@ export function DashboardPage() {
           Aqui está o resumo do seu workspace hoje.
         </p>
       </div>
+
+      {isFree && contactCount > 0 && (
+        <div className="card px-4 py-3 flex items-center justify-between gap-4">
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center justify-between mb-1.5">
+              <p className="text-xs text-text-secondary">
+                Contatos usados — plano Free
+              </p>
+              <p className="text-xs font-medium text-text-secondary">
+                {contactCount} / {FREE_CONTACT_LIMIT}
+              </p>
+            </div>
+            <div className="h-1.5 bg-bg-border rounded-full overflow-hidden">
+              <div
+                className="h-full rounded-full transition-all"
+                style={{
+                  width: `${Math.min((contactCount / FREE_CONTACT_LIMIT) * 100, 100)}%`,
+                  backgroundColor: contactCount >= FREE_CONTACT_LIMIT ? '#ef4444' : contactCount >= FREE_CONTACT_LIMIT * 0.8 ? '#f59e0b' : '#72d296',
+                }}
+              />
+            </div>
+          </div>
+          {contactCount >= FREE_CONTACT_LIMIT * 0.8 && (
+            <button
+              onClick={() => showUpgrade('starter')}
+              className="text-xs font-medium text-accent-green hover:underline whitespace-nowrap flex-shrink-0"
+            >
+              Fazer upgrade
+            </button>
+          )}
+        </div>
+      )}
 
       {kpisLoading ? (
         <div className="flex justify-center py-8"><Spinner /></div>

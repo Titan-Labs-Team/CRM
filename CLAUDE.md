@@ -259,28 +259,29 @@ See [plan.md](./plan.md) for current progress.
 | M7 — Billing & Premium Tiers | ✅ Done |
 | M8 — Polish, Search, Deployment | ✅ Done |
 
-## Next: M9 T1 (Stripe checkout fix) + M10
+## Next: M10 (restante)
 
 Ver detalhes completos em [plan.md](./plan.md) — seções M9 e M10.
 
 | Task | Descrição | Status |
 |---|---|---|
-| T1 | Stripe: Price IDs + webhook em produção | 🔴 Bloqueado — ver erro abaixo |
-| T2 | Acesso ao banco PostgreSQL em produção (Docker) | ✅ Done (documentado) |
-| T3 | Landing page de apresentação e venda | ✅ Done |
-| T4 | Navbar: exibir nome da empresa do tenant | ✅ Done |
-| T5 | Pipeline: editar nome das etapas (inline edit) | ✅ Done |
-| T6 | Contatos: campo "Responsável" com select de membros | ✅ Done |
-
-**M9 T1 — Erro pendente para próxima sessão**:
-`StripeInvalidRequestError: No valid payment method types for this Checkout Session`
-— Stripe não tem métodos de pagamento habilitados para BRL na conta.
-— Solução rápida: adicionar `payment_method_types: ['card']` na criação da sessão em `billing.service.ts:54`
-— Solução definitiva: habilitar cartão em dashboard.stripe.com/settings/payment_methods
+| M9 T1 | Stripe: `payment_method_types: ['card']` corrigido | ✅ Done |
+| M9 T2 | Acesso ao banco PostgreSQL em produção (Docker) | ✅ Done (documentado) |
+| M9 T3 | Landing page de apresentação e venda | ✅ Done |
+| M9 T4 | Navbar: exibir nome da empresa do tenant | ✅ Done |
+| M9 T5 | Pipeline: editar nome das etapas (inline edit) | ✅ Done |
+| M9 T6 | Contatos: campo "Responsável" com select de membros | ✅ Done |
+| M10 T1 | Limite Free 300 contatos + gate Relatórios + indicador Dashboard | ✅ Done |
+| M10 T2 | RegisterPage simplificada (slug auto-gerado, 4 campos) | ✅ Done |
+| M10 T3 | Botão WhatsApp flutuante (LandingPage + AppShell) | ✅ Done — trocar número em produção |
+| M10 T2 | OAuth Google no cadastro | 🔲 Pendente |
+| M10 T2 | Onboarding pós-cadastro (2 passos) | 🔲 Pendente |
+| M10 T3 | Integração Z-API / Evolution API | 🔲 Pendente |
+| M9 T1 | Webhook Stripe em produção | 🔲 Pendente (aguarda domínio) |
 
 ## Key implementation notes (context for future sessions)
 
-- All 8 milestones complete. Latest migration: `20240014_create_notifications`
+- All 8 milestones complete + M9/M10 partially done. Latest migration: `20240014_create_notifications`
 - `must_change_password` field on `users` — set `true` on invite, cleared on `PATCH /auth/me`
 - `ChangePasswordModal` + `UpgradeModal` mounted in `AppShell` (global)
 - `ErrorBoundary` wraps `<Outlet />` in AppShell — catches all page-level crashes
@@ -295,16 +296,23 @@ Ver detalhes completos em [plan.md](./plan.md) — seções M9 e M10.
 - Production deploy: `docker-compose.prod.yml` (Postgres + backend tsx + nginx frontend)
 - CI: `.github/workflows/ci.yml` — tsc type-check on backend + frontend on PR
 - CD: `.github/workflows/cd.yml` — builds Docker images and pushes to GHCR on merge to main
+- Stripe: `payment_method_types: ['card']` set in `billing.service.ts` — fixes checkout for BRL accounts
 - Stripe webhook uses raw body — registered before `express.json()` in `server.ts`
 - `upgradeStore` (Zustand) holds `{ open, requiredPlan, showUpgrade, closeUpgrade }`
 - Rate limiting: `tierRateLimiter` on all `/api/v1/*` (100/1000/10000 req/day by plan)
 - API keys: prefix `tlk_`, SHA-256 hash stored, admin only, `starter` tier gated
 - Public API via `X-API-Key`: `GET /api/v1/public/contacts`, `/public/deals`, `POST /public/contacts`
 - Webhooks HMAC-signed with `X-Titan-Signature: sha256=<hmac>`
-- `LandingPage` at `src/pages/landing/LandingPage.tsx` — public route `/`, redirects auth'd users to `/dashboard`
-- `useTenant()` hook (`src/hooks/useTenant.ts`) — calls `GET /tenant`, used in Sidebar to show tenant name
+- `LandingPage` at `src/pages/landing/LandingPage.tsx` — public route `/`, redirects auth'd users to `/dashboard`; WhatsApp floating button (expand-on-hover)
+- `AppShell` has WhatsApp floating button (icon-only, bottom-right) — replace `5511999999999` with real number in prod
+- `useTenant()` hook (`src/hooks/useTenant.ts`) — calls `GET /tenant`, used in Sidebar + Dashboard + ReportsPage
 - `PipelineSettingsModal` supports inline stage rename: click pencil → edit in place → Enter/✓ confirms, Escape cancels
 - `ContactForm` has `ownerId` field (select from active users via `useUsers()`), mapped to `owner_id` on backend
+- Free plan contact limit: 300 contacts — `contacts.service.ts` checks COUNT before insert, throws 402 with `{ code: 'upgrade_required', requiredPlan: 'starter' }`
+- `errorHandler.ts` now forwards `status`, `code`, `requiredPlan` from thrown errors (for 4xx non-Zod errors)
+- `ReportsPage` — Activities + Leaderboard tabs gated to Starter+; Free sees lock icon + `UpgradeModal` on click
+- `DashboardPage` — shows contact usage progress bar (green/amber/red) for Free plan; "Fazer upgrade" CTA at 80%+
+- `RegisterPage` — simplified to 4 fields (workspace name, full name, email, password); slug auto-generated via `generateSlug()`
 - Docker prod build: both Dockerfiles use `context: .` (repo root) — required for npm workspaces lockfile
 - Backend Dockerfile CMD: `node_modules/.bin/tsx packages/backend/src/server.ts` (run from repo root `/app`)
 - `docker-compose.prod.yml` uses `DATABASE_URL` from `.env` with `?sslmode=disable` for local Postgres

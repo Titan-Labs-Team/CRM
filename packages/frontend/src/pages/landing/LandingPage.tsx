@@ -11,6 +11,7 @@ import {
   ChevronUp,
   ArrowRight,
   Star,
+  MessageCircle,
 } from 'lucide-react';
 import { useState } from 'react';
 import { useAuthStore } from '@/store/authStore';
@@ -440,6 +441,20 @@ export function LandingPage() {
           <p className="text-xs text-text-muted">© {new Date().getFullYear()} Titan Labs. Todos os direitos reservados.</p>
         </div>
       </footer>
+
+      {/* WhatsApp floating button */}
+      <a
+        href="https://wa.me/5511999999999?text=Ol%C3%A1%21+Tenho+uma+d%C3%BAvida+sobre+o+Titan+Labs+CRM."
+        target="_blank"
+        rel="noopener noreferrer"
+        className="fixed bottom-6 right-6 z-50 flex items-center gap-2 bg-[#25D366] hover:bg-[#1ebe5d] text-white px-4 py-3 rounded-full shadow-lg transition-all hover:scale-105 group"
+        aria-label="Fale conosco no WhatsApp"
+      >
+        <MessageCircle size={20} />
+        <span className="text-sm font-medium max-w-0 overflow-hidden group-hover:max-w-xs transition-all duration-300 whitespace-nowrap">
+          Fale conosco
+        </span>
+      </a>
     </div>
   );
 }

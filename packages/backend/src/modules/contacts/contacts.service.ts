@@ -71,7 +71,20 @@ export async function getContact(tenantId: string, id: string) {
   return contact;
 }
 
+const FREE_CONTACT_LIMIT = 300;
+
 export async function createContact(tenantId: string, input: CreateContactInput) {
+  const tenant = await db('tenants').where({ id: tenantId }).first('plan');
+  if (tenant?.plan === 'free') {
+    const [{ count }] = await db('contacts').where({ tenant_id: tenantId }).count('id as count');
+    if (Number(count) >= FREE_CONTACT_LIMIT) {
+      throw Object.assign(
+        new Error('Contact limit reached for free plan'),
+        { status: 402, code: 'upgrade_required', requiredPlan: 'starter' },
+      );
+    }
+  }
+
   const [contact] = await db('contacts')
     .insert({
       tenant_id: tenantId,

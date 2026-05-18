@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Outlet } from 'react-router-dom';
-import { Menu } from 'lucide-react';
+import { Menu, MessageCircle } from 'lucide-react';
 import { Sidebar } from './Sidebar';
 import { Topbar } from './Topbar';
 import { ChangePasswordModal } from '@/components/auth/ChangePasswordModal';
@@ -52,6 +52,17 @@ export function AppShell() {
 
       <ChangePasswordModal />
       <UpgradeModal />
+
+      {/* WhatsApp support button */}
+      <a
+        href="https://wa.me/5511999999999?text=Ol%C3%A1%21+Preciso+de+ajuda+com+o+Titan+Labs+CRM."
+        target="_blank"
+        rel="noopener noreferrer"
+        className="fixed bottom-5 right-5 z-50 flex items-center justify-center w-12 h-12 bg-[#25D366] hover:bg-[#1ebe5d] text-white rounded-full shadow-lg transition-all hover:scale-110"
+        aria-label="Suporte via WhatsApp"
+      >
+        <MessageCircle size={22} />
+      </a>
     </div>
   );
 }
