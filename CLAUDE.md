@@ -274,14 +274,15 @@ Ver detalhes completos em [plan.md](./plan.md) — seções M9 e M10.
 | M10 T1 | Limite Free 300 contatos + gate Relatórios + indicador Dashboard | ✅ Done |
 | M10 T2 | RegisterPage simplificada (slug auto-gerado, 4 campos) | ✅ Done |
 | M10 T3 | Botão WhatsApp flutuante (LandingPage + AppShell) | ✅ Done — trocar número em produção |
-| M10 T2 | OAuth Google no cadastro | 🔲 Pendente |
-| M10 T2 | Onboarding pós-cadastro (2 passos) | 🔲 Pendente |
+| M10 T2 | OAuth Google no cadastro | ✅ Done (código pronto) |
+| M10 T2 | Onboarding pós-cadastro (2 passos) | ✅ Done |
 | M10 T3 | Integração Z-API / Evolution API | 🔲 Pendente |
 | M9 T1 | Webhook Stripe em produção | 🔲 Pendente (aguarda domínio) |
+| M10 T2 | Credenciais Google OAuth em produção | 🔲 Pendente — ver plan.md T2 |
 
 ## Key implementation notes (context for future sessions)
 
-- All 8 milestones complete + M9/M10 partially done. Latest migration: `20240014_create_notifications`
+- All 8 milestones complete + M9/M10 mostly done. Latest migration: `20240015_nullable_password_hash`
 - `must_change_password` field on `users` — set `true` on invite, cleared on `PATCH /auth/me`
 - `ChangePasswordModal` + `UpgradeModal` mounted in `AppShell` (global)
 - `ErrorBoundary` wraps `<Outlet />` in AppShell — catches all page-level crashes
@@ -312,7 +313,12 @@ Ver detalhes completos em [plan.md](./plan.md) — seções M9 e M10.
 - `errorHandler.ts` now forwards `status`, `code`, `requiredPlan` from thrown errors (for 4xx non-Zod errors)
 - `ReportsPage` — Activities + Leaderboard tabs gated to Starter+; Free sees lock icon + `UpgradeModal` on click
 - `DashboardPage` — shows contact usage progress bar (green/amber/red) for Free plan; "Fazer upgrade" CTA at 80%+
-- `RegisterPage` — simplified to 4 fields (workspace name, full name, email, password); slug auto-generated via `generateSlug()`
+- `RegisterPage` — simplified to 4 fields (workspace name, full name, email, password); slug auto-generated via `generateSlug()`; redirects to `/onboarding` after register
+- **OAuth Google**: `GET /api/v1/auth/google` + `/auth/google/callback` (passport-google-oauth20); only mounted if `GOOGLE_CLIENT_ID` + `GOOGLE_CLIENT_SECRET` are set in `.env`; new users auto-create tenant; `password_hash` is nullable (migration 20240015)
+- `GoogleButton` component at `src/components/auth/GoogleButton.tsx`; shown in LoginPage and RegisterPage
+- `AuthCallbackPage` at `/auth/callback` — reads `accessToken`/`refreshToken`/`isNew` from query string; redirects to `/onboarding` if new user, `/dashboard` if existing
+- `OnboardingPage` at `/onboarding` (ProtectedRoute) — Step 1: create pipeline + 4 default stages (Prospecção, Qualificação, Proposta, Fechamento); Step 2: optional team invite
+- **Pending infra tasks**: (1) configure Google OAuth credentials in prod `.env`; (2) configure Stripe webhook URL once domain is set; (3) replace WhatsApp number `5511999999999` in LandingPage + AppShell
 - Docker prod build: both Dockerfiles use `context: .` (repo root) — required for npm workspaces lockfile
 - Backend Dockerfile CMD: `node_modules/.bin/tsx packages/backend/src/server.ts` (run from repo root `/app`)
 - `docker-compose.prod.yml` uses `DATABASE_URL` from `.env` with `?sslmode=disable` for local Postgres

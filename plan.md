@@ -395,7 +395,8 @@ docker compose -f docker-compose.prod.yml exec backend \
 **O que fazer**:
 
 - [x] Simplificar `RegisterPage` para **4 campos**: nome da empresa, seu nome, e-mail, senha — slug gerado automaticamente sem expor ao usuário
-- [x] Adicionar opção de **continuar com Google** (OAuth) — `passport-google-oauth20` no backend; `GET /auth/google` + `/auth/google/callback`; botão `GoogleButton` em Login e Register; página `/auth/callback` processa tokens; requer `GOOGLE_CLIENT_ID` + `GOOGLE_CLIENT_SECRET` no `.env`
+- [x] Adicionar opção de **continuar com Google** (OAuth) — `passport-google-oauth20` no backend; `GET /auth/google` + `/auth/google/callback`; botão `GoogleButton` em Login e Register; página `/auth/callback` processa tokens
+- [ ] **Configurar credenciais Google OAuth em produção** — adicionar `GOOGLE_CLIENT_ID` e `GOOGLE_CLIENT_SECRET` no `.env` do backend (as rotas só são montadas se essas variáveis existirem); criar projeto em [console.cloud.google.com](https://console.cloud.google.com), habilitar Google+ API, cadastrar `https://<domínio>/api/v1/auth/google/callback` como Redirect URI autorizado
 - [x] Após cadastro, redirecionar para um **onboarding de 2 passos**: (1) nome do pipeline → cria pipeline + 4 etapas padrão; (2) convite opcional de membro — rota `/onboarding`
 
 **Arquivos-chave**:
