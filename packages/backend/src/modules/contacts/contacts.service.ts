@@ -1,6 +1,7 @@
 import { db } from '../../db';
 import { getPaginationParams, paginatedResponse } from '../../shared/utils/paginate';
 import type { CreateContactInput, UpdateContactInput, ListContactsQuery } from './contacts.schema';
+import { fireWebhook } from '../integrations/integrations.service';
 
 export async function listContacts(tenantId: string, query: ListContactsQuery) {
   const { page, limit, offset } = getPaginationParams(query);
@@ -87,6 +88,7 @@ export async function createContact(tenantId: string, input: CreateContactInput)
     })
     .returning('*');
 
+  fireWebhook(tenantId, 'contact.created', contact).catch(() => {});
   return contact;
 }
 
@@ -113,12 +115,14 @@ export async function updateContact(
     .returning('*');
 
   if (!contact) throw Object.assign(new Error('Contact not found'), { status: 404 });
+  fireWebhook(tenantId, 'contact.updated', contact).catch(() => {});
   return contact;
 }
 
 export async function deleteContact(tenantId: string, id: string) {
   const deleted = await db('contacts').where({ id, tenant_id: tenantId }).delete();
   if (!deleted) throw Object.assign(new Error('Contact not found'), { status: 404 });
+  fireWebhook(tenantId, 'contact.deleted', { id }).catch(() => {});
 }
 
 export async function importContactsCsv(

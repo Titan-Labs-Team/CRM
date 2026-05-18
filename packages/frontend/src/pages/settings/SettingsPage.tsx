@@ -3,6 +3,8 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { UserPlus, Shield, ShieldCheck, Briefcase, ToggleLeft, ToggleRight, Zap, ExternalLink, CreditCard } from 'lucide-react';
+import { ApiKeysSection } from '@/components/integrations/ApiKeysSection';
+import { WebhooksSection } from '@/components/integrations/WebhooksSection';
 import { useUsers, useInviteUser, useUpdateUser } from '@/hooks/useUsers';
 import { useBilling, useCreateCheckoutSession, useCreatePortalSession } from '@/hooks/useBilling';
 import { useAuthStore } from '@/store/authStore';
@@ -325,6 +327,10 @@ export function SettingsPage() {
           </table>
         )}
       </div>
+
+      {/* Integrations sections — gated by starter tier */}
+      <WebhooksSection isAdmin={isAdmin} />
+      <ApiKeysSection isAdmin={isAdmin} />
 
       {/* Invite modal */}
       <Modal open={inviteOpen} onClose={() => setInviteOpen(false)} title="Convidar membro">

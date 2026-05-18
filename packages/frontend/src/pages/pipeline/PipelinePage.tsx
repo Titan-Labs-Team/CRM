@@ -22,7 +22,7 @@ import { DealForm } from '@/components/kanban/DealForm';
 import { PipelineSettingsModal } from '@/components/pipeline/PipelineSettingsModal';
 import { Modal } from '@/components/ui/Modal';
 import { Button } from '@/components/ui/Button';
-import { Spinner } from '@/components/ui/Spinner';
+import { KanbanSkeleton } from '@/components/ui/Skeleton';
 import type { StageWithDeals, Deal } from '@/services/pipeline.service';
 import { dealsService, pipelineService } from '@/services/pipeline.service';
 
@@ -163,7 +163,7 @@ export function PipelinePage() {
     setActivePipelineId(pipeline.id);
   };
 
-  if (loadingPipelines) return <div className="flex justify-center py-24"><Spinner /></div>;
+  if (loadingPipelines) return <KanbanSkeleton columns={4} />;
 
   if (!pipelines || pipelines.length === 0) {
     return (
@@ -213,7 +213,7 @@ export function PipelinePage() {
       </div>
 
       {loadingKanban ? (
-        <div className="flex justify-center py-16"><Spinner /></div>
+        <KanbanSkeleton columns={localStages.length || 3} />
       ) : (
         <DndContext
           sensors={sensors}

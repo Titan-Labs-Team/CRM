@@ -1,6 +1,8 @@
 import { db } from '../../db';
 import { getPaginationParams, paginatedResponse } from '../../shared/utils/paginate';
 import type { CreateDealInput, UpdateDealInput, ListDealsQuery } from './deals.schema';
+import { fireWebhook } from '../integrations/integrations.service';
+import { notifyTenantUsers } from '../notifications/notifications.service';
 
 async function logAudit(
   tenantId: string,
@@ -111,6 +113,7 @@ export async function createDeal(tenantId: string, userId: string, input: Create
     .returning('*');
 
   await logAudit(tenantId, userId, 'deal.created', deal.id);
+  fireWebhook(tenantId, 'deal.created', deal).catch(() => {});
   return deal;
 }
 
@@ -164,6 +167,8 @@ export async function moveDeal(
     from: current.stage_id,
     to: stageId,
   });
+  fireWebhook(tenantId, 'deal.stage_changed', { ...deal, previous_stage_id: current.stage_id }).catch(() => {});
+  notifyTenantUsers(tenantId, userId, 'deal.stage_changed', `Deal movido: ${deal.title}`, undefined, 'deal', id).catch(() => {});
 
   return deal;
 }
@@ -176,6 +181,8 @@ export async function markWon(tenantId: string, userId: string, id: string) {
 
   if (!deal) throw Object.assign(new Error('Deal not found'), { status: 404 });
   await logAudit(tenantId, userId, 'deal.won', id);
+  fireWebhook(tenantId, 'deal.won', deal).catch(() => {});
+  notifyTenantUsers(tenantId, userId, 'deal.won', `Deal ganho: ${deal.title}`, undefined, 'deal', id).catch(() => {});
   return deal;
 }
 
@@ -192,6 +199,8 @@ export async function markLost(tenantId: string, userId: string, id: string, los
 
   if (!deal) throw Object.assign(new Error('Deal not found'), { status: 404 });
   await logAudit(tenantId, userId, 'deal.lost', id, { reason: lostReason });
+  fireWebhook(tenantId, 'deal.lost', deal).catch(() => {});
+  notifyTenantUsers(tenantId, userId, 'deal.lost', `Deal perdido: ${deal.title}`, lostReason, 'deal', id).catch(() => {});
   return deal;
 }
 

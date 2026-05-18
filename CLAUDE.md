@@ -255,30 +255,32 @@ See [plan.md](./plan.md) for current progress.
 | M3 — Pipeline & Kanban | ✅ Done |
 | M4 — Dashboard, Activities, Calendar | ✅ Done |
 | M5 — Reports, Export, Team | ✅ Done |
-| M6 — Integrations API & Webhooks | ⏳ Pending |
+| M6 — Integrations API & Webhooks | ✅ Done |
 | M7 — Billing & Premium Tiers | ✅ Done |
-| M8 — Polish, Search, Deployment | ⏳ Pending |
+| M8 — Polish, Search, Deployment | ✅ Done |
 
-## Next: M6
+## All milestones complete — project is production-ready.
 
-M7 is complete. Recommended order going forward:
+## Key implementation notes (context for future sessions)
 
-1. **M6** — API keys + webhooks (gated by `requireTier('starter')`)
-2. **M8** — Polish, global search, notifications, deployment
-
-## Key implementation notes (context for next session)
-
-- `packages/backend/src/db/migrations/` has 11 migrations (latest: `20240011_create_subscriptions`)
-- `must_change_password` field exists on `users` table — set `true` on invite, cleared when user changes password via `PATCH /auth/me`
-- `ChangePasswordModal` mounted in `AppShell` — auto-shows when `user.must_change_password === true`
-- Deals and contacts CSV export gated at `requireTier('pro')` — returns HTTP 402 if below tier
-- Contacts CSV import: `POST /contacts/import` (multipart/form-data, field name `file`), also requires `pro`
-- `GET /reports/activities` and `GET /reports/leaderboard` — both accept optional query filters (`?user=`, `?from=`, `?to=`, `?pipeline=`)
-- ReportsPage has 4 tabs: Overview, Atividades, Ranking, Exportar
-- Column drag-to-reorder on Kanban: grip handle on column header, uses `useSortable` + `horizontalListSortingStrategy`
-- Billing routes: `GET /billing/subscription`, `POST /billing/checkout`, `POST /billing/portal`, `POST /billing/webhook`
+- All 8 milestones complete. Latest migration: `20240014_create_notifications`
+- `must_change_password` field on `users` — set `true` on invite, cleared on `PATCH /auth/me`
+- `ChangePasswordModal` + `UpgradeModal` mounted in `AppShell` (global)
+- `ErrorBoundary` wraps `<Outlet />` in AppShell — catches all page-level crashes
+- `GET /search?q=` — ILIKE search across contacts, deals, activities (min 2 chars)
+- `GET /notifications`, `PATCH /notifications/:id/read`, `POST /notifications/read-all`, `GET /notifications/unread-count`
+- Notifications auto-fired on `deal.won`, `deal.lost`, `deal.stage_changed` — notifies all tenant users except the actor
+- Cmd+K triggers `SearchModal` (global keyboard listener in Topbar)
+- Notification bell in Topbar with unread badge; `NotificationPanel` dropdown (polls every 30s)
+- Skeletons: `TableSkeleton`, `KanbanSkeleton`, `CardSkeleton` in `src/components/ui/Skeleton.tsx`
+- `EmptyState` component in `src/components/ui/EmptyState.tsx` — used in Contacts and Deals list pages
+- Mobile: hamburger button in AppShell opens sidebar overlay on `< md` screens
+- Production deploy: `docker-compose.prod.yml` (Postgres + backend tsx + nginx frontend)
+- CI: `.github/workflows/ci.yml` — tsc type-check on backend + frontend on PR
+- CD: `.github/workflows/cd.yml` — builds Docker images and pushes to GHCR on merge to main
 - Stripe webhook uses raw body — registered before `express.json()` in `server.ts`
-- `UpgradeModal` is mounted in `AppShell`; triggered automatically when any API call returns HTTP 402 via Axios interceptor in `api.ts`
 - `upgradeStore` (Zustand) holds `{ open, requiredPlan, showUpgrade, closeUpgrade }`
-- Rate limiting: `tierRateLimiter` middleware applied to all `/api/v1/*` routes (100/1000/10000 req/day by plan)
-- Required Stripe env vars in `packages/backend/.env`: `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`, `STRIPE_PRICE_STARTER`, `STRIPE_PRICE_PRO`
+- Rate limiting: `tierRateLimiter` on all `/api/v1/*` (100/1000/10000 req/day by plan)
+- API keys: prefix `tlk_`, SHA-256 hash stored, admin only, `starter` tier gated
+- Public API via `X-API-Key`: `GET /api/v1/public/contacts`, `/public/deals`, `POST /public/contacts`
+- Webhooks HMAC-signed with `X-Titan-Signature: sha256=<hmac>`

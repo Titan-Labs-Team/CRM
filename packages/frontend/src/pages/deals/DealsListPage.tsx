@@ -1,10 +1,11 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Trophy, X, Circle } from 'lucide-react';
+import { Trophy, X, Circle, Briefcase } from 'lucide-react';
 import { useDeals } from '@/hooks/useDeals';
 import { usePipelines } from '@/hooks/usePipeline';
 import { Badge } from '@/components/ui/Badge';
-import { Spinner } from '@/components/ui/Spinner';
+import { TableSkeleton } from '@/components/ui/Skeleton';
+import { EmptyState } from '@/components/ui/EmptyState';
 import type { Deal } from '@/services/pipeline.service';
 
 const STATUS_FILTERS = [
@@ -84,11 +85,13 @@ export function DealsListPage() {
       {/* Table */}
       <div className="card overflow-hidden">
         {isLoading ? (
-          <div className="flex items-center justify-center py-16"><Spinner /></div>
+          <TableSkeleton rows={6} />
         ) : deals.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-16 gap-2">
-            <p className="text-text-muted text-sm">Nenhum negócio encontrado</p>
-          </div>
+          <EmptyState
+            icon={Briefcase}
+            title="Nenhum negócio encontrado"
+            description="Crie negócios no seu pipeline para acompanhar oportunidades de venda."
+          />
         ) : (
           <table className="w-full text-sm">
             <thead>

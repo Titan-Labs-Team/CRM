@@ -35,7 +35,11 @@ const navItems = [
   { to: '/reports', icon: BarChart3, label: 'Relatórios' },
 ];
 
-export function Sidebar() {
+interface SidebarProps {
+  onClose?: () => void;
+}
+
+export function Sidebar({ onClose }: SidebarProps) {
   const { sidebarCollapsed, toggleSidebar } = useUIStore();
   const { user } = useAuthStore();
   const { data: billing } = useBilling();
@@ -49,6 +53,7 @@ export function Sidebar() {
         sidebarCollapsed ? 'w-14' : 'w-56',
       )}
     >
+
       <div className="flex items-center justify-between p-3 border-b border-bg-border">
         <div className="flex items-center gap-2 overflow-hidden">
           <LogoIcon size={22} className="flex-shrink-0" />
@@ -69,6 +74,7 @@ export function Sidebar() {
           <NavLink
             key={to}
             to={to}
+            onClick={onClose}
             className={({ isActive }) =>
               cn(
                 'flex items-center gap-3 px-2 py-2 rounded text-sm transition-colors',

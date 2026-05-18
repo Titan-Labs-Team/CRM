@@ -1,14 +1,15 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Search, Plus, Download, Trash2, Pencil } from 'lucide-react';
+import { Search, Plus, Download, Trash2, Pencil, Users } from 'lucide-react';
 import { useContacts, useCreateContact, useUpdateContact, useDeleteContact } from '@/hooks/useContacts';
 import { contactsService, type Contact } from '@/services/contacts.service';
 import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
 import { Avatar } from '@/components/ui/Avatar';
-import { Spinner } from '@/components/ui/Spinner';
 import { Modal } from '@/components/ui/Modal';
 import { ContactForm } from '@/components/contacts/ContactForm';
+import { TableSkeleton } from '@/components/ui/Skeleton';
+import { EmptyState } from '@/components/ui/EmptyState';
 import { useAuthStore } from '@/store/authStore';
 import { toast } from 'sonner';
 import { useDebounce } from '@/hooks/useDebounce';
@@ -151,16 +152,18 @@ export function ContactsPage() {
       {/* Table */}
       <div className="card overflow-hidden">
         {isLoading ? (
-          <div className="flex items-center justify-center py-16">
-            <Spinner />
-          </div>
+          <TableSkeleton rows={6} />
         ) : contacts.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-16 gap-3">
-            <p className="text-text-muted text-sm">Nenhum contato encontrado</p>
-            <Button size="sm" onClick={openCreate}>
-              <Plus size={14} /> Adicionar primeiro contato
-            </Button>
-          </div>
+          <EmptyState
+            icon={Users}
+            title={debouncedSearch ? 'Nenhum resultado' : 'Nenhum contato ainda'}
+            description={
+              debouncedSearch
+                ? `Nada encontrado para "${debouncedSearch}". Tente outro termo.`
+                : 'Adicione seu primeiro contato para começar a organizar seu pipeline.'
+            }
+            action={!debouncedSearch ? { label: 'Adicionar contato', onClick: openCreate } : undefined}
+          />
         ) : (
           <table className="w-full text-sm">
             <thead>

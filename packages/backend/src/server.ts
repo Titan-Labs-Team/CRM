@@ -14,6 +14,11 @@ import activityRoutes from './modules/activities/activities.routes';
 import calendarRoutes from './modules/calendar/calendar.routes';
 import reportRoutes from './modules/reports/reports.routes';
 import billingRoutes from './modules/billing/billing.routes';
+import apiKeyRoutes from './modules/api-keys/api-keys.routes';
+import integrationRoutes from './modules/integrations/integrations.routes';
+import publicRoutes from './modules/public/public.routes';
+import searchRoutes from './modules/search/search.routes';
+import notificationRoutes from './modules/notifications/notifications.routes';
 import { tierRateLimiter } from './shared/middleware/rateLimiter';
 
 const app = express();
@@ -38,6 +43,11 @@ app.use('/api/v1/activities', activityRoutes);
 app.use('/api/v1/calendar/events', calendarRoutes);
 app.use('/api/v1/reports', reportRoutes);
 app.use('/api/v1/billing', billingRoutes);
+app.use('/api/v1/api-keys', apiKeyRoutes);
+app.use('/api/v1/integrations', integrationRoutes);
+app.use('/api/v1/public', publicRoutes);
+app.use('/api/v1/search', searchRoutes);
+app.use('/api/v1/notifications', notificationRoutes);
 
 app.use(errorHandler);
 

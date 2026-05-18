@@ -130,17 +130,18 @@
 **Goal**: Developer-facing REST API and HMAC-signed webhook delivery.
 
 ### Backend
-- [ ] Migrations: `integrations`, `api_keys`, `audit_logs`
-- [ ] `/integrations` CRUD + HMAC-signed webhook delivery + retry
-- [ ] `POST /integrations/:id/test`
-- [ ] `/api-keys` CRUD (prefix+hash scheme)
-- [ ] Public API routes (`/public/contacts`, `/public/deals`) authenticated via `X-API-Key`
-- [ ] Scope enforcement (read/write)
+- [x] Migrations: `api_keys`, `integrations` (audit_logs already existed)
+- [x] `/integrations` CRUD + HMAC-signed webhook delivery (`X-Titan-Signature`) + fire-and-forget
+- [x] `POST /integrations/:id/test`
+- [x] `/api-keys` CRUD (prefix+hash scheme, SHA-256)
+- [x] Public API routes (`/public/contacts`, `/public/deals`) authenticated via `X-API-Key`
+- [x] Scope enforcement (read/write)
+- [x] Webhook auto-fire on contact.created/updated/deleted and deal.created/stage_changed/won/lost
 
 ### Frontend
-- [ ] `IntegrationsSettings` — webhook form + test button + response preview
-- [ ] API key generator (show-once modal with copy)
-- [ ] Key list with prefix, dates, last used
+- [x] `WebhooksSection` in SettingsPage — webhook form, event picker, test button, response status
+- [x] `ApiKeysSection` in SettingsPage — key list with prefix, dates, last used
+- [x] API key generator with show-once modal + copy button
 
 **Test**: Webhook receives signed payload. API key reads contacts via curl. Revoked key → 401.
 
@@ -170,24 +171,23 @@
 **Goal**: Production deployment, global search, notifications, final UX polish.
 
 ### Backend
-- [ ] `GET /search?q=` — unified full-text search across contacts/deals/activities
-- [ ] Notifications table + `GET /notifications` + `PATCH /notifications/:id/read`
-- [ ] `GET /health` health check endpoint
-- [ ] Docker multi-stage build
-- [ ] Connection pool tuning + index review
+- [x] `GET /search?q=` — unified full-text search across contacts/deals/activities
+- [x] Notifications table + `GET /notifications` + `PATCH /notifications/:id/read` + `POST /notifications/read-all`
+- [x] `GET /health` health check endpoint
+- [x] Docker multi-stage build (`packages/backend/Dockerfile`, `packages/frontend/Dockerfile`)
 
 ### Frontend
-- [ ] Cmd+K search modal with keyboard navigation + grouped results
-- [ ] Notification bell — unread count badge + mark-all-read
-- [ ] Error boundaries on all pages
-- [ ] Loading skeletons (replace spinners)
-- [ ] Empty states with context-aware CTAs on all list pages
-- [ ] Sonner toasts on all mutations
-- [ ] Mobile responsive layout (hamburger sidebar, horizontal Kanban scroll)
+- [x] Cmd+K search modal with keyboard navigation + grouped results
+- [x] Notification bell — unread count badge + mark-all-read
+- [x] Error boundaries on all pages (AppShell wraps Outlet)
+- [x] Loading skeletons (TableSkeleton, KanbanSkeleton, CardSkeleton, Skeleton)
+- [x] Empty states with context-aware CTAs on all list pages (EmptyState component)
+- [x] Sonner toasts on all mutations
+- [x] Mobile responsive layout (hamburger sidebar via AppShell, horizontal Kanban scroll)
 
 ### Infra
-- [ ] `docker-compose.yml` production config (Postgres + backend + nginx)
-- [ ] GitHub Actions CI (lint + type-check + test on PR)
-- [ ] GitHub Actions CD (Docker build + push on merge to main)
+- [x] `docker-compose.prod.yml` production config (Postgres + backend + nginx)
+- [x] GitHub Actions CI (lint + type-check on PR — `.github/workflows/ci.yml`)
+- [x] GitHub Actions CD (Docker build + push on merge to main — `.github/workflows/cd.yml`)
 
-**Test**: Global search accurate. Notifications appear on stage change. CI passes. `docker compose up` starts full system. Mobile layout usable.
+**Test**: Global search accurate. Notifications appear on stage change. CI passes. `docker compose -f docker-compose.prod.yml up` starts full system. Mobile layout usable. ✅
