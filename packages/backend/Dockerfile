@@ -16,4 +16,4 @@ COPY --from=deps /app/node_modules ./node_modules
 COPY packages/backend ./packages/backend
 
 EXPOSE 3001
-CMD ["node", "--import", "tsx/esm", "packages/backend/src/server.ts"]
+CMD ["node_modules/.bin/tsx", "packages/backend/src/server.ts"]
