@@ -1,4 +1,4 @@
-import rateLimit from 'express-rate-limit';
+import rateLimit, { ipKeyGenerator } from 'express-rate-limit';
 import { Request } from 'express';
 import { db } from '../../db';
 
@@ -15,13 +15,13 @@ async function getTenantPlan(tenantId: string): Promise<string> {
 }
 
 export const tierRateLimiter = rateLimit({
-  windowMs: 24 * 60 * 60 * 1000, // 24 hours
+  windowMs: 24 * 60 * 60 * 1000,
   max: async (req: Request) => {
     if (!req.user) return TIER_LIMITS.free;
     const plan = await getTenantPlan(req.user.tenantId);
     return TIER_LIMITS[plan] ?? TIER_LIMITS.free;
   },
-  keyGenerator: (req: Request) => req.user?.tenantId ?? (req.ip ?? 'anonymous').replace(/^::ffff:/, ''),
+  keyGenerator: (req: Request) => req.user?.tenantId ?? ipKeyGenerator(req),
   standardHeaders: true,
   legacyHeaders: false,
   message: { error: 'rate_limit_exceeded', message: 'Daily API limit reached for your plan' },
