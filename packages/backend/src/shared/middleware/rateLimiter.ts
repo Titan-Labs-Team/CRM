@@ -21,7 +21,7 @@ export const tierRateLimiter = rateLimit({
     const plan = await getTenantPlan(req.user.tenantId);
     return TIER_LIMITS[plan] ?? TIER_LIMITS.free;
   },
-  keyGenerator: (req: Request) => req.user?.tenantId ?? req.ip ?? 'anonymous',
+  keyGenerator: (req: Request) => req.user?.tenantId ?? (req.ip ?? 'anonymous').replace(/^::ffff:/, ''),
   standardHeaders: true,
   legacyHeaders: false,
   message: { error: 'rate_limit_exceeded', message: 'Daily API limit reached for your plan' },
