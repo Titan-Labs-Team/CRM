@@ -342,3 +342,57 @@ docker compose -f docker-compose.prod.yml exec backend \
 - [x] Exibir avatar + nome do responsável na `ContactDetailPage` (já consome `owner_name` do backend)
 
 **Arquivo-chave**: `packages/frontend/src/components/contacts/ContactForm.tsx`
+
+---
+
+## M10 — Conversão e Crescimento
+
+> Melhorias identificadas após análise de pricing e produto. Foco em aumentar conversão Free → Pago.
+
+---
+
+### T1 — Limitar plano Free para forçar conversão
+
+**Problema**: O Free entrega quase tudo (pipeline, relatórios, leaderboard, calendário, contatos ilimitados). O usuário não sente falta de nada — não tem motivo para pagar.
+
+**O que fazer**:
+
+- [ ] Limitar contatos no Free a **300** — ao atingir o limite, exibir banner "Você atingiu o limite do plano Free. Faça upgrade para adicionar mais contatos." com CTA para Starter/Pro
+- [ ] Mover **Relatórios** (ReportsPage — abas Activities, Leaderboard) para **Starter+** — no Free exibir as abas bloqueadas com `UpgradeModal` ao clicar
+- [ ] Implementar contagem de contatos no backend: antes de inserir novo contato, verificar `COUNT` e retornar 402 se Free e >= 300
+- [ ] Exibir no Dashboard um indicador de uso: "247 / 300 contatos usados" no plano Free
+
+**Arquivos-chave**:
+- `packages/backend/src/modules/contacts/contacts.service.ts` (adicionar check de limite)
+- `packages/frontend/src/pages/reports/ReportsPage.tsx` (gate nas abas)
+- `packages/frontend/src/pages/dashboard/DashboardPage.tsx` (indicador de uso)
+
+---
+
+### T2 — Landing page: reduzir atrito no CTA principal
+
+**Problema**: O fluxo atual é landing → `/register` com 5 campos (workspace, slug, nome, e-mail, senha). Qualquer campo a mais reduz conversão.
+
+**O que fazer**:
+
+- [ ] Simplificar `RegisterPage` para **3 campos apenas**: e-mail, senha, nome da empresa — gerar o slug automaticamente a partir do nome da empresa (sem expor o campo slug ao usuário)
+- [ ] Adicionar opção de **continuar com Google** (OAuth) — reduz atrito para zero no cadastro (requer `passport-google-oauth20` no backend ou Supabase Auth)
+- [ ] Após cadastro, redirecionar para um **onboarding de 2 passos** em vez de jogar direto no dashboard vazio: (1) "Como se chama seu primeiro pipeline?" (2) "Convide alguém do time (opcional)" — aumenta ativação
+
+**Arquivos-chave**:
+- `packages/frontend/src/pages/auth/RegisterPage.tsx`
+- `packages/backend/src/modules/auth/auth.service.ts`
+
+---
+
+### T3 — Suporte via WhatsApp
+
+**Problema**: Para SaaS B2B pequeno no Brasil, suporte por WhatsApp aumenta conversão e reduz churn — o cliente sente que tem alguém por trás do produto.
+
+**O que fazer**:
+
+- [ ] Adicionar botão flutuante de WhatsApp na `LandingPage` e dentro do app (canto inferior direito) apontando para o número de suporte
+- [ ] Criar template de mensagem automática: "Olá! Sou da [empresa], tenho dúvida sobre o Titan Labs CRM."
+- [ ] Avaliar integração com **Z-API ou Evolution API** para automação de respostas comuns (boas-vindas, link de docs, status de pagamento)
+
+**Arquivo-chave**: `packages/frontend/src/pages/landing/LandingPage.tsx`, `packages/frontend/src/components/layout/AppShell.tsx`
