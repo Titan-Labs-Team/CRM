@@ -308,7 +308,7 @@ docker compose -f docker-compose.prod.yml exec backend \
 - [x] No `Sidebar.tsx`, buscar o nome do tenant via `GET /api/v1/tenant` (já existe endpoint + hook `useBilling` retorna subscription, mas o tenant name vem de `PATCH /tenant`)
 - [x] Criar (ou reutilizar) hook `useTenant()` que chama `GET /api/v1/tenant` e retorna `{ name, plan, ... }`
 - [x] Substituir o texto `"Titan Labs"` no `Sidebar.tsx` pelo `tenant.name` (com fallback `"Titan Labs"` enquanto carrega)
-- [ ] Garantir que `RegisterPage` já salva o `companyName` como `tenants.name` — verificar `POST /auth/register`
+- [x] Garantir que `RegisterPage` já salva o `companyName` como `tenants.name` — verificar `POST /auth/register`
 
 **Arquivo-chave**: `packages/frontend/src/components/layout/Sidebar.tsx`
 
@@ -339,6 +339,6 @@ docker compose -f docker-compose.prod.yml exec backend \
 - [x] Buscar usuários via `useUsers()` (hook já existe) e popular as opções com `{ value: user.id, label: user.full_name }`
 - [x] Incluir `ownerId` no schema Zod do formulário e no `CreateContactInput`
 - [x] Verificar que o backend já aceita `owner_id` no `POST /contacts` e `PATCH /contacts/:id` — se não, adicionar ao service/controller
-- [ ] Exibir avatar + nome do responsável na `ContactDetailPage` (já consome `owner_name` do backend)
+- [x] Exibir avatar + nome do responsável na `ContactDetailPage` (já consome `owner_name` do backend)
 
 **Arquivo-chave**: `packages/frontend/src/components/contacts/ContactForm.tsx`

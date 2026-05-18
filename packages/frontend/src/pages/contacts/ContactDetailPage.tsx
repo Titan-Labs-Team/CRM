@@ -1,5 +1,5 @@
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Pencil, Mail, Phone, Building2, Briefcase, Globe } from 'lucide-react';
+import { ArrowLeft, Pencil, Mail, Phone, Building2, Briefcase, Globe, UserCheck } from 'lucide-react';
 import { useContact, useUpdateContact } from '@/hooks/useContacts';
 import { ActivityTimeline } from '@/components/activities/ActivityTimeline';
 import { Button } from '@/components/ui/Button';
@@ -122,8 +122,18 @@ export function ContactDetailPage() {
             </div>
           )}
 
-          <div className="pt-2 border-t border-bg-border text-xs text-text-muted space-y-1">
-            <p>Responsável: {contact.owner_name ?? '—'}</p>
+          <div className="pt-2 border-t border-bg-border text-xs text-text-muted space-y-2">
+            <div className="flex items-center gap-2">
+              <UserCheck size={13} className="flex-shrink-0" />
+              {contact.owner_name ? (
+                <div className="flex items-center gap-1.5">
+                  <Avatar name={contact.owner_name} size="sm" />
+                  <span className="text-text-secondary">{contact.owner_name}</span>
+                </div>
+              ) : (
+                <span>Sem responsável</span>
+              )}
+            </div>
             <p>Criado em: {new Date(contact.created_at).toLocaleDateString('pt-BR')}</p>
           </div>
         </div>
