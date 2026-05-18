@@ -259,18 +259,24 @@ See [plan.md](./plan.md) for current progress.
 | M7 — Billing & Premium Tiers | ✅ Done |
 | M8 — Polish, Search, Deployment | ✅ Done |
 
-## Next: M9 (tasks T1–T6)
+## Next: M9 T1 (Stripe checkout fix) + M10
 
-Ver detalhes completos em [plan.md](./plan.md) — seção M9.
+Ver detalhes completos em [plan.md](./plan.md) — seções M9 e M10.
 
 | Task | Descrição | Status |
 |---|---|---|
-| T1 | Stripe: Price IDs + webhook em produção | ⏳ Pending |
-| T2 | Acesso ao banco PostgreSQL em produção (Docker) | ⏳ Pending (doc only) |
+| T1 | Stripe: Price IDs + webhook em produção | 🔴 Bloqueado — ver erro abaixo |
+| T2 | Acesso ao banco PostgreSQL em produção (Docker) | ✅ Done (documentado) |
 | T3 | Landing page de apresentação e venda | ✅ Done |
 | T4 | Navbar: exibir nome da empresa do tenant | ✅ Done |
 | T5 | Pipeline: editar nome das etapas (inline edit) | ✅ Done |
 | T6 | Contatos: campo "Responsável" com select de membros | ✅ Done |
+
+**M9 T1 — Erro pendente para próxima sessão**:
+`StripeInvalidRequestError: No valid payment method types for this Checkout Session`
+— Stripe não tem métodos de pagamento habilitados para BRL na conta.
+— Solução rápida: adicionar `payment_method_types: ['card']` na criação da sessão em `billing.service.ts:54`
+— Solução definitiva: habilitar cartão em dashboard.stripe.com/settings/payment_methods
 
 ## Key implementation notes (context for future sessions)
 
@@ -299,3 +305,10 @@ Ver detalhes completos em [plan.md](./plan.md) — seção M9.
 - `useTenant()` hook (`src/hooks/useTenant.ts`) — calls `GET /tenant`, used in Sidebar to show tenant name
 - `PipelineSettingsModal` supports inline stage rename: click pencil → edit in place → Enter/✓ confirms, Escape cancels
 - `ContactForm` has `ownerId` field (select from active users via `useUsers()`), mapped to `owner_id` on backend
+- Docker prod build: both Dockerfiles use `context: .` (repo root) — required for npm workspaces lockfile
+- Backend Dockerfile CMD: `node_modules/.bin/tsx packages/backend/src/server.ts` (run from repo root `/app`)
+- `docker-compose.prod.yml` uses `DATABASE_URL` from `.env` with `?sslmode=disable` for local Postgres
+- Migrations in prod: `docker compose -f docker-compose.prod.yml exec backend node_modules/.bin/tsx node_modules/.bin/knex --knexfile packages/backend/knexfile.ts migrate:latest`
+- Dev workflow: use `docker compose up -d` (docker-compose.yml, password: `postgres`) for local DB, then `npm run dev:backend`
+- `packages/backend/.env` DATABASE_URL must use `localhost` (not `db`) when running backend outside Docker
+- `rateLimiter.ts` uses `ipKeyGenerator` from `express-rate-limit` to handle IPv6 addresses correctly

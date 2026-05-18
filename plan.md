@@ -206,19 +206,38 @@
 
 **O que fazer**:
 
-- [ ] No dashboard Stripe (modo live), criar os produtos **Starter** e **Pro** com seus respectivos preços recorrentes e copiar os Price IDs
-- [ ] Adicionar ao `.env` de produção (e ao `docker-compose.prod.yml` → variável de ambiente do serviço `backend`):
-  ```
-  STRIPE_SECRET_KEY=sk_live_...
-  STRIPE_WEBHOOK_SECRET=whsec_...
-  STRIPE_PRICE_STARTER=price_...
-  STRIPE_PRICE_PRO=price_...
-  ```
-- [ ] No dashboard Stripe → Webhooks, apontar para `https://<seu-dominio>/api/v1/billing/webhook` e habilitar os eventos: `checkout.session.completed`, `customer.subscription.updated`, `customer.subscription.deleted`
-- [ ] Verificar no `billing.service.ts` que `subscription.plan` é atualizado corretamente no webhook `checkout.session.completed` (campo `metadata.tenantId` deve ser passado na criação da sessão)
-- [ ] Testar com Stripe CLI localmente: `stripe listen --forward-to localhost:3001/api/v1/billing/webhook`
+- [x] No dashboard Stripe (modo live), criar os produtos **Starter** e **Pro** com seus respectivos preços recorrentes e copiar os Price IDs
+- [x] Adicionar ao `packages/backend/.env`: `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`, `STRIPE_PRICE_STARTER`, `STRIPE_PRICE_PRO`
+- [ ] No dashboard Stripe → Webhooks, apontar para `https://<seu-dominio>/api/v1/billing/webhook` e habilitar os eventos: `checkout.session.completed`, `customer.subscription.updated`, `customer.subscription.deleted` — **pendente: aguardando domínio de produção**
+- [ ] Corrigir erro `StripeInvalidRequestError: No valid payment method types` ao criar Checkout Session — **ver bloco de erro abaixo**
+- [ ] Testar webhook ponta a ponta: `stripe listen --forward-to localhost:3001/api/v1/billing/webhook` + `stripe trigger checkout.session.completed` retornando 200
 
 **Arquivo-chave**: `packages/backend/src/modules/billing/billing.service.ts`
+
+#### ⚠️ Erro pendente — Checkout Session falha ao criar
+
+**Erro**: `StripeInvalidRequestError: No valid payment method types for this Checkout Session`
+
+**Causa**: A conta Stripe não tem métodos de pagamento compatíveis com a moeda configurada (provavelmente BRL) habilitados no dashboard.
+
+**Como corrigir (duas opções)**:
+
+**Opção A — Habilitar métodos no dashboard Stripe (recomendado para produção)**:
+1. Acesse [dashboard.stripe.com/settings/payment_methods](https://dashboard.stripe.com/settings/payment_methods)
+2. Habilite **Cartão de crédito/débito** para BRL
+3. Se usar modo live, pode precisar ativar também **Boleto** ou **Pix**
+
+**Opção B — Especificar `payment_method_types` explicitamente no código**:
+Em `packages/backend/src/modules/billing/billing.service.ts`, na criação da sessão, adicionar:
+```typescript
+const session = await stripe.checkout.sessions.create({
+  payment_method_types: ['card'],  // adicionar esta linha
+  customer: customerId,
+  mode: 'subscription',
+  ...
+});
+```
+Esta opção resolve independente das configurações do dashboard.
 
 ---
 
