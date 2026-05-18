@@ -15,7 +15,5 @@ ENV NODE_ENV=production
 COPY --from=deps /app/node_modules ./node_modules
 COPY packages/backend ./packages/backend
 
-WORKDIR /app/packages/backend
-
 EXPOSE 3001
-CMD ["node", "--import", "tsx/esm", "src/server.ts"]
+CMD ["node", "--import", "tsx/esm", "packages/backend/src/server.ts"]
