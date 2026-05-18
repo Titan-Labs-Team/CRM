@@ -15,6 +15,7 @@ import { cn } from '@/lib/utils';
 import { useUIStore } from '@/store/uiStore';
 import { useAuthStore } from '@/store/authStore';
 import { useBilling } from '@/hooks/useBilling';
+import { useTenant } from '@/hooks/useTenant';
 import { Avatar } from '@/components/ui/Avatar';
 import { Badge } from '@/components/ui/Badge';
 import { LogoIcon } from '@/components/ui/LogoIcon';
@@ -43,6 +44,7 @@ export function Sidebar({ onClose }: SidebarProps) {
   const { sidebarCollapsed, toggleSidebar } = useUIStore();
   const { user } = useAuthStore();
   const { data: billing } = useBilling();
+  const { data: tenant } = useTenant();
   const plan = billing?.plan ?? 'free';
   const planBadge = PLAN_BADGE[plan] ?? PLAN_BADGE.free;
 
@@ -58,7 +60,7 @@ export function Sidebar({ onClose }: SidebarProps) {
         <div className="flex items-center gap-2 overflow-hidden">
           <LogoIcon size={22} className="flex-shrink-0" />
           {!sidebarCollapsed && (
-            <span className="font-semibold text-sm text-text-primary truncate">Titan Labs</span>
+            <span className="font-semibold text-sm text-text-primary truncate">{tenant?.name ?? 'Titan Labs'}</span>
           )}
         </div>
         <button

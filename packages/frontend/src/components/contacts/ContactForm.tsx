@@ -3,6 +3,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { Input } from '@/components/ui/Input';
 import { Button } from '@/components/ui/Button';
+import { useUsers } from '@/hooks/useUsers';
 import type { Contact } from '@/services/contacts.service';
 
 const schema = z.object({
@@ -14,6 +15,7 @@ const schema = z.object({
   jobTitle: z.string().optional(),
   source: z.string().optional(),
   customSource: z.string().optional(),
+  ownerId: z.string().optional(),
 });
 
 type FormData = z.infer<typeof schema>;
@@ -43,6 +45,9 @@ const sourceOptions = [
 const PREDEFINED_SOURCES = ['', 'paid_traffic', 'landing_page', 'ecommerce'];
 
 export function ContactForm({ defaultValues, onSubmit, onCancel, isSubmitting }: ContactFormProps) {
+  const { data: usersData } = useUsers();
+  const activeUsers = usersData?.data.filter((u) => u.is_active) ?? [];
+
   const existingSource = defaultValues?.source ?? '';
   const isExistingCustom = !!existingSource && !PREDEFINED_SOURCES.includes(existingSource);
 
@@ -62,6 +67,7 @@ export function ContactForm({ defaultValues, onSubmit, onCancel, isSubmitting }:
       jobTitle: defaultValues?.job_title ?? '',
       source: isExistingCustom ? 'custom' : existingSource,
       customSource: isExistingCustom ? existingSource : '',
+      ownerId: defaultValues?.owner_id ?? '',
     },
   });
 
@@ -69,7 +75,7 @@ export function ContactForm({ defaultValues, onSubmit, onCancel, isSubmitting }:
 
   const handleFormSubmit = handleSubmit((data) => {
     const resolvedSource = data.source === 'custom' ? (data.customSource || '') : data.source;
-    return onSubmit({ ...data, source: resolvedSource });
+    return onSubmit({ ...data, source: resolvedSource, ownerId: data.ownerId || undefined });
   });
 
   return (
@@ -140,6 +146,16 @@ export function ContactForm({ defaultValues, onSubmit, onCancel, isSubmitting }:
             placeholder="Digite a origem personalizada"
           />
         )}
+      </div>
+
+      <div className="flex flex-col gap-1">
+        <label className="text-xs font-medium text-text-secondary">Responsável</label>
+        <select {...register('ownerId')} className="input-base">
+          <option value="">Sem responsável</option>
+          {activeUsers.map((u) => (
+            <option key={u.id} value={u.id}>{u.full_name}</option>
+          ))}
+        </select>
       </div>
 
       <div className="flex gap-2 pt-2 justify-end">

@@ -1,6 +1,6 @@
-import { useState } from 'react';
-import { Trash2, Plus, GripVertical } from 'lucide-react';
-import { useCreateStage, useDeleteStage } from '@/hooks/usePipeline';
+import { useState, useRef } from 'react';
+import { Trash2, Plus, GripVertical, Check, X, Pencil } from 'lucide-react';
+import { useCreateStage, useDeleteStage, useUpdateStage } from '@/hooks/usePipeline';
 import { Button } from '@/components/ui/Button';
 import { Modal } from '@/components/ui/Modal';
 import { Input } from '@/components/ui/Input';
@@ -35,9 +35,32 @@ export function PipelineSettingsModal({
 }: PipelineSettingsModalProps) {
   const [newStageName, setNewStageName] = useState('');
   const [selectedColor, setSelectedColor] = useState(STAGE_COLORS[0]);
+  const [editingStageId, setEditingStageId] = useState<string | null>(null);
+  const [editingName, setEditingName] = useState('');
+  const editInputRef = useRef<HTMLInputElement>(null);
 
   const createStage = useCreateStage();
   const deleteStage = useDeleteStage();
+  const updateStage = useUpdateStage();
+
+  const startEdit = (stageId: string, currentName: string) => {
+    setEditingStageId(stageId);
+    setEditingName(currentName);
+    setTimeout(() => editInputRef.current?.focus(), 0);
+  };
+
+  const cancelEdit = () => {
+    setEditingStageId(null);
+    setEditingName('');
+  };
+
+  const confirmEdit = async (stageId: string) => {
+    const name = editingName.trim();
+    if (!name) { cancelEdit(); return; }
+    await updateStage.mutateAsync({ pipelineId, stageId, input: { name } });
+    toast.success('Etapa renomeada');
+    cancelEdit();
+  };
 
   const handleAddStage = async () => {
     const name = newStageName.trim();
@@ -75,19 +98,61 @@ export function PipelineSettingsModal({
                   className="w-3 h-3 rounded-full flex-shrink-0"
                   style={{ backgroundColor: s.color || '#6366f1' }}
                 />
-                <span className="text-text-primary text-sm flex-1">{s.name}</span>
-                {s.deals.length > 0 && (
+                {editingStageId === s.id ? (
+                  <input
+                    ref={editInputRef}
+                    value={editingName}
+                    onChange={(e) => setEditingName(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') { e.preventDefault(); confirmEdit(s.id); }
+                      if (e.key === 'Escape') cancelEdit();
+                    }}
+                    className="flex-1 text-sm bg-bg-border text-text-primary rounded px-2 py-0.5 outline-none focus:ring-1 focus:ring-accent-green"
+                  />
+                ) : (
+                  <span className="text-text-primary text-sm flex-1">{s.name}</span>
+                )}
+                {s.deals.length > 0 && editingStageId !== s.id && (
                   <span className="text-xs text-text-muted">
                     {s.deals.length} negócio{s.deals.length !== 1 ? 's' : ''}
                   </span>
                 )}
-                <button
-                  onClick={() => handleDelete(s.id, s.deals.length)}
-                  className="p-1 rounded text-text-muted hover:text-status-lost hover:bg-status-lost/10 transition-colors"
-                  title="Remover etapa"
-                >
-                  <Trash2 size={13} />
-                </button>
+                {editingStageId === s.id ? (
+                  <>
+                    <button
+                      onClick={() => confirmEdit(s.id)}
+                      disabled={updateStage.isPending}
+                      className="p-1 rounded text-accent-green hover:bg-accent-green/10 transition-colors"
+                      title="Confirmar"
+                    >
+                      <Check size={13} />
+                    </button>
+                    <button
+                      onClick={cancelEdit}
+                      className="p-1 rounded text-text-muted hover:text-text-primary hover:bg-bg-border transition-colors"
+                      title="Cancelar"
+                    >
+                      <X size={13} />
+                    </button>
+                  </>
+                ) : (
+                  <>
+                    <button
+                      onClick={() => startEdit(s.id, s.name)}
+                      className="p-1 rounded text-text-muted hover:text-text-primary hover:bg-bg-border transition-colors"
+                      title="Renomear etapa"
+                    >
+                      <Pencil size={13} />
+                    </button>
+                    <button
+                      onClick={() => handleDelete(s.id, s.deals.length)}
+                      className="p-1 rounded text-text-muted hover:text-status-lost hover:bg-status-lost/10 transition-colors"
+                      title="Remover etapa"
+                    >
+                      <Trash2 size={13} />
+                    </button>
+                  </>
+                )}
               </div>
             ))}
           </div>

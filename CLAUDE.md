@@ -266,11 +266,11 @@ Ver detalhes completos em [plan.md](./plan.md) — seção M9.
 | Task | Descrição | Status |
 |---|---|---|
 | T1 | Stripe: Price IDs + webhook em produção | ⏳ Pending |
-| T2 | Acesso ao banco PostgreSQL em produção (Docker) | ⏳ Pending |
-| T3 | Landing page de apresentação e venda | ⏳ Pending |
-| T4 | Navbar: exibir nome da empresa do tenant | ⏳ Pending |
-| T5 | Pipeline: editar nome das etapas (inline edit) | ⏳ Pending |
-| T6 | Contatos: campo "Responsável" com select de membros | ⏳ Pending |
+| T2 | Acesso ao banco PostgreSQL em produção (Docker) | ⏳ Pending (doc only) |
+| T3 | Landing page de apresentação e venda | ✅ Done |
+| T4 | Navbar: exibir nome da empresa do tenant | ✅ Done |
+| T5 | Pipeline: editar nome das etapas (inline edit) | ✅ Done |
+| T6 | Contatos: campo "Responsável" com select de membros | ✅ Done |
 
 ## Key implementation notes (context for future sessions)
 
@@ -295,3 +295,7 @@ Ver detalhes completos em [plan.md](./plan.md) — seção M9.
 - API keys: prefix `tlk_`, SHA-256 hash stored, admin only, `starter` tier gated
 - Public API via `X-API-Key`: `GET /api/v1/public/contacts`, `/public/deals`, `POST /public/contacts`
 - Webhooks HMAC-signed with `X-Titan-Signature: sha256=<hmac>`
+- `LandingPage` at `src/pages/landing/LandingPage.tsx` — public route `/`, redirects auth'd users to `/dashboard`
+- `useTenant()` hook (`src/hooks/useTenant.ts`) — calls `GET /tenant`, used in Sidebar to show tenant name
+- `PipelineSettingsModal` supports inline stage rename: click pencil → edit in place → Enter/✓ confirms, Escape cancels
+- `ContactForm` has `ownerId` field (select from active users via `useUsers()`), mapped to `owner_id` on backend
