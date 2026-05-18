@@ -274,19 +274,19 @@ docker compose -f docker-compose.prod.yml exec backend \
 
 ---
 
-### T3 — Landing Page de apresentação e venda
+### T3 — Landing Page de apresentação e venda ✅
 
 **Objetivo**: Página pública em `/` (ou domínio separado) que convença visitantes a criar conta. Deve comunicar o produto, mostrar os planos e ter CTAs claros para cadastro.
 
 **Seções obrigatórias**:
 
-- [ ] **Hero** — headline forte + subheadline + CTA primário ("Começar grátis") + screenshot/mockup do produto
-- [ ] **Dor / Solução** — 3 bullets curtos: problema atual (WhatsApp, planilhas) → como o Titan Labs resolve
-- [ ] **Features** — 4–6 cards com ícone: Pipeline Kanban, Contatos, Relatórios, Automações/Webhooks, API, Multi-usuário
-- [ ] **Social proof** — depoimentos placeholder ou logos de clientes (pode ser fictício no MVP)
-- [ ] **Pricing** — tabela de planos FREE / STARTER / PRO com features por tier e botões de CTA
-- [ ] **FAQ** — 4–6 perguntas frequentes sobre planos, cancelamento, dados
-- [ ] **Footer** — links: Termos, Privacidade, Contato, redes sociais
+- [x] **Hero** — headline forte + subheadline + CTA primário ("Começar grátis") + screenshot/mockup do produto
+- [x] **Dor / Solução** — 3 bullets curtos: problema atual (WhatsApp, planilhas) → como o Titan Labs resolve
+- [x] **Features** — 4–6 cards com ícone: Pipeline Kanban, Contatos, Relatórios, Automações/Webhooks, API, Multi-usuário
+- [x] **Social proof** — depoimentos placeholder ou logos de clientes (pode ser fictício no MVP)
+- [x] **Pricing** — tabela de planos FREE / STARTER / PRO com features por tier e botões de CTA
+- [x] **FAQ** — 4–6 perguntas frequentes sobre planos, cancelamento, dados
+- [x] **Footer** — links: Termos, Privacidade, Contato, redes sociais
 
 **Decisões técnicas**:
 - Criar como página React em `packages/frontend/src/pages/landing/LandingPage.tsx`
@@ -299,46 +299,46 @@ docker compose -f docker-compose.prod.yml exec backend \
 
 ---
 
-### T4 — Navbar: nome do workspace no lugar de "Titan Labs"
+### T4 — Navbar: nome do workspace no lugar de "Titan Labs" ✅
 
 **Problema**: O nome fixo "Titan Labs" aparece na sidebar. Deve ser substituído pelo nome da empresa que o admin cadastrou no momento do registro (campo `tenants.name`).
 
 **O que fazer**:
 
-- [ ] No `Sidebar.tsx`, buscar o nome do tenant via `GET /api/v1/tenant` (já existe endpoint + hook `useBilling` retorna subscription, mas o tenant name vem de `PATCH /tenant`)
-- [ ] Criar (ou reutilizar) hook `useTenant()` que chama `GET /api/v1/tenant` e retorna `{ name, plan, ... }`
-- [ ] Substituir o texto `"Titan Labs"` no `Sidebar.tsx` pelo `tenant.name` (com fallback `"Titan Labs"` enquanto carrega)
+- [x] No `Sidebar.tsx`, buscar o nome do tenant via `GET /api/v1/tenant` (já existe endpoint + hook `useBilling` retorna subscription, mas o tenant name vem de `PATCH /tenant`)
+- [x] Criar (ou reutilizar) hook `useTenant()` que chama `GET /api/v1/tenant` e retorna `{ name, plan, ... }`
+- [x] Substituir o texto `"Titan Labs"` no `Sidebar.tsx` pelo `tenant.name` (com fallback `"Titan Labs"` enquanto carrega)
 - [ ] Garantir que `RegisterPage` já salva o `companyName` como `tenants.name` — verificar `POST /auth/register`
 
 **Arquivo-chave**: `packages/frontend/src/components/layout/Sidebar.tsx`
 
 ---
 
-### T5 — Pipeline: editar nome das etapas (stages)
+### T5 — Pipeline: editar nome das etapas (stages) ✅
 
 **Problema**: Na modal de configurações do pipeline (`PipelineSettingsModal`), é possível excluir etapas mas não renomeá-las. O endpoint `PATCH /pipelines/:pipelineId/stages/:stageId` já existe no backend.
 
 **O que fazer**:
 
-- [ ] Em `PipelineSettingsModal.tsx`, adicionar modo de edição inline nas etapas: clicar no nome da etapa transforma em `<input>`, confirmar com Enter ou botão ✓, cancelar com Escape
-- [ ] Chamar `PATCH /pipelines/:pipelineId/stages/:stageId` com `{ name }` ao confirmar
-- [ ] Usar `useUpdateStage` (hook já existe em `usePipeline.ts`) para a mutation
-- [ ] Adicionar toast de sucesso/erro (já no hook)
+- [x] Em `PipelineSettingsModal.tsx`, adicionar modo de edição inline nas etapas: clicar no nome da etapa transforma em `<input>`, confirmar com Enter ou botão ✓, cancelar com Escape
+- [x] Chamar `PATCH /pipelines/:pipelineId/stages/:stageId` com `{ name }` ao confirmar
+- [x] Usar `useUpdateStage` (hook já existe em `usePipeline.ts`) para a mutation
+- [x] Adicionar toast de sucesso/erro (já no hook)
 
 **Arquivo-chave**: `packages/frontend/src/components/pipeline/PipelineSettingsModal.tsx`
 
 ---
 
-### T6 — Contatos: campo "Responsável" funcional com select de membros
+### T6 — Contatos: campo "Responsável" funcional com select de membros ✅
 
 **Problema**: A tabela de contatos exibe a coluna "Responsável" e o filtro por owner existe no backend, mas o formulário de criação/edição de contato (`ContactForm.tsx`) não tem campo para selecionar o responsável — o `owner_id` nunca é preenchido.
 
 **O que fazer**:
 
-- [ ] Em `ContactForm.tsx`, adicionar campo `<select>` (ou combobox) "Responsável" que lista os usuários ativos do tenant
-- [ ] Buscar usuários via `useUsers()` (hook já existe) e popular as opções com `{ value: user.id, label: user.full_name }`
-- [ ] Incluir `ownerId` no schema Zod do formulário e no `CreateContactInput`
-- [ ] Verificar que o backend já aceita `owner_id` no `POST /contacts` e `PATCH /contacts/:id` — se não, adicionar ao service/controller
+- [x] Em `ContactForm.tsx`, adicionar campo `<select>` (ou combobox) "Responsável" que lista os usuários ativos do tenant
+- [x] Buscar usuários via `useUsers()` (hook já existe) e popular as opções com `{ value: user.id, label: user.full_name }`
+- [x] Incluir `ownerId` no schema Zod do formulário e no `CreateContactInput`
+- [x] Verificar que o backend já aceita `owner_id` no `POST /contacts` e `PATCH /contacts/:id` — se não, adicionar ao service/controller
 - [ ] Exibir avatar + nome do responsável na `ContactDetailPage` (já consome `owner_name` do backend)
 
 **Arquivo-chave**: `packages/frontend/src/components/contacts/ContactForm.tsx`
