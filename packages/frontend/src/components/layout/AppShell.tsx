@@ -6,9 +6,17 @@ import { Topbar } from './Topbar';
 import { ChangePasswordModal } from '@/components/auth/ChangePasswordModal';
 import { UpgradeModal } from '@/components/billing/UpgradeModal';
 import { ErrorBoundary } from '@/components/ui/ErrorBoundary';
+import { useTenant } from '@/hooks/useTenant';
+
+const WA_NUMBER = '5511999999999';
 
 export function AppShell() {
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
+  const { data: tenant } = useTenant();
+  const waMessage = encodeURIComponent(
+    `Olá! Sou da ${tenant?.name ?? 'minha empresa'} e preciso de ajuda com o Titan Labs CRM.`,
+  );
+  const waUrl = `https://wa.me/${WA_NUMBER}?text=${waMessage}`;
 
   return (
     <div className="flex h-screen overflow-hidden bg-bg-primary">
@@ -55,7 +63,7 @@ export function AppShell() {
 
       {/* WhatsApp support button */}
       <a
-        href="https://wa.me/5511999999999?text=Ol%C3%A1%21+Preciso+de+ajuda+com+o+Titan+Labs+CRM."
+        href={waUrl}
         target="_blank"
         rel="noopener noreferrer"
         className="fixed bottom-5 right-5 z-50 flex items-center justify-center w-12 h-12 bg-[#25D366] hover:bg-[#1ebe5d] text-white rounded-full shadow-lg transition-all hover:scale-110"

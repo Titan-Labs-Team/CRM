@@ -15,6 +15,8 @@ const schema = z.object({
   STRIPE_PRICE_PRO: z.string().optional(),
   FRONTEND_URL: z.string().url().default('http://localhost:5173'),
   RESEND_API_KEY: z.string().optional(),
+  GOOGLE_CLIENT_ID: z.string().optional(),
+  GOOGLE_CLIENT_SECRET: z.string().optional(),
 });
 
 const parsed = schema.safeParse(process.env);

@@ -3,6 +3,8 @@ import { AppShell } from '@/components/layout/AppShell';
 import { ProtectedRoute } from './ProtectedRoute';
 import { LoginPage } from '@/pages/auth/LoginPage';
 import { RegisterPage } from '@/pages/auth/RegisterPage';
+import { AuthCallbackPage } from '@/pages/auth/AuthCallbackPage';
+import { OnboardingPage } from '@/pages/onboarding/OnboardingPage';
 import { LandingPage } from '@/pages/landing/LandingPage';
 import { DashboardPage } from '@/pages/dashboard/DashboardPage';
 import { ContactsPage } from '@/pages/contacts/ContactsPage';
@@ -27,6 +29,18 @@ export const router = createBrowserRouter([
   {
     path: '/register',
     element: <RegisterPage />,
+  },
+  {
+    path: '/auth/callback',
+    element: <AuthCallbackPage />,
+  },
+  {
+    path: '/onboarding',
+    element: (
+      <ProtectedRoute>
+        <OnboardingPage />
+      </ProtectedRoute>
+    ),
   },
   {
     element: (

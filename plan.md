@@ -395,8 +395,8 @@ docker compose -f docker-compose.prod.yml exec backend \
 **O que fazer**:
 
 - [x] Simplificar `RegisterPage` para **4 campos**: nome da empresa, seu nome, e-mail, senha — slug gerado automaticamente sem expor ao usuário
-- [ ] Adicionar opção de **continuar com Google** (OAuth) — reduz atrito para zero no cadastro (requer `passport-google-oauth20` no backend ou Supabase Auth)
-- [ ] Após cadastro, redirecionar para um **onboarding de 2 passos** em vez de jogar direto no dashboard vazio: (1) "Como se chama seu primeiro pipeline?" (2) "Convide alguém do time (opcional)" — aumenta ativação
+- [x] Adicionar opção de **continuar com Google** (OAuth) — `passport-google-oauth20` no backend; `GET /auth/google` + `/auth/google/callback`; botão `GoogleButton` em Login e Register; página `/auth/callback` processa tokens; requer `GOOGLE_CLIENT_ID` + `GOOGLE_CLIENT_SECRET` no `.env`
+- [x] Após cadastro, redirecionar para um **onboarding de 2 passos**: (1) nome do pipeline → cria pipeline + 4 etapas padrão; (2) convite opcional de membro — rota `/onboarding`
 
 **Arquivos-chave**:
 - `packages/frontend/src/pages/auth/RegisterPage.tsx`
@@ -411,7 +411,7 @@ docker compose -f docker-compose.prod.yml exec backend \
 **O que fazer**:
 
 - [x] Adicionar botão flutuante de WhatsApp na `LandingPage` e dentro do app (canto inferior direito) — número placeholder, substituir em produção
-- [ ] Criar template de mensagem automática: "Olá! Sou da [empresa], tenho dúvida sobre o Titan Labs CRM."
+- [x] Criar template de mensagem dinâmica no AppShell — inclui nome da empresa do tenant (`useTenant()`) na mensagem pré-preenchida do WhatsApp
 - [ ] Avaliar integração com **Z-API ou Evolution API** para automação de respostas comuns (boas-vindas, link de docs, status de pagamento)
 
 **Arquivo-chave**: `packages/frontend/src/pages/landing/LandingPage.tsx`, `packages/frontend/src/components/layout/AppShell.tsx`

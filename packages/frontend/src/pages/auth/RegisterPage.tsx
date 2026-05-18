@@ -6,6 +6,7 @@ import { authService } from '@/services/auth.service';
 import { useAuthStore } from '@/store/authStore';
 import { Input } from '@/components/ui/Input';
 import { Button } from '@/components/ui/Button';
+import { GoogleButton } from '@/components/auth/GoogleButton';
 import { useState } from 'react';
 
 const schema = z.object({
@@ -49,7 +50,7 @@ export function RegisterPage() {
         password: data.password,
       });
       setAuth(result.user, result.accessToken, result.refreshToken);
-      navigate('/dashboard');
+      navigate('/onboarding');
     } catch (err: unknown) {
       const msg =
         (err as { response?: { data?: { error?: string } } }).response?.data?.error ??
@@ -118,6 +119,17 @@ export function RegisterPage() {
               {isSubmitting ? 'Criando workspace…' : 'Começar grátis'}
             </Button>
           </form>
+
+          <div className="relative">
+            <div className="absolute inset-0 flex items-center">
+              <div className="w-full border-t border-bg-border" />
+            </div>
+            <div className="relative flex justify-center text-xs text-text-muted">
+              <span className="px-2 bg-bg-surface">ou cadastre-se com</span>
+            </div>
+          </div>
+
+          <GoogleButton label="Continuar com Google" />
 
           <p className="text-sm text-text-secondary text-center">
             Já tem um workspace?{' '}

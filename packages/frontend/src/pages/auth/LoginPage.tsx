@@ -6,6 +6,7 @@ import { authService } from '@/services/auth.service';
 import { useAuthStore } from '@/store/authStore';
 import { Input } from '@/components/ui/Input';
 import { Button } from '@/components/ui/Button';
+import { GoogleButton } from '@/components/auth/GoogleButton';
 import { useState } from 'react';
 
 const schema = z.object({
@@ -84,6 +85,17 @@ export function LoginPage() {
               {isSubmitting ? 'Entrando…' : 'Entrar'}
             </Button>
           </form>
+
+          <div className="relative">
+            <div className="absolute inset-0 flex items-center">
+              <div className="w-full border-t border-bg-border" />
+            </div>
+            <div className="relative flex justify-center text-xs text-text-muted">
+              <span className="px-2 bg-bg-surface">ou</span>
+            </div>
+          </div>
+
+          <GoogleButton label="Entrar com Google" />
 
           <p className="text-sm text-text-secondary text-center">
             Não tem um workspace?{' '}
