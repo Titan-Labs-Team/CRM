@@ -3,6 +3,7 @@ import express from 'express';
 import { corsMiddleware } from './config/cors';
 import { errorHandler } from './shared/middleware/errorHandler';
 import { env } from './config/env';
+import { db } from './db';
 
 import authRoutes from './modules/auth/auth.routes';
 import googleRoutes from './modules/auth/google.routes';
@@ -53,8 +54,14 @@ app.use('/api/v1/notifications', notificationRoutes);
 
 app.use(errorHandler);
 
-app.listen(env.PORT, () => {
-  console.log(`[server] Running on http://localhost:${env.PORT}`);
+db.migrate.latest().then(() => {
+  console.log('[db] Migrations up to date');
+  app.listen(env.PORT, () => {
+    console.log(`[server] Running on http://localhost:${env.PORT}`);
+  });
+}).catch((err) => {
+  console.error('[db] Migration failed:', err);
+  process.exit(1);
 });
 
 export default app;
