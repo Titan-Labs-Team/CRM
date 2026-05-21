@@ -232,6 +232,7 @@ Isso inicia:
 
 Crie o arquivo `packages/backend/.env`:
 
+[guid]::NewGuid().ToString()
 ```env
 DATABASE_URL=postgresql://postgres:postgres@localhost:5432/titancrm
 JWT_SECRET=your-super-secret-jwt-key-change-in-production
