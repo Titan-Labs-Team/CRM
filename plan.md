@@ -214,30 +214,7 @@
 
 **Arquivo-chave**: `packages/backend/src/modules/billing/billing.service.ts`
 
-#### ⚠️ Erro pendente — Checkout Session falha ao criar
-
-**Erro**: `StripeInvalidRequestError: No valid payment method types for this Checkout Session`
-
-**Causa**: A conta Stripe não tem métodos de pagamento compatíveis com a moeda configurada (provavelmente BRL) habilitados no dashboard.
-
-**Como corrigir (duas opções)**:
-
-**Opção A — Habilitar métodos no dashboard Stripe (recomendado para produção)**:
-1. Acesse [dashboard.stripe.com/settings/payment_methods](https://dashboard.stripe.com/settings/payment_methods)
-2. Habilite **Cartão de crédito/débito** para BRL
-3. Se usar modo live, pode precisar ativar também **Boleto** ou **Pix**
-
-**Opção B — Especificar `payment_method_types` explicitamente no código**:
-Em `packages/backend/src/modules/billing/billing.service.ts`, na criação da sessão, adicionar:
-```typescript
-const session = await stripe.checkout.sessions.create({
-  payment_method_types: ['card'],  // adicionar esta linha
-  customer: customerId,
-  mode: 'subscription',
-  ...
-});
-```
-Esta opção resolve independente das configurações do dashboard.
+> ✅ `payment_method_types: ['card']` já adicionado em `billing.service.ts` — erro resolvido.
 
 ---
 
