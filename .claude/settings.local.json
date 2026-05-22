@@ -2,7 +2,8 @@
   "permissions": {
     "allow": [
       "Bash(npm install *)",
-      "Bash(rtk ls *)"
+      "Bash(rtk ls *)",
+      "Bash(git commit -m ' *)"
     ]
   }
 }
