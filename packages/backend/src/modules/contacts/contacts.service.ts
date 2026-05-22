@@ -187,6 +187,51 @@ export async function importContactsCsv(
   return { imported, skipped, errors };
 }
 
+export async function importContactsBulk(
+  tenantId: string,
+  contacts: Array<{ fullName: string; phone?: string; email?: string; company?: string }>,
+): Promise<{ imported: number; skipped: number; errors: string[] }> {
+  const tenant = await db('tenants').where({ id: tenantId }).first('plan');
+  let imported = 0;
+  let skipped = 0;
+  const errors: string[] = [];
+
+  for (const item of contacts) {
+    if (!item.fullName?.trim()) { skipped++; continue; }
+
+    if (item.email) {
+      const existing = await db('contacts').where({ tenant_id: tenantId, email: item.email }).first();
+      if (existing) { skipped++; continue; }
+    }
+
+    if (tenant?.plan === 'free') {
+      const [{ count }] = await db('contacts').where({ tenant_id: tenantId }).count('id as count');
+      if (Number(count) >= FREE_CONTACT_LIMIT) {
+        errors.push(`Limite de ${FREE_CONTACT_LIMIT} contatos atingido no plano gratuito`);
+        break;
+      }
+    }
+
+    try {
+      await db('contacts').insert({
+        tenant_id: tenantId,
+        full_name: item.fullName.trim(),
+        phone: item.phone || null,
+        email: item.email || null,
+        company_name: item.company || null,
+        type: 'lead',
+        tags: '{}',
+        custom_fields: '{}',
+      });
+      imported++;
+    } catch {
+      errors.push(`Erro ao importar "${item.fullName}"`);
+    }
+  }
+
+  return { imported, skipped, errors };
+}
+
 export async function exportContactsCsv(tenantId: string): Promise<string> {
   const contacts = await db('contacts')
     .where({ tenant_id: tenantId })

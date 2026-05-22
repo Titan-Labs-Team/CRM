@@ -55,4 +55,8 @@ export const contactsService = {
       '/contacts/import', form, { headers: { 'Content-Type': 'multipart/form-data' } },
     ).then((r) => r.data.data);
   },
+  importBulk: (contacts: Array<{ fullName: string; phone?: string; email?: string; company?: string }>) =>
+    api.post<{ data: { imported: number; skipped: number; errors: string[] } }>(
+      '/contacts/import-bulk', { contacts },
+    ).then((r) => r.data.data),
 };

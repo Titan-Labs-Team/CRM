@@ -8,6 +8,7 @@ import { Badge } from '@/components/ui/Badge';
 import { Avatar } from '@/components/ui/Avatar';
 import { Modal } from '@/components/ui/Modal';
 import { ContactForm } from '@/components/contacts/ContactForm';
+import { ImportContactsModal } from '@/components/contacts/ImportContactsModal';
 import { TableSkeleton } from '@/components/ui/Skeleton';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { useAuthStore } from '@/store/authStore';
@@ -43,6 +44,7 @@ export function ContactsPage() {
   const [modalOpen, setModalOpen] = useState(false);
   const [editContact, setEditContact] = useState<Contact | null>(null);
   const [exportLoading, setExportLoading] = useState(false);
+  const [importOpen, setImportOpen] = useState(false);
 
   const debouncedSearch = useDebounce(search, 300);
 
@@ -113,6 +115,10 @@ export function ContactsPage() {
           <Button variant="secondary" size="sm" onClick={handleExport} disabled={exportLoading}>
             <Download size={14} />
             {exportLoading ? 'Exportando…' : 'Exportar CSV'}
+          </Button>
+          <Button variant="secondary" size="sm" onClick={() => setImportOpen(true)}>
+            <Users size={14} />
+            Importar
           </Button>
           <Button size="sm" onClick={openCreate}>
             <Plus size={14} />
@@ -256,6 +262,9 @@ export function ContactsPage() {
           isSubmitting={createContact.isPending || updateContact.isPending}
         />
       </Modal>
+
+      {/* Import Modal */}
+      {importOpen && <ImportContactsModal onClose={() => setImportOpen(false)} />}
     </div>
   );
 }
