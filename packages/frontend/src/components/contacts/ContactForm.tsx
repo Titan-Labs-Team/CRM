@@ -1,16 +1,31 @@
-import { useForm, useWatch } from 'react-hook-form';
+import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { Input } from '@/components/ui/Input';
 import { Button } from '@/components/ui/Button';
+import { CustomSelect } from '@/components/ui/CustomSelect';
 import { useUsers } from '@/hooks/useUsers';
 import type { Contact } from '@/services/contacts.service';
+
+function formatPhone(value: string): string {
+  const digits = value.replace(/\D/g, '').slice(0, 11);
+  if (digits.length === 0) return '';
+  if (digits.length <= 2) return `(${digits}`;
+  if (digits.length <= 6) return `(${digits.slice(0, 2)}) ${digits.slice(2)}`;
+  if (digits.length <= 10) return `(${digits.slice(0, 2)}) ${digits.slice(2, 6)}-${digits.slice(6)}`;
+  return `(${digits.slice(0, 2)}) ${digits.slice(2, 7)}-${digits.slice(7)}`;
+}
+
+const phoneRegex = /^\(\d{2}\) \d{4,5}-\d{4}$/;
 
 const schema = z.object({
   type: z.enum(['lead', 'contact', 'client']).default('lead'),
   fullName: z.string().min(1, 'Nome é obrigatório'),
   email: z.string().email('E-mail inválido').optional().or(z.literal('')),
-  phone: z.string().optional(),
+  phone: z.string().optional().refine(
+    (val) => !val || phoneRegex.test(val),
+    { message: 'Telefone inválido. Use (XX) XXXXX-XXXX' }
+  ),
   companyName: z.string().optional(),
   jobTitle: z.string().optional(),
   source: z.string().optional(),
@@ -31,6 +46,25 @@ const typeOptions = [
   { value: 'lead', label: 'Lead' },
   { value: 'contact', label: 'Contato' },
   { value: 'client', label: 'Cliente' },
+];
+
+const jobTitleOptions = [
+  { value: 'CEO', label: 'CEO' },
+  { value: 'CFO', label: 'CFO' },
+  { value: 'CTO', label: 'CTO' },
+  { value: 'COO', label: 'COO' },
+  { value: 'Diretor', label: 'Diretor' },
+  { value: 'Gerente', label: 'Gerente' },
+  { value: 'Coordenador', label: 'Coordenador' },
+  { value: 'Supervisor', label: 'Supervisor' },
+  { value: 'Analista', label: 'Analista' },
+  { value: 'Consultor', label: 'Consultor' },
+  { value: 'Vendedor', label: 'Vendedor' },
+  { value: 'Assistente', label: 'Assistente' },
+  { value: 'Estagiário', label: 'Estagiário' },
+  { value: 'Autônomo', label: 'Autônomo' },
+  { value: 'Empresário', label: 'Empresário' },
+  { value: 'Outro', label: 'Outro' },
 ];
 
 const sourceOptions = [
@@ -71,8 +105,6 @@ export function ContactForm({ defaultValues, onSubmit, onCancel, isSubmitting }:
     },
   });
 
-  const sourceValue = useWatch({ control, name: 'source' });
-
   const handleFormSubmit = handleSubmit((data) => {
     const resolvedSource = data.source === 'custom' ? (data.customSource || '') : data.source;
     return onSubmit({ ...data, source: resolvedSource, ownerId: data.ownerId || undefined });
@@ -80,17 +112,18 @@ export function ContactForm({ defaultValues, onSubmit, onCancel, isSubmitting }:
 
   return (
     <form onSubmit={handleFormSubmit} className="space-y-4">
-      <div className="flex flex-col gap-1">
-        <label className="text-xs font-medium text-text-secondary">Tipo</label>
-        <select
-          {...register('type')}
-          className="input-base"
-        >
-          {typeOptions.map((o) => (
-            <option key={o.value} value={o.value}>{o.label}</option>
-          ))}
-        </select>
-      </div>
+      <Controller
+        control={control}
+        name="type"
+        render={({ field }) => (
+          <CustomSelect
+            label="Tipo"
+            options={typeOptions}
+            value={field.value ?? ''}
+            onChange={field.onChange}
+          />
+        )}
+      />
 
       <Input
         {...register('fullName')}
@@ -109,11 +142,19 @@ export function ContactForm({ defaultValues, onSubmit, onCancel, isSubmitting }:
           placeholder="joao@empresa.com"
           error={errors.email?.message}
         />
-        <Input
-          {...register('phone')}
-          id="phone"
-          label="Telefone"
-          placeholder="+55 11 9xxxx-xxxx"
+        <Controller
+          control={control}
+          name="phone"
+          render={({ field }) => (
+            <Input
+              id="phone"
+              label="Telefone"
+              placeholder="(11) 99999-9999"
+              error={errors.phone?.message}
+              value={field.value ?? ''}
+              onChange={(e) => field.onChange(formatPhone(e.target.value))}
+            />
+          )}
         />
       </div>
 
@@ -124,39 +165,57 @@ export function ContactForm({ defaultValues, onSubmit, onCancel, isSubmitting }:
           label="Empresa"
           placeholder="Acme Corp"
         />
-        <Input
-          {...register('jobTitle')}
-          id="jobTitle"
-          label="Cargo"
-          placeholder="CEO"
+        <Controller
+          control={control}
+          name="jobTitle"
+          render={({ field }) => (
+            <CustomSelect
+              label="Cargo"
+              placeholder="Selecione um cargo"
+              options={jobTitleOptions}
+              value={field.value ?? ''}
+              onChange={field.onChange}
+            />
+          )}
         />
       </div>
 
-      <div className="flex flex-col gap-1">
-        <label className="text-xs font-medium text-text-secondary">Origem</label>
-        <select {...register('source')} className="input-base">
-          {sourceOptions.map((o) => (
-            <option key={o.value} value={o.value}>{o.label}</option>
-          ))}
-        </select>
-        {sourceValue === 'custom' && (
-          <input
-            {...register('customSource')}
-            className="input-base mt-2"
-            placeholder="Digite a origem personalizada"
+      <Controller
+        control={control}
+        name="source"
+        render={({ field }) => (
+          <div className="flex flex-col gap-2">
+            <CustomSelect
+              label="Origem"
+              placeholder="Nenhuma"
+              options={sourceOptions.filter((o) => o.value !== '')}
+              value={field.value ?? ''}
+              onChange={field.onChange}
+            />
+            {field.value === 'custom' && (
+              <input
+                {...register('customSource')}
+                className="input-base mt-1"
+                placeholder="Digite a origem personalizada"
+              />
+            )}
+          </div>
+        )}
+      />
+
+      <Controller
+        control={control}
+        name="ownerId"
+        render={({ field }) => (
+          <CustomSelect
+            label="Responsável"
+            placeholder="Sem responsável"
+            options={activeUsers.map((u) => ({ value: u.id, label: u.full_name }))}
+            value={field.value ?? ''}
+            onChange={field.onChange}
           />
         )}
-      </div>
-
-      <div className="flex flex-col gap-1">
-        <label className="text-xs font-medium text-text-secondary">Responsável</label>
-        <select {...register('ownerId')} className="input-base">
-          <option value="">Sem responsável</option>
-          {activeUsers.map((u) => (
-            <option key={u.id} value={u.id}>{u.full_name}</option>
-          ))}
-        </select>
-      </div>
+      />
 
       <div className="flex gap-2 pt-2 justify-end">
         <Button type="button" variant="ghost" onClick={onCancel}>

@@ -37,6 +37,19 @@
   .input-base {
     @apply w-full bg-bg-surface border border-bg-border rounded px-3 py-2 text-text-primary placeholder-text-muted text-sm focus:outline-none focus:ring-1 focus:ring-accent-green focus:border-accent-green transition-colors;
   }
+
+  .scrollbar-surface::-webkit-scrollbar {
+    width: 5px;
+  }
+  .scrollbar-surface::-webkit-scrollbar-track {
+    @apply bg-bg-surface rounded-full;
+  }
+  .scrollbar-surface::-webkit-scrollbar-thumb {
+    @apply bg-bg-border rounded-full;
+  }
+  .scrollbar-surface::-webkit-scrollbar-thumb:hover {
+    @apply bg-text-muted;
+  }
 }
 
 /* FullCalendar dark theme overrides */
