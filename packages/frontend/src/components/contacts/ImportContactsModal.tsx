@@ -12,9 +12,7 @@ interface Props {
 }
 
 const hasContactPicker =
-  typeof navigator !== 'undefined' &&
-  'contacts' in navigator &&
-  'ContactsManager' in window;
+  typeof navigator !== 'undefined' && 'contacts' in navigator;
 
 export function ImportContactsModal({ onClose }: Props) {
   const queryClient = useQueryClient();
