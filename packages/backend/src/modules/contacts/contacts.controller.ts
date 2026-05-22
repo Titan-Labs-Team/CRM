@@ -71,6 +71,20 @@ export async function importContacts(req: Request, res: Response, next: NextFunc
   } catch (err) { next(err); }
 }
 
+export async function importContactsBulk(req: Request, res: Response, next: NextFunction) {
+  try {
+    const contacts = req.body?.contacts;
+    if (!Array.isArray(contacts) || contacts.length === 0) {
+      res.status(400).json({ error: 'contacts array is required' });
+      return;
+    }
+    const result = await ContactsService.importContactsBulk(req.user!.tenantId, contacts);
+    res.status(201).json({ data: result });
+  } catch (err) {
+    next(err);
+  }
+}
+
 export async function exportContacts(req: Request, res: Response, next: NextFunction) {
   try {
     const csv = await ContactsService.exportContactsCsv(req.user!.tenantId);
