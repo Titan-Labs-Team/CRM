@@ -232,10 +232,12 @@ Isso inicia:
 
 Crie o arquivo `packages/backend/.env`:
 
+
 ```env
 DATABASE_URL=postgresql://postgres:postgres@localhost:5432/titancrm
 JWT_SECRET=your-super-secret-jwt-key-change-in-production
 JWT_REFRESH_SECRET=your-super-secret-refresh-key-change-in-production
+[guid]::NewGuid().ToString() #para gerar secret key
 PORT=3001
 NODE_ENV=development
 FRONTEND_URL=http://localhost:5173
