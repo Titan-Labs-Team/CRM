@@ -195,14 +195,14 @@ export function ContactsPage() {
                           <img
                             src={contactsService.photoUrl(c.id)}
                             alt={c.full_name}
-                            className="h-6 w-6 rounded-full object-cover flex-shrink-0"
+                            className="h-9 w-9 rounded-full object-cover flex-shrink-0"
                           />
                         ) : (
-                          <Avatar name={c.full_name} size="sm" />
+                          <Avatar name={c.full_name} size="md" />
                         )
                       ) : (
-                        <div className="h-6 w-6 rounded-full bg-bg-border flex items-center justify-center flex-shrink-0">
-                          <User size={12} className="text-text-muted" />
+                        <div className="h-9 w-9 rounded-full bg-bg-border flex items-center justify-center flex-shrink-0">
+                          <User size={14} className="text-text-muted" />
                         </div>
                       )}
                       <div>
