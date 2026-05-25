@@ -21,6 +21,7 @@ import integrationRoutes from './modules/integrations/integrations.routes';
 import publicRoutes from './modules/public/public.routes';
 import searchRoutes from './modules/search/search.routes';
 import notificationRoutes from './modules/notifications/notifications.routes';
+import contractRoutes from './modules/contracts/contracts.routes';
 import { tierRateLimiter } from './shared/middleware/rateLimiter';
 
 const app = express();
@@ -51,6 +52,7 @@ app.use('/api/v1/integrations', integrationRoutes);
 app.use('/api/v1/public', publicRoutes);
 app.use('/api/v1/search', searchRoutes);
 app.use('/api/v1/notifications', notificationRoutes);
+app.use('/api/v1/contacts/:contactId/contracts', contractRoutes);
 
 app.use(errorHandler);
 

@@ -2,6 +2,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { ArrowLeft, Pencil, Mail, Phone, Building2, Briefcase, Globe, UserCheck, User } from 'lucide-react';
 import { useContact, useUpdateContact } from '@/hooks/useContacts';
 import { ActivityTimeline } from '@/components/activities/ActivityTimeline';
+import { ContractSection } from '@/components/contacts/ContractSection';
 import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
 import { Avatar } from '@/components/ui/Avatar';
@@ -64,7 +65,8 @@ export function ContactDetailPage() {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
-        {/* Left — profile */}
+        {/* Left — profile + contracts (clients only) */}
+        <div className="flex flex-col gap-5">
         <div className="card p-5 space-y-5">
           <div className="flex flex-col items-center text-center gap-3">
             {contact.type === 'client' ? (
@@ -144,6 +146,9 @@ export function ContactDetailPage() {
             )}
             <p>Criado em: {new Date(contact.created_at).toLocaleDateString('pt-BR')}</p>
           </div>
+        </div>
+
+          {contact.type === 'client' && <ContractSection contactId={contact.id} />}
         </div>
 
         {/* Right — activity timeline */}
