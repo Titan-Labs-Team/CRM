@@ -38,6 +38,19 @@ export function useMarkActivityDone() {
   });
 }
 
+export function useUpdateActivity() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, input }: { id: string; input: Partial<CreateActivityInput> }) =>
+      activitiesService.update(id, input),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: activityKeys.all });
+      toast.success('Atividade atualizada');
+    },
+    onError: () => toast.error('Erro ao atualizar atividade'),
+  });
+}
+
 export function useDeleteActivity() {
   const qc = useQueryClient();
   return useMutation({

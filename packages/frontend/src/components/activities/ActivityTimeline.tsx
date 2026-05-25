@@ -1,6 +1,6 @@
 import { useState } from 'react';
-import { Phone, Mail, MessageSquare, Users, CheckSquare, Plus, Check } from 'lucide-react';
-import { useActivities, useCreateActivity, useMarkActivityDone } from '@/hooks/useActivities';
+import { Phone, Mail, MessageSquare, Users, CheckSquare, Plus, Check, Pencil, Trash2 } from 'lucide-react';
+import { useActivities, useCreateActivity, useUpdateActivity, useMarkActivityDone, useDeleteActivity } from '@/hooks/useActivities';
 import { ActivityForm } from './ActivityForm';
 import { Button } from '@/components/ui/Button';
 import { Modal } from '@/components/ui/Modal';
@@ -29,18 +29,27 @@ interface ActivityTimelineProps {
 }
 
 export function ActivityTimeline({ dealId, contactId }: ActivityTimelineProps) {
-  const [modalOpen, setModalOpen] = useState(false);
+  const [createOpen, setCreateOpen] = useState(false);
+  const [editActivity, setEditActivity] = useState<Activity | null>(null);
+
   const { data, isLoading } = useActivities({ dealId, contactId, limit: 30 });
   const createActivity = useCreateActivity();
+  const updateActivity = useUpdateActivity();
   const markDone = useMarkActivityDone();
+  const deleteActivity = useDeleteActivity();
 
   const activities = data?.data ?? [];
+
+  function handleDelete(a: Activity) {
+    if (!confirm(`Excluir "${a.title}"?`)) return;
+    deleteActivity.mutate(a.id);
+  }
 
   return (
     <div className="space-y-3">
       <div className="flex items-center justify-between">
         <p className="text-sm font-medium text-text-primary">Atividades</p>
-        <Button size="sm" variant="secondary" onClick={() => setModalOpen(true)}>
+        <Button size="sm" variant="secondary" onClick={() => setCreateOpen(true)}>
           <Plus size={13} /> Registrar
         </Button>
       </div>
@@ -54,7 +63,7 @@ export function ActivityTimeline({ dealId, contactId }: ActivityTimelineProps) {
           {activities.map((a) => (
             <div
               key={a.id}
-              className={`flex items-start gap-3 p-3 rounded-lg transition-opacity ${
+              className={`group flex items-start gap-3 p-3 rounded-lg transition-opacity ${
                 a.is_done ? 'opacity-50' : 'bg-bg-surface/40'
               }`}
             >
@@ -67,12 +76,9 @@ export function ActivityTimeline({ dealId, contactId }: ActivityTimelineProps) {
               >
                 {typeIcon[a.type]}
               </div>
+
               <div className="flex-1 min-w-0">
-                <p
-                  className={`text-sm ${
-                    a.is_done ? 'line-through text-text-muted' : 'text-text-primary'
-                  }`}
-                >
+                <p className={`text-sm ${a.is_done ? 'line-through text-text-muted' : 'text-text-primary'}`}>
                   {a.title}
                 </p>
                 {a.body && (
@@ -83,31 +89,62 @@ export function ActivityTimeline({ dealId, contactId }: ActivityTimelineProps) {
                   {new Date(a.created_at).toLocaleDateString('pt-BR')}
                 </p>
               </div>
-              {!a.is_done && (
+
+              <div className="flex items-center gap-1 flex-shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
+                {!a.is_done && (
+                  <button
+                    onClick={() => markDone.mutate(a.id)}
+                    className="p-1.5 rounded text-text-muted hover:text-accent-green hover:bg-accent-green/10 transition-colors"
+                    title="Concluir"
+                  >
+                    <Check size={13} />
+                  </button>
+                )}
                 <button
-                  onClick={() => markDone.mutate(a.id)}
-                  className="text-text-muted hover:text-accent-green transition-colors flex-shrink-0"
-                  title="Marcar como concluída"
+                  onClick={() => setEditActivity(a)}
+                  className="p-1.5 rounded text-text-muted hover:text-text-primary hover:bg-bg-border transition-colors"
+                  title="Editar"
                 >
-                  <Check size={14} />
+                  <Pencil size={13} />
                 </button>
-              )}
+                <button
+                  onClick={() => handleDelete(a)}
+                  className="p-1.5 rounded text-text-muted hover:text-status-lost hover:bg-status-lost/10 transition-colors"
+                  title="Excluir"
+                >
+                  <Trash2 size={13} />
+                </button>
+              </div>
             </div>
           ))}
         </div>
       )}
 
-      <Modal open={modalOpen} onClose={() => setModalOpen(false)} title="Registrar atividade">
+      <Modal open={createOpen} onClose={() => setCreateOpen(false)} title="Registrar atividade">
         <ActivityForm
           dealId={dealId}
           contactId={contactId}
           onSubmit={async (input) => {
             await createActivity.mutateAsync(input);
-            setModalOpen(false);
+            setCreateOpen(false);
           }}
-          onCancel={() => setModalOpen(false)}
+          onCancel={() => setCreateOpen(false)}
           isSubmitting={createActivity.isPending}
         />
+      </Modal>
+
+      <Modal open={!!editActivity} onClose={() => setEditActivity(null)} title="Editar atividade">
+        {editActivity && (
+          <ActivityForm
+            defaultValues={editActivity}
+            onSubmit={async (input) => {
+              await updateActivity.mutateAsync({ id: editActivity.id, input });
+              setEditActivity(null);
+            }}
+            onCancel={() => setEditActivity(null)}
+            isSubmitting={updateActivity.isPending}
+          />
+        )}
       </Modal>
     </div>
   );

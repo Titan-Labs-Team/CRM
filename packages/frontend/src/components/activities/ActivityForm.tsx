@@ -3,7 +3,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { Input } from '@/components/ui/Input';
 import { Button } from '@/components/ui/Button';
-import type { CreateActivityInput } from '@/services/activities.service';
+import type { CreateActivityInput, Activity } from '@/services/activities.service';
 
 const schema = z.object({
   type: z.enum(['note', 'call', 'email', 'meeting', 'task']),
@@ -17,6 +17,7 @@ type FormData = z.infer<typeof schema>;
 interface ActivityFormProps {
   dealId?: string;
   contactId?: string;
+  defaultValues?: Partial<Activity>;
   onSubmit: (data: CreateActivityInput) => Promise<void>;
   onCancel: () => void;
   isSubmitting?: boolean;
@@ -30,10 +31,16 @@ const typeOptions = [
   { value: 'task', label: 'Tarefa' },
 ] as const;
 
-export function ActivityForm({ dealId, contactId, onSubmit, onCancel, isSubmitting }: ActivityFormProps) {
+export function ActivityForm({ dealId, contactId, defaultValues, onSubmit, onCancel, isSubmitting }: ActivityFormProps) {
+  const isEditing = !!defaultValues?.id;
   const { register, handleSubmit, formState: { errors } } = useForm<FormData>({
     resolver: zodResolver(schema),
-    defaultValues: { type: 'note' },
+    defaultValues: {
+      type: defaultValues?.type ?? 'note',
+      title: defaultValues?.title ?? '',
+      body: defaultValues?.body ?? '',
+      dueAt: defaultValues?.due_at ? defaultValues.due_at.slice(0, 16) : '',
+    },
   });
 
   const handleFormSubmit = (data: FormData) => {
@@ -86,7 +93,7 @@ export function ActivityForm({ dealId, contactId, onSubmit, onCancel, isSubmitti
       <div className="flex gap-2 pt-2 justify-end">
         <Button type="button" variant="ghost" onClick={onCancel}>Cancelar</Button>
         <Button type="submit" disabled={isSubmitting}>
-          {isSubmitting ? 'Salvando...' : 'Registrar'}
+          {isSubmitting ? 'Salvando...' : isEditing ? 'Salvar' : 'Registrar'}
         </Button>
       </div>
     </form>
