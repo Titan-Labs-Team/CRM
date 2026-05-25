@@ -178,7 +178,6 @@ export function ContactsPage() {
                 <th className="text-left px-4 py-3 font-medium hidden md:table-cell">Empresa</th>
                 <th className="text-left px-4 py-3 font-medium hidden lg:table-cell">Telefone</th>
                 <th className="text-left px-4 py-3 font-medium">Tipo</th>
-                <th className="text-left px-4 py-3 font-medium hidden sm:table-cell">Responsável</th>
                 <th className="px-4 py-3 w-20" />
               </tr>
             </thead>
@@ -214,9 +213,6 @@ export function ContactsPage() {
                   </td>
                   <td className="px-4 py-3">
                     <Badge variant={typeBadgeVariant[c.type] ?? 'default'}>{typeLabel[c.type] ?? c.type}</Badge>
-                  </td>
-                  <td className="px-4 py-3 text-text-muted text-xs hidden sm:table-cell">
-                    {c.owner_name ?? '—'}
                   </td>
                   <td
                     className="px-4 py-3"
