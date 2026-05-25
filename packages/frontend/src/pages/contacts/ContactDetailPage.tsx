@@ -129,17 +129,19 @@ export function ContactDetailPage() {
           )}
 
           <div className="pt-2 border-t border-bg-border text-xs text-text-muted space-y-2">
-            <div className="flex items-center gap-2">
-              <UserCheck size={13} className="flex-shrink-0" />
-              {contact.owner_name ? (
-                <div className="flex items-center gap-1.5">
-                  <Avatar name={contact.owner_name} size="sm" />
-                  <span className="text-text-secondary">{contact.owner_name}</span>
-                </div>
-              ) : (
-                <span>Sem responsável</span>
-              )}
-            </div>
+            {contact.type !== 'client' && (
+              <div className="flex items-center gap-2">
+                <UserCheck size={13} className="flex-shrink-0" />
+                {contact.owner_name ? (
+                  <div className="flex items-center gap-1.5">
+                    <Avatar name={contact.owner_name} size="sm" />
+                    <span className="text-text-secondary">{contact.owner_name}</span>
+                  </div>
+                ) : (
+                  <span>Sem responsável</span>
+                )}
+              </div>
+            )}
             <p>Criado em: {new Date(contact.created_at).toLocaleDateString('pt-BR')}</p>
           </div>
         </div>

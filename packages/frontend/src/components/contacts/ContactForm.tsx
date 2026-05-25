@@ -1,4 +1,4 @@
-import { useForm, Controller } from 'react-hook-form';
+import { useForm, Controller, useWatch } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { Input } from '@/components/ui/Input';
@@ -89,6 +89,7 @@ export function ContactForm({ defaultValues, onSubmit, onCancel, isSubmitting }:
     register,
     handleSubmit,
     control,
+    setValue,
     formState: { errors },
   } = useForm<FormData>({
     resolver: zodResolver(schema),
@@ -105,6 +106,9 @@ export function ContactForm({ defaultValues, onSubmit, onCancel, isSubmitting }:
     },
   });
 
+  const typeValue = useWatch({ control, name: 'type' });
+  const isClient = typeValue === 'client';
+
   const handleFormSubmit = handleSubmit((data) => {
     const resolvedSource = data.source === 'custom' ? (data.customSource || '') : data.source;
     return onSubmit({ ...data, source: resolvedSource, ownerId: data.ownerId || undefined });
@@ -120,7 +124,10 @@ export function ContactForm({ defaultValues, onSubmit, onCancel, isSubmitting }:
             label="Tipo"
             options={typeOptions}
             value={field.value ?? ''}
-            onChange={field.onChange}
+            onChange={(val) => {
+              field.onChange(val);
+              if (val === 'client') setValue('ownerId', '');
+            }}
           />
         )}
       />
@@ -203,19 +210,21 @@ export function ContactForm({ defaultValues, onSubmit, onCancel, isSubmitting }:
         )}
       />
 
-      <Controller
-        control={control}
-        name="ownerId"
-        render={({ field }) => (
-          <CustomSelect
-            label="Responsável"
-            placeholder="Sem responsável"
-            options={activeUsers.map((u) => ({ value: u.id, label: u.full_name }))}
-            value={field.value ?? ''}
-            onChange={field.onChange}
-          />
-        )}
-      />
+      {!isClient && (
+        <Controller
+          control={control}
+          name="ownerId"
+          render={({ field }) => (
+            <CustomSelect
+              label="Responsável"
+              placeholder="Sem responsável"
+              options={activeUsers.map((u) => ({ value: u.id, label: u.full_name }))}
+              value={field.value ?? ''}
+              onChange={field.onChange}
+            />
+          )}
+        />
+      )}
 
       <div className="flex gap-2 pt-2 justify-end">
         <Button type="button" variant="ghost" onClick={onCancel}>
