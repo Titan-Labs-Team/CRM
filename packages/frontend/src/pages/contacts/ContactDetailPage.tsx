@@ -1,5 +1,5 @@
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Pencil, Mail, Phone, Building2, Briefcase, Globe, UserCheck } from 'lucide-react';
+import { ArrowLeft, Pencil, Mail, Phone, Building2, Briefcase, Globe, UserCheck, User } from 'lucide-react';
 import { useContact, useUpdateContact } from '@/hooks/useContacts';
 import { ActivityTimeline } from '@/components/activities/ActivityTimeline';
 import { Button } from '@/components/ui/Button';
@@ -67,7 +67,13 @@ export function ContactDetailPage() {
         {/* Left — profile */}
         <div className="card p-5 space-y-5">
           <div className="flex flex-col items-center text-center gap-3">
-            <Avatar name={contact.full_name} size="lg" />
+            {contact.type === 'client' ? (
+                <Avatar name={contact.full_name} size="lg" />
+              ) : (
+                <div className="h-10 w-10 rounded-full bg-bg-border flex items-center justify-center flex-shrink-0">
+                  <User size={20} className="text-text-muted" />
+                </div>
+              )}
             <div>
               <p className="font-semibold text-text-primary">{contact.full_name}</p>
               {contact.job_title && (

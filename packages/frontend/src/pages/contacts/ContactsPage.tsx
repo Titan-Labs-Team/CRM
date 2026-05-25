@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Search, Plus, Download, Trash2, Pencil, Users } from 'lucide-react';
+import { Search, Plus, Download, Trash2, Pencil, Users, User } from 'lucide-react';
 import { useContacts, useCreateContact, useUpdateContact, useDeleteContact } from '@/hooks/useContacts';
 import { contactsService, type Contact } from '@/services/contacts.service';
 import { Button } from '@/components/ui/Button';
@@ -191,7 +191,13 @@ export function ContactsPage() {
                 >
                   <td className="px-4 py-3">
                     <div className="flex items-center gap-3">
-                      <Avatar name={c.full_name} size="sm" />
+                      {c.type === 'client' ? (
+                        <Avatar name={c.full_name} size="sm" />
+                      ) : (
+                        <div className="h-6 w-6 rounded-full bg-bg-border flex items-center justify-center flex-shrink-0">
+                          <User size={12} className="text-text-muted" />
+                        </div>
+                      )}
                       <div>
                         <p className="font-medium text-text-primary">{c.full_name}</p>
                         {c.job_title && (
