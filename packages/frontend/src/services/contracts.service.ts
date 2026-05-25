@@ -18,7 +18,7 @@ export const contractsService = {
     return api.post<{ data: Contract }>(
       `/contacts/${contactId}/contracts`,
       form,
-      { headers: { 'Content-Type': 'multipart/form-data' } },
+      { headers: { 'Content-Type': undefined } },
     ).then((r) => r.data.data);
   },
 

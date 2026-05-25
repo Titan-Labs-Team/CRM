@@ -27,10 +27,15 @@ export function ContactPhotoUpload({ contactId, hasPhoto, onPhotoChange }: Conta
     reader.onload = (ev) => setPreview(ev.target?.result as string);
     reader.readAsDataURL(file);
 
-    await uploadPhoto.mutateAsync({ id: contactId, file });
-    setPreview(null);
-    onPhotoChange?.();
-    e.target.value = '';
+    try {
+      await uploadPhoto.mutateAsync({ id: contactId, file });
+      setPreview(null);
+      onPhotoChange?.();
+    } catch {
+      setPreview(null);
+    } finally {
+      e.target.value = '';
+    }
   }
 
   async function handleDelete() {

@@ -1,4 +1,5 @@
 import { api } from './api';
+import { useAuthStore } from '@/store/authStore';
 
 export interface Contact {
   id: string;
@@ -60,10 +61,20 @@ export const contactsService = {
     api.post<{ data: { imported: number; skipped: number; errors: string[] } }>(
       '/contacts/import-bulk', { contacts },
     ).then((r) => r.data.data),
-  uploadPhoto: (id: string, file: File) => {
+  uploadPhoto: async (id: string, file: File) => {
     const form = new FormData();
     form.append('photo', file);
-    return api.post(`/contacts/${id}/photo`, form, { headers: { 'Content-Type': 'multipart/form-data' } });
+    const token = useAuthStore.getState().accessToken;
+    const res = await fetch(`${import.meta.env.VITE_API_URL}/contacts/${id}/photo`, {
+      method: 'POST',
+      headers: token ? { Authorization: `Bearer ${token}` } : {},
+      body: form,
+    });
+    if (!res.ok) {
+      const body = await res.json().catch(() => ({}));
+      throw Object.assign(new Error('Upload failed'), { response: { status: res.status, data: body } });
+    }
+    return res.json();
   },
   deletePhoto: (id: string) => api.delete(`/contacts/${id}/photo`),
   photoUrl: (id: string) => `${import.meta.env.VITE_API_URL}/contacts/${id}/photo`,
