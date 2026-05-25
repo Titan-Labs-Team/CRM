@@ -13,6 +13,7 @@ export interface Contact {
   owner_id?: string;
   owner_name?: string;
   tenant_id: string;
+  has_photo?: boolean;
   created_at: string;
   updated_at: string;
 }
@@ -59,4 +60,11 @@ export const contactsService = {
     api.post<{ data: { imported: number; skipped: number; errors: string[] } }>(
       '/contacts/import-bulk', { contacts },
     ).then((r) => r.data.data),
+  uploadPhoto: (id: string, file: File) => {
+    const form = new FormData();
+    form.append('photo', file);
+    return api.post(`/contacts/${id}/photo`, form, { headers: { 'Content-Type': 'multipart/form-data' } });
+  },
+  deletePhoto: (id: string) => api.delete(`/contacts/${id}/photo`),
+  photoUrl: (id: string) => `${import.meta.env.VITE_API_URL}/contacts/${id}/photo`,
 };

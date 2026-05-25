@@ -9,6 +9,14 @@ export const csvUpload = multer({
     cb(null, file.mimetype === 'text/csv' || file.originalname.endsWith('.csv'));
   },
 });
+
+export const photoUpload = multer({
+  storage: multer.memoryStorage(),
+  limits: { fileSize: 5 * 1024 * 1024 },
+  fileFilter: (_req, file, cb) => {
+    cb(null, ['image/jpeg', 'image/png', 'image/webp'].includes(file.mimetype));
+  },
+});
 import {
   createContactSchema,
   updateContactSchema,
@@ -83,6 +91,36 @@ export async function importContactsBulk(req: Request, res: Response, next: Next
   } catch (err) {
     next(err);
   }
+}
+
+export async function uploadPhoto(req: Request, res: Response, next: NextFunction) {
+  try {
+    if (!req.file) { res.status(400).json({ error: 'Image file required' }); return; }
+    await ContactsService.uploadContactPhoto(
+      req.user!.tenantId,
+      req.params.id,
+      req.file.buffer,
+      req.file.mimetype,
+    );
+    res.json({ data: { ok: true } });
+  } catch (err) { next(err); }
+}
+
+export async function getPhoto(req: Request, res: Response, next: NextFunction) {
+  try {
+    const photo = await ContactsService.getContactPhoto(req.params.id);
+    if (!photo) { res.status(404).json({ error: 'No photo' }); return; }
+    res.setHeader('Content-Type', photo.mime);
+    res.setHeader('Cache-Control', 'public, max-age=86400');
+    res.send(photo.data);
+  } catch (err) { next(err); }
+}
+
+export async function deletePhoto(req: Request, res: Response, next: NextFunction) {
+  try {
+    await ContactsService.deleteContactPhoto(req.user!.tenantId, req.params.id);
+    res.status(204).send();
+  } catch (err) { next(err); }
 }
 
 export async function exportContacts(req: Request, res: Response, next: NextFunction) {

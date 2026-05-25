@@ -3,11 +3,13 @@ import { ArrowLeft, Pencil, Mail, Phone, Building2, Briefcase, Globe, UserCheck,
 import { useContact, useUpdateContact } from '@/hooks/useContacts';
 import { ActivityTimeline } from '@/components/activities/ActivityTimeline';
 import { ContractSection } from '@/components/contacts/ContractSection';
+import { ContactPhotoUpload } from '@/components/contacts/ContactPhotoUpload';
 import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
 import { Avatar } from '@/components/ui/Avatar';
 import { Spinner } from '@/components/ui/Spinner';
 import { Modal } from '@/components/ui/Modal';
+import { contactsService } from '@/services/contacts.service';
 import { ContactForm } from '@/components/contacts/ContactForm';
 import { useState } from 'react';
 
@@ -70,12 +72,20 @@ export function ContactDetailPage() {
         <div className="card p-5 space-y-5">
           <div className="flex flex-col items-center text-center gap-3">
             {contact.type === 'client' ? (
-                <Avatar name={contact.full_name} size="lg" />
+              contact.has_photo ? (
+                <img
+                  src={`${contactsService.photoUrl(contact.id)}?t=${contact.updated_at}`}
+                  alt={contact.full_name}
+                  className="h-20 w-20 rounded-full object-cover border-2 border-bg-border"
+                />
               ) : (
-                <div className="h-10 w-10 rounded-full bg-bg-border flex items-center justify-center flex-shrink-0">
-                  <User size={20} className="text-text-muted" />
-                </div>
-              )}
+                <Avatar name={contact.full_name} size="lg" />
+              )
+            ) : (
+              <div className="h-10 w-10 rounded-full bg-bg-border flex items-center justify-center flex-shrink-0">
+                <User size={20} className="text-text-muted" />
+              </div>
+            )}
             <div>
               <p className="font-semibold text-text-primary">{contact.full_name}</p>
               {contact.job_title && (
@@ -86,6 +96,13 @@ export function ContactDetailPage() {
               </Badge>
             </div>
           </div>
+
+          {contact.type === 'client' && (
+            <ContactPhotoUpload
+              contactId={contact.id}
+              hasPhoto={!!contact.has_photo}
+            />
+          )}
 
           <div className="space-y-3 text-sm">
             {contact.email && (

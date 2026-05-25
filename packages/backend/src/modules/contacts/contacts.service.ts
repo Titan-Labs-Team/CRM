@@ -23,6 +23,7 @@ export async function listContacts(tenantId: string, query: ListContactsQuery) {
       'c.created_at',
       'c.updated_at',
       db.raw("u.full_name as owner_name"),
+      db.raw("(c.photo_data IS NOT NULL) as has_photo"),
     );
 
   if (query.type) base = base.where('c.type', query.type);
@@ -61,9 +62,12 @@ export async function getContact(tenantId: string, id: string) {
     .leftJoin('users as u', 'c.owner_id', 'u.id')
     .where({ 'c.id': id, 'c.tenant_id': tenantId })
     .select(
-      'c.*',
+      'c.id', 'c.tenant_id', 'c.type', 'c.full_name', 'c.email', 'c.phone',
+      'c.company_name', 'c.job_title', 'c.source', 'c.tags', 'c.owner_id',
+      'c.custom_fields', 'c.created_at', 'c.updated_at',
       db.raw("u.full_name as owner_name"),
       db.raw("u.email as owner_email"),
+      db.raw("(c.photo_data IS NOT NULL) as has_photo"),
     )
     .first();
 
@@ -230,6 +234,37 @@ export async function importContactsBulk(
   }
 
   return { imported, skipped, errors };
+}
+
+export async function uploadContactPhoto(
+  tenantId: string,
+  contactId: string,
+  buffer: Buffer,
+  mimeType: string,
+): Promise<void> {
+  const contact = await db('contacts').where({ id: contactId, tenant_id: tenantId }).first('id');
+  if (!contact) throw Object.assign(new Error('Contact not found'), { status: 404 });
+
+  await db('contacts')
+    .where({ id: contactId, tenant_id: tenantId })
+    .update({ photo_data: buffer, photo_mime: mimeType, updated_at: new Date() });
+}
+
+export async function getContactPhoto(
+  contactId: string,
+): Promise<{ data: Buffer; mime: string } | null> {
+  const row = await db('contacts').where({ id: contactId }).select('photo_data', 'photo_mime').first();
+  if (!row || !row.photo_data) return null;
+  return { data: row.photo_data, mime: row.photo_mime };
+}
+
+export async function deleteContactPhoto(tenantId: string, contactId: string): Promise<void> {
+  const contact = await db('contacts').where({ id: contactId, tenant_id: tenantId }).first('id');
+  if (!contact) throw Object.assign(new Error('Contact not found'), { status: 404 });
+
+  await db('contacts')
+    .where({ id: contactId, tenant_id: tenantId })
+    .update({ photo_data: null, photo_mime: null, updated_at: new Date() });
 }
 
 export async function exportContactsCsv(tenantId: string): Promise<string> {

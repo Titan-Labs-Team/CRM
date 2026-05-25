@@ -14,5 +14,8 @@ router.get('/:id', requireAuth, ContactsController.getContact);
 router.post('/', requireAuth, ContactsController.createContact);
 router.patch('/:id', requireAuth, ContactsController.updateContact);
 router.delete('/:id', requireAuth, requireRole('manager', 'admin'), ContactsController.deleteContact);
+router.post('/:id/photo', requireAuth, ContactsController.photoUpload.single('photo'), ContactsController.uploadPhoto);
+router.get('/:id/photo', ContactsController.getPhoto);
+router.delete('/:id/photo', requireAuth, ContactsController.deletePhoto);
 
 export default router;

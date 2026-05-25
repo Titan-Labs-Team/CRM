@@ -4,6 +4,7 @@ import { z } from 'zod';
 import { Input } from '@/components/ui/Input';
 import { Button } from '@/components/ui/Button';
 import { CustomSelect } from '@/components/ui/CustomSelect';
+import { ContactPhotoUpload } from './ContactPhotoUpload';
 import { useUsers } from '@/hooks/useUsers';
 import type { Contact } from '@/services/contacts.service';
 
@@ -223,6 +224,13 @@ export function ContactForm({ defaultValues, onSubmit, onCancel, isSubmitting }:
               onChange={field.onChange}
             />
           )}
+        />
+      )}
+
+      {isClient && defaultValues?.id && (
+        <ContactPhotoUpload
+          contactId={defaultValues.id}
+          hasPhoto={!!(defaultValues as Contact & { has_photo?: boolean }).has_photo}
         />
       )}
 

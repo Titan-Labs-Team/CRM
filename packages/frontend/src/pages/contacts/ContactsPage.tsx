@@ -191,7 +191,15 @@ export function ContactsPage() {
                   <td className="px-4 py-3">
                     <div className="flex items-center gap-3">
                       {c.type === 'client' ? (
-                        <Avatar name={c.full_name} size="sm" />
+                        c.has_photo ? (
+                          <img
+                            src={contactsService.photoUrl(c.id)}
+                            alt={c.full_name}
+                            className="h-6 w-6 rounded-full object-cover flex-shrink-0"
+                          />
+                        ) : (
+                          <Avatar name={c.full_name} size="sm" />
+                        )
                       ) : (
                         <div className="h-6 w-6 rounded-full bg-bg-border flex items-center justify-center flex-shrink-0">
                           <User size={12} className="text-text-muted" />

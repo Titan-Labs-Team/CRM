@@ -59,3 +59,27 @@ export function useDeleteContact() {
     onError: () => toast.error('Failed to delete contact'),
   });
 }
+
+export function useUploadContactPhoto() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, file }: { id: string; file: File }) => contactsService.uploadPhoto(id, file),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: contactsKeys.all });
+      toast.success('Foto atualizada');
+    },
+    onError: () => toast.error('Erro ao enviar foto'),
+  });
+}
+
+export function useDeleteContactPhoto() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) => contactsService.deletePhoto(id),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: contactsKeys.all });
+      toast.success('Foto removida');
+    },
+    onError: () => toast.error('Erro ao remover foto'),
+  });
+}
