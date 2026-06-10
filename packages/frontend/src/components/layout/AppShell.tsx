@@ -14,7 +14,7 @@ export function AppShell() {
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const { data: tenant } = useTenant();
   const waMessage = encodeURIComponent(
-    `Olá! Sou da ${tenant?.name ?? 'minha empresa'} e preciso de ajuda com o Titan Labs CRM.`,
+    `Olá! Sou da ${tenant?.name ?? 'minha empresa'} e preciso de ajuda com o TitanFlow.`,
   );
   const waUrl = `https://wa.me/${WA_NUMBER}?text=${waMessage}`;
 

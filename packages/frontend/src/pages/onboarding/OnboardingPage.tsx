@@ -97,7 +97,7 @@ export function OnboardingPage() {
         {/* Header */}
         <div className="flex items-center gap-2 mb-8 justify-center">
           <LogoIcon size={22} />
-          <span className="text-xl font-bold text-text-primary">Titan Labs CRM</span>
+          <span className="text-xl font-bold text-text-primary">TitanFlow</span>
         </div>
 
         {/* Progress */}

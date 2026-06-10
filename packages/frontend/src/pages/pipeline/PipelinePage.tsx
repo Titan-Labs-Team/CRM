@@ -136,6 +136,7 @@ export function PipelinePage() {
 
   const handleCreateDeal = async (data: {
     title: string; stageId: string; value?: number; expectedClose?: string;
+    contactId?: string; ownerId?: string;
   }) => {
     await createDeal.mutateAsync({
       title: data.title,
@@ -143,6 +144,8 @@ export function PipelinePage() {
       stageId: data.stageId,
       value: data.value,
       expectedClose: data.expectedClose,
+      contactId: data.contactId || undefined,
+      ownerId: data.ownerId || undefined,
     });
     setDealModalOpen(false);
   };

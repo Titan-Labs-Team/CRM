@@ -46,7 +46,7 @@ export function LoginPage() {
       <div className="w-full max-w-sm">
         <div className="flex items-center gap-2 mb-8 justify-center">
           <div className="h-8 w-8 rounded-md bg-accent-green" />
-          <span className="text-xl font-bold text-text-primary">Titan Labs CRM</span>
+          <span className="text-xl font-bold text-text-primary">TitanFlow</span>
         </div>
 
         <div className="card p-6 space-y-5">

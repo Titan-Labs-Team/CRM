@@ -107,7 +107,7 @@ const testimonials = [
   {
     name: 'Rafael Oliveira',
     role: 'Diretor Comercial, Agência Acelera',
-    text: 'Finalmente saímos do WhatsApp e das planilhas. O Titan Labs organizou todo o nosso funil em menos de um dia.',
+    text: 'Finalmente saímos do WhatsApp e das planilhas. O TitanFlow organizou todo o nosso funil em menos de um dia.',
     stars: 5,
   },
   {
@@ -194,7 +194,7 @@ export function LandingPage() {
         <div className="max-w-6xl mx-auto px-6 h-14 flex items-center justify-between">
           <div className="flex items-center gap-2">
             <LogoIcon size={22} />
-            <span className="font-semibold text-sm">Titan Labs</span>
+            <span className="font-semibold text-sm">TitanFlow</span>
           </div>
           <nav className="hidden md:flex items-center gap-6 text-sm text-text-secondary">
             <a href="#features" className="hover:text-text-primary transition-colors">Funcionalidades</a>
@@ -431,20 +431,20 @@ export function LandingPage() {
         <div className="max-w-6xl mx-auto px-6 py-8 flex flex-col md:flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-2">
             <LogoIcon size={18} />
-            <span className="text-sm text-text-secondary">Titan Labs CRM</span>
+            <span className="text-sm text-text-secondary">TitanFlow</span>
           </div>
           <div className="flex items-center gap-6 text-xs text-text-muted">
             <a href="#" className="hover:text-text-secondary transition-colors">Termos de Uso</a>
             <a href="#" className="hover:text-text-secondary transition-colors">Privacidade</a>
             <a href="mailto:contato@titanlabs.com.br" className="hover:text-text-secondary transition-colors">Contato</a>
           </div>
-          <p className="text-xs text-text-muted">© {new Date().getFullYear()} Titan Labs. Todos os direitos reservados.</p>
+          <p className="text-xs text-text-muted">© {new Date().getFullYear()} TitanFlow. Todos os direitos reservados.</p>
         </div>
       </footer>
 
       {/* WhatsApp floating button */}
       <a
-        href="https://wa.me/5511999999999?text=Ol%C3%A1%21+Tenho+uma+d%C3%BAvida+sobre+o+Titan+Labs+CRM."
+        href="https://wa.me/5511999999999?text=Ol%C3%A1%21+Tenho+uma+d%C3%BAvida+sobre+o+TitanFlow."
         target="_blank"
         rel="noopener noreferrer"
         className="fixed bottom-6 right-6 z-50 flex items-center gap-2 bg-[#25D366] hover:bg-[#1ebe5d] text-white px-4 py-3 rounded-full shadow-lg transition-all hover:scale-105 group"
