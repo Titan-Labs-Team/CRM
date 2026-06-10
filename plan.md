@@ -1,4 +1,4 @@
-# Titan Labs CRM — Milestone Plan
+# TitanFlow — Milestone Plan
 
 > Track build progress. Each milestone is a deployable, independently testable increment.
 
@@ -393,3 +393,58 @@ docker compose -f docker-compose.prod.yml exec backend \
 - [ ] Avaliar integração com **Z-API ou Evolution API** para automação de respostas comuns (boas-vindas, link de docs, status de pagamento)
 
 **Arquivo-chave**: `packages/frontend/src/pages/landing/LandingPage.tsx`, `packages/frontend/src/components/layout/AppShell.tsx`
+
+---
+
+## M11 — Rebrand TitanFlow, Kanban Redesign, Deal Lifecycle ✅
+
+> Polimento visual e funcional pós-lançamento: renomear o produto, redesenhar o kanban, corrigir drag & drop e completar o ciclo de vida dos negócios.
+
+---
+
+### T1 — Rebrand para TitanFlow ✅
+
+- [x] Renomear produto de "Titan Labs CRM" para **TitanFlow** em todos os pontos de exibição: browser tab (`index.html`), LoginPage, RegisterPage, OnboardingPage, LandingPage (nav + footer), AppShell (mensagem WhatsApp)
+- [x] Sidebar top-left exibe fixo "TitanFlow" (removido nome dinâmico do tenant)
+
+---
+
+### T2 — Redesign visual do Kanban ✅
+
+- [x] **KanbanColumn**: header card com borda esquerda colorida na cor da etapa; nome da etapa em UPPERCASE + letter-spacing + cor da etapa; valor total abaixo; badge de contagem de deals
+- [x] **KanbanCard**: fundo `bg-surface`; título branco bold; valor em verde grande; nome do contato abaixo; linha separadora + ícone owner (ou "Desconhecido") + data (vermelha se vencida); botões Ganho/Perdido apenas no hover
+- [x] `onWon` / `onLost` passam `(id, title)` para exibir nome do negócio no toast
+
+---
+
+### T3 — Fix drag & drop entre colunas ✅
+
+**Problema**: ao arrastar um card para outra coluna, ele voltava à coluna original após soltar.
+
+**Causa**: `handleDragOver` movia o card otimisticamente em `localStages`; `handleDragEnd` buscava `activeDealStage` em `localStages` (já modificado) e encontrava o card na coluna destino, tratando como reordenação interna em vez de movimentação — o `invalidateQueries` revertia para o estado do servidor.
+
+**Fix**: `dragOriginStageId` (useRef) captura o `stage_id` original no `handleDragStart`; `handleDragEnd` usa esse ref para determinar se é cross-column ou same-column, independentemente do estado atual de `localStages`.
+
+---
+
+### T4 — Scroll horizontal via roda do mouse ✅
+
+- [x] `onWheel` no container do kanban converte `deltaY` em `scrollLeft` — navega entre colunas com a roda do mouse sem precisar da scrollbar horizontal
+
+---
+
+### T5 — Transições de status dos negócios ✅
+
+- [x] Backend: `PATCH /deals/:id/open` — reabre negócio (status='open', limpa `closed_at` e `lost_reason`)
+- [x] Frontend: `useMarkOpen()` hook; `useDeleteDeal()` invalida `['deals']` além de `pipelineKeys.all`
+- [x] `DealDetailPage`: botões contextuais por status — open→(Ganho, Perdido), won→(Reabrir, Marcar como perdido), lost→(Reabrir, Marcar como ganho)
+- [x] Botão "Perdido" usa variante `warning` (laranja); "Excluir" usa `danger` (vermelho) — diferenciação visual
+- [x] Toast com botão "Desfazer" após marcar Ganho/Perdido no kanban — chama `markOpen`
+
+---
+
+### T6 — Exclusão completa de negócios ✅
+
+- [x] Backend: `deleteDeal` roda em transação — deleta `deals` + limpa `audit_logs` (resource_type='deal', resource_id) + `notifications` (resource_id); `activities` cascateia pelo FK `onDelete('CASCADE')`
+- [x] Frontend: modal de confirmação com aviso de irreversibilidade; após excluir redireciona para `/deals`
+- [x] Seta de voltar no `DealDetailPage` usa `navigate(-1)` — volta para onde o usuário veio (pipeline ou lista de negócios)

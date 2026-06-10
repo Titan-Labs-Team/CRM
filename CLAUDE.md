@@ -1,4 +1,4 @@
-# Titan Labs CRM — CLAUDE.md
+# TitanFlow — CLAUDE.md
 
 This file documents everything an AI assistant needs to know to contribute effectively to this project.
 
@@ -6,7 +6,7 @@ This file documents everything an AI assistant needs to know to contribute effec
 
 ## Project Overview
 
-**Titan Labs CRM** is a multi-tenant SaaS CRM for managing leads, contacts, deals, and sales pipelines. Companies sign up and get an isolated workspace. The product replaces scattered tools (WhatsApp, spreadsheets) with a centralized Kanban-first platform.
+**TitanFlow** (formerly Titan Labs CRM) is a multi-tenant SaaS CRM for managing leads, contacts, deals, and sales pipelines. Companies sign up and get an isolated workspace. The product replaces scattered tools (WhatsApp, spreadsheets) with a centralized Kanban-first platform.
 
 **Key personas**: Seller (manages leads/deals), Manager (analytics + team config), Admin (billing + workspace ownership).
 
@@ -259,7 +259,7 @@ See [plan.md](./plan.md) for current progress.
 | M7 — Billing & Premium Tiers | ✅ Done |
 | M8 — Polish, Search, Deployment | ✅ Done |
 
-## Next: M10 (restante)
+## Next: pendências restantes
 
 Ver detalhes completos em [plan.md](./plan.md) — seções M9 e M10.
 
@@ -276,13 +276,19 @@ Ver detalhes completos em [plan.md](./plan.md) — seções M9 e M10.
 | M10 T3 | Botão WhatsApp flutuante (LandingPage + AppShell) | ✅ Done — trocar número em produção |
 | M10 T2 | OAuth Google no cadastro | ✅ Done (código pronto) |
 | M10 T2 | Onboarding pós-cadastro (2 passos) | ✅ Done |
+| M11 T1 | Rebrand para TitanFlow + redesign Kanban | ✅ Done |
+| M11 T2 | Pipeline: fix drag & drop entre colunas | ✅ Done |
+| M11 T3 | Pipeline: scroll horizontal via roda do mouse | ✅ Done |
+| M11 T4 | Deals: transições de status (open↔won↔lost) + toast undo | ✅ Done |
+| M11 T5 | Deals: exclusão com limpeza completa no banco | ✅ Done |
 | M10 T3 | Integração Z-API / Evolution API | 🔲 Pendente |
 | M9 T1 | Webhook Stripe em produção | 🔲 Pendente (aguarda domínio) |
 | M10 T2 | Credenciais Google OAuth em produção | 🔲 Pendente — ver plan.md T2 |
 
 ## Key implementation notes (context for future sessions)
 
-- All 8 milestones complete + M9/M10 mostly done. Latest migration: `20240015_nullable_password_hash`
+- **Produto renomeado para TitanFlow** — browser tab, auth pages, onboarding, landing page e sidebar atualizados; sidebar top-left exibe fixo "TitanFlow" (não mais o nome do tenant)
+- All 8 milestones complete + M9/M10/M11 done. Latest migration: `20240015_nullable_password_hash`
 - `must_change_password` field on `users` — set `true` on invite, cleared on `PATCH /auth/me`
 - `ChangePasswordModal` + `UpgradeModal` mounted in `AppShell` (global)
 - `ErrorBoundary` wraps `<Outlet />` in AppShell — catches all page-level crashes
@@ -306,7 +312,7 @@ Ver detalhes completos em [plan.md](./plan.md) — seções M9 e M10.
 - Webhooks HMAC-signed with `X-Titan-Signature: sha256=<hmac>`
 - `LandingPage` at `src/pages/landing/LandingPage.tsx` — public route `/`, redirects auth'd users to `/dashboard`; WhatsApp floating button (expand-on-hover)
 - `AppShell` has WhatsApp floating button (icon-only, bottom-right) — replace `5511999999999` with real number in prod
-- `useTenant()` hook (`src/hooks/useTenant.ts`) — calls `GET /tenant`, used in Sidebar + Dashboard + ReportsPage
+- `useTenant()` hook (`src/hooks/useTenant.ts`) — calls `GET /tenant`, used in Dashboard + ReportsPage
 - `PipelineSettingsModal` supports inline stage rename: click pencil → edit in place → Enter/✓ confirms, Escape cancels
 - `ContactForm` has `ownerId` field (select from active users via `useUsers()`), mapped to `owner_id` on backend
 - Free plan contact limit: 300 contacts — `contacts.service.ts` checks COUNT before insert, throws 402 with `{ code: 'upgrade_required', requiredPlan: 'starter' }`
@@ -317,7 +323,7 @@ Ver detalhes completos em [plan.md](./plan.md) — seções M9 e M10.
 - **OAuth Google**: `GET /api/v1/auth/google` + `/auth/google/callback` (passport-google-oauth20); only mounted if `GOOGLE_CLIENT_ID` + `GOOGLE_CLIENT_SECRET` are set in `.env`; new users auto-create tenant; `password_hash` is nullable (migration 20240015)
 - `GoogleButton` component at `src/components/auth/GoogleButton.tsx`; shown in LoginPage and RegisterPage
 - `AuthCallbackPage` at `/auth/callback` — reads `accessToken`/`refreshToken`/`isNew` from query string; redirects to `/onboarding` if new user, `/dashboard` if existing
-- `OnboardingPage` at `/onboarding` (ProtectedRoute) — Step 1: create pipeline + 4 default stages (Prospecção, Qualificação, Proposta, Fechamento); Step 2: optional team invite
+- `OnboardingPage` at `/onboarding` (ProtectedRoute) — Step 1: create pipeline + 4 default stages; Step 2: optional team invite
 - **Pending infra tasks**: (1) configure Google OAuth credentials in prod `.env`; (2) configure Stripe webhook URL once domain is set; (3) replace WhatsApp number `5511999999999` in LandingPage + AppShell
 - Docker prod build: both Dockerfiles use `context: .` (repo root) — required for npm workspaces lockfile
 - Backend Dockerfile CMD: `node_modules/.bin/tsx packages/backend/src/server.ts` (run from repo root `/app`)
@@ -326,3 +332,22 @@ Ver detalhes completos em [plan.md](./plan.md) — seções M9 e M10.
 - Dev workflow: use `docker compose up -d` (docker-compose.yml, password: `postgres`) for local DB, then `npm run dev:backend`
 - `packages/backend/.env` DATABASE_URL must use `localhost` (not `db`) when running backend outside Docker
 - `rateLimiter.ts` uses `ipKeyGenerator` from `express-rate-limit` to handle IPv6 addresses correctly
+
+## Kanban / Pipeline — notas críticas (M11)
+
+- **Drag & drop fix**: `dragOriginStageId` (useRef) captura o stage original no `handleDragStart`; `handleDragEnd` usa esse ref em vez de buscar em `localStages` (que já foi modificado pelo `handleDragOver`) — evita que o card reverta para a coluna original
+- **Scroll horizontal**: `onWheel` no container do kanban converte `deltaY` em `scrollLeft` — permite navegar entre colunas com a roda do mouse
+- **KanbanColumn header**: card com `borderLeft` na cor da etapa, nome em uppercase + tracking-widest na cor da etapa, valor total abaixo, badge de contagem
+- **KanbanCard**: título branco bold, valor em verde grande, nome do contato abaixo, linha separadora + owner + data (vermelha se vencida), botões Ganho/Perdido aparecem no hover
+- **`onWon` / `onLost`** assinam `(id: string, title: string) => void` — o title é usado no toast com botão "Desfazer"
+- **Toast com Desfazer**: após marcar Ganho/Perdido no kanban, toast chama `markOpen.mutate(id)` no clique de Desfazer
+
+## Deals — status transitions (M11)
+
+- `PATCH /deals/:id/open` — endpoint de reabertura (sets `status='open'`, limpa `closed_at` e `lost_reason`)
+- `useMarkOpen()` hook em `usePipeline.ts`
+- `useDeleteDeal()` invalida tanto `pipelineKeys.all` (`['pipelines']`) quanto `['deals']` para atualizar `DealsListPage`
+- `DealDetailPage`: botões contextuais por status — open→(Ganho, Perdido), won→(Reabrir, Marcar perdido), lost→(Reabrir, Marcar ganho); botão Excluir sempre visível
+- Botão "Perdido" usa variante `warning` (laranja) do Button; "Excluir" usa `danger` (vermelho)
+- `deleteDeal` no backend roda em transação: deleta deal + limpa `audit_logs` (resource_type='deal') + `notifications` (resource_id=id); `activities` cascateia automaticamente pelo FK
+- `navigate(-1)` na seta de voltar do `DealDetailPage`; exclusão redireciona para `/deals`
