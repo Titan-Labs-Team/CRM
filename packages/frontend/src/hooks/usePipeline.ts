@@ -92,7 +92,7 @@ export function useMarkWon() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: (id: string) => dealsService.markWon(id),
-    onSuccess: () => { qc.invalidateQueries({ queryKey: pipelineKeys.all }); toast.success('Negócio marcado como Ganho!'); },
+    onSuccess: () => { qc.invalidateQueries({ queryKey: pipelineKeys.all }); },
   });
 }
 
@@ -100,7 +100,29 @@ export function useMarkLost() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: ({ id, reason }: { id: string; reason?: string }) => dealsService.markLost(id, reason),
-    onSuccess: () => { qc.invalidateQueries({ queryKey: pipelineKeys.all }); toast.success('Negócio marcado como Perdido'); },
+    onSuccess: () => { qc.invalidateQueries({ queryKey: pipelineKeys.all }); },
+  });
+}
+
+export function useMarkOpen() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) => dealsService.markOpen(id),
+    onSuccess: () => { qc.invalidateQueries({ queryKey: pipelineKeys.all }); toast.success('Negócio reaberto'); },
+    onError: () => toast.error('Erro ao reabrir negócio'),
+  });
+}
+
+export function useDeleteDeal() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) => dealsService.delete(id),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: pipelineKeys.all });
+      qc.invalidateQueries({ queryKey: ['deals'] });
+      toast.success('Negócio excluído');
+    },
+    onError: () => toast.error('Erro ao excluir negócio'),
   });
 }
 

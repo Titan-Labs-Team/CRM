@@ -60,7 +60,7 @@ export function Sidebar({ onClose }: SidebarProps) {
         <div className="flex items-center gap-2 overflow-hidden">
           <LogoIcon size={22} className="flex-shrink-0" />
           {!sidebarCollapsed && (
-            <span className="font-semibold text-sm text-text-primary truncate">{tenant?.name ?? 'Titan Labs'}</span>
+            <span className="font-semibold text-sm text-text-primary truncate">TitanFlow</span>
           )}
         </div>
         <button

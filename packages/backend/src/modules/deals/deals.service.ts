@@ -204,6 +204,18 @@ export async function markLost(tenantId: string, userId: string, id: string, los
   return deal;
 }
 
+export async function markOpen(tenantId: string, userId: string, id: string) {
+  const [deal] = await db('deals')
+    .where({ id, tenant_id: tenantId })
+    .update({ status: 'open', closed_at: null, lost_reason: null, updated_at: new Date() })
+    .returning('*');
+
+  if (!deal) throw Object.assign(new Error('Deal not found'), { status: 404 });
+  await logAudit(tenantId, userId, 'deal.reopened', id);
+  fireWebhook(tenantId, 'deal.reopened', deal).catch(() => {});
+  return deal;
+}
+
 export async function reorderDeals(tenantId: string, stageId: string, dealIds: string[]) {
   await db.transaction(async (trx) => {
     for (let i = 0; i < dealIds.length; i++) {
@@ -252,6 +264,11 @@ export async function exportDealsCsv(tenantId: string): Promise<string> {
 }
 
 export async function deleteDeal(tenantId: string, id: string) {
-  const deleted = await db('deals').where({ id, tenant_id: tenantId }).delete();
-  if (!deleted) throw Object.assign(new Error('Deal not found'), { status: 404 });
+  await db.transaction(async (trx) => {
+    const count = await trx('deals').where({ id, tenant_id: tenantId }).delete();
+    if (!count) throw Object.assign(new Error('Deal not found'), { status: 404 });
+    // Clean up orphaned records that have no FK cascade
+    await trx('audit_logs').where({ tenant_id: tenantId, resource_type: 'deal', resource_id: id }).delete();
+    await trx('notifications').where({ tenant_id: tenantId, resource_id: id }).delete();
+  });
 }

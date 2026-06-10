@@ -78,6 +78,7 @@ export const dealsService = {
   markWon: (id: string) => api.patch(`/deals/${id}/won`).then((r) => r.data.data as Deal),
   markLost: (id: string, lostReason?: string) =>
     api.patch(`/deals/${id}/lost`, { lostReason }).then((r) => r.data.data as Deal),
+  markOpen: (id: string) => api.patch(`/deals/${id}/open`).then((r) => r.data.data as Deal),
   reorder: (stageId: string, dealIds: string[]) =>
     api.post('/deals/reorder', { stageId, dealIds }),
   delete: (id: string) => api.delete(`/deals/${id}`),

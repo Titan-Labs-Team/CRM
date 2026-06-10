@@ -17,5 +17,6 @@ router.delete('/:id', requireAuth, requireRole('manager', 'admin'), DealsControl
 router.patch('/:id/stage', requireAuth, DealsController.moveDeal);
 router.patch('/:id/won', requireAuth, DealsController.markWon);
 router.patch('/:id/lost', requireAuth, DealsController.markLost);
+router.patch('/:id/open', requireAuth, DealsController.markOpen);
 
 export default router;

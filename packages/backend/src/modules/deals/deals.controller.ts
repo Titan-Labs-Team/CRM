@@ -76,6 +76,13 @@ export async function markLost(req: Request, res: Response, next: NextFunction) 
   } catch (err) { next(err); }
 }
 
+export async function markOpen(req: Request, res: Response, next: NextFunction) {
+  try {
+    const data = await DealsService.markOpen(req.user!.tenantId, req.user!.id, req.params.id);
+    res.json({ data });
+  } catch (err) { next(err); }
+}
+
 export async function reorderDeals(req: Request, res: Response, next: NextFunction) {
   try {
     const { stageId, dealIds } = reorderDealsSchema.parse(req.body);

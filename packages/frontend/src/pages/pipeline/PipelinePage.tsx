@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   DndContext,
@@ -13,7 +13,7 @@ import {
 } from '@dnd-kit/core';
 import { arrayMove, SortableContext, horizontalListSortingStrategy } from '@dnd-kit/sortable';
 import { GripVertical, Plus, Settings } from 'lucide-react';
-import { useKanban, usePipelines, useCreateDeal, useMoveDeal, useMarkWon, useMarkLost, useCreatePipeline, useReorderStages } from '@/hooks/usePipeline';
+import { useKanban, usePipelines, useCreateDeal, useMoveDeal, useMarkWon, useMarkLost, useMarkOpen, useCreatePipeline, useReorderStages } from '@/hooks/usePipeline';
 import { useQueryClient } from '@tanstack/react-query';
 import { pipelineKeys } from '@/hooks/usePipeline';
 import { KanbanColumn } from '@/components/kanban/KanbanColumn';
@@ -25,6 +25,7 @@ import { Button } from '@/components/ui/Button';
 import { KanbanSkeleton } from '@/components/ui/Skeleton';
 import type { StageWithDeals, Deal } from '@/services/pipeline.service';
 import { dealsService, pipelineService } from '@/services/pipeline.service';
+import { toast } from 'sonner';
 
 export function PipelinePage() {
   const qc = useQueryClient();
@@ -38,11 +39,15 @@ export function PipelinePage() {
   const [activeStage, setActiveStage] = useState<StageWithDeals | null>(null);
   const [localStages, setLocalStages] = useState<StageWithDeals[]>([]);
 
+  // Track the original stage ID of the deal being dragged (before handleDragOver moves it)
+  const dragOriginStageId = useRef<string | null>(null);
+
   const { data: kanban, isLoading: loadingKanban } = useKanban(activePipelineId);
   const createDeal = useCreateDeal();
   const moveDeal = useMoveDeal();
   const markWon = useMarkWon();
   const markLost = useMarkLost();
+  const markOpen = useMarkOpen();
   const createPipeline = useCreatePipeline();
   const reorderStages = useReorderStages();
 
@@ -63,9 +68,13 @@ export function PipelinePage() {
     if (active.data.current?.type === 'column') {
       const stage = localStages.find((s) => s.id === active.id);
       if (stage) setActiveStage(stage);
+      dragOriginStageId.current = null;
       return;
     }
-    const deal = localStages.flatMap((s) => s.deals).find((d) => d.id === active.id);
+    const originStage = localStages.find((s) => s.deals.some((d) => d.id === active.id));
+    dragOriginStageId.current = originStage?.id ?? null;
+
+    const deal = originStage?.deals.find((d) => d.id === active.id) ?? null;
     if (deal) setActiveDeal(deal);
   };
 
@@ -94,6 +103,7 @@ export function PipelinePage() {
     setActiveStage(null);
     if (!over) return;
 
+    // Column reorder
     if (active.data.current?.type === 'column') {
       if (active.id === over.id) return;
       const oldIdx = localStages.findIndex((s) => s.id === active.id);
@@ -105,28 +115,66 @@ export function PipelinePage() {
       return;
     }
 
-    const activeDealStage = localStages.find((s) => s.deals.some((d) => d.id === active.id));
+    // Use the original stage ID captured at drag start — not the current localStages position
+    // (handleDragOver already moved the deal optimistically, so searching localStages would give
+    // the destination stage instead of the source stage)
+    const originStageId = dragOriginStageId.current;
+    dragOriginStageId.current = null;
+
     const overStage = localStages.find(
       (s) => s.id === over.id || s.deals.some((d) => d.id === over.id),
     );
-    if (!activeDealStage || !overStage) return;
+    if (!originStageId || !overStage) return;
 
-    if (activeDealStage.id === overStage.id) {
-      const oldIdx = activeDealStage.deals.findIndex((d) => d.id === active.id);
-      const newIdx = activeDealStage.deals.findIndex((d) => d.id === over.id);
-      if (oldIdx === newIdx) return;
+    if (originStageId === overStage.id) {
+      // Same-column reorder
+      const stage = localStages.find((s) => s.id === originStageId);
+      if (!stage) return;
+      const oldIdx = stage.deals.findIndex((d) => d.id === active.id);
+      const newIdx = stage.deals.findIndex((d) => d.id === over.id);
+      if (oldIdx === newIdx || newIdx === -1) return;
 
-      const reordered = arrayMove(activeDealStage.deals, oldIdx, newIdx);
+      const reordered = arrayMove(stage.deals, oldIdx, newIdx);
       setLocalStages((prev) =>
-        prev.map((s) => (s.id === activeDealStage.id ? { ...s, deals: reordered } : s)),
+        prev.map((s) => (s.id === originStageId ? { ...s, deals: reordered } : s)),
       );
-      await dealsService.reorder(activeDealStage.id, reordered.map((d) => d.id));
+      await dealsService.reorder(originStageId, reordered.map((d) => d.id));
     } else {
+      // Cross-column move — optimistic state already applied by handleDragOver
       const position = overStage.deals.findIndex((d) => d.id === over.id);
-      await moveDeal.mutateAsync({ id: String(active.id), stageId: overStage.id, position });
+      try {
+        await moveDeal.mutateAsync({ id: String(active.id), stageId: overStage.id, position });
+      } catch {
+        // On error revert to server state
+        qc.invalidateQueries({ queryKey: pipelineKeys.kanban(activePipelineId) });
+      }
     }
+  };
 
-    qc.invalidateQueries({ queryKey: pipelineKeys.kanban(activePipelineId) });
+  const handleMarkWon = (id: string, title: string) => {
+    markWon.mutate(id, {
+      onSuccess: () => {
+        toast.success(`"${title}" marcado como Ganho!`, {
+          action: {
+            label: 'Desfazer',
+            onClick: () => markOpen.mutate(id),
+          },
+        });
+      },
+    });
+  };
+
+  const handleMarkLost = (id: string, title: string) => {
+    markLost.mutate({ id }, {
+      onSuccess: () => {
+        toast.error(`"${title}" marcado como Perdido`, {
+          action: {
+            label: 'Desfazer',
+            onClick: () => markOpen.mutate(id),
+          },
+        });
+      },
+    });
   };
 
   const openDealModal = (stageId: string) => {
@@ -225,15 +273,22 @@ export function PipelinePage() {
           onDragOver={handleDragOver}
           onDragEnd={handleDragEnd}
         >
-          <div className="flex gap-4 overflow-x-auto pb-4 flex-1">
+          <div
+            className="flex gap-4 overflow-x-auto pb-4 flex-1"
+            onWheel={(e) => {
+              if (e.deltaY === 0) return;
+              e.preventDefault();
+              e.currentTarget.scrollLeft += e.deltaY;
+            }}
+          >
             <SortableContext items={localStages.map((s) => s.id)} strategy={horizontalListSortingStrategy}>
               {localStages.map((stage) => (
                 <KanbanColumn
                   key={stage.id}
                   stage={stage}
                   onAddDeal={openDealModal}
-                  onWon={(id) => markWon.mutate(id)}
-                  onLost={(id) => markLost.mutate({ id })}
+                  onWon={(id, title) => handleMarkWon(id, title)}
+                  onLost={(id, title) => handleMarkLost(id, title)}
                   onDealClick={(deal) => navigate(`/deals/${deal.id}`)}
                   isCardDragActive={activeDeal !== null}
                 />

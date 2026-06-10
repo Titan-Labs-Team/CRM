@@ -1,9 +1,9 @@
 import { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Trophy, X, DollarSign, Calendar, User } from 'lucide-react';
-import { useQuery } from '@tanstack/react-query';
+import { ArrowLeft, Trophy, X, DollarSign, Calendar, User, RotateCcw, Trash2 } from 'lucide-react';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { dealsService } from '@/services/pipeline.service';
-import { useMarkWon, useMarkLost } from '@/hooks/usePipeline';
+import { useMarkWon, useMarkLost, useMarkOpen, useDeleteDeal } from '@/hooks/usePipeline';
 import { ActivityTimeline } from '@/components/activities/ActivityTimeline';
 import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
@@ -29,17 +29,25 @@ function formatCurrency(value: number, currency: string) {
 export function DealDetailPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const qc = useQueryClient();
   const [lostModalOpen, setLostModalOpen] = useState(false);
   const [lostReason, setLostReason] = useState('');
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+
+  const dealQueryKey = ['deals', id];
 
   const { data: deal, isLoading } = useQuery({
-    queryKey: ['deals', id],
+    queryKey: dealQueryKey,
     queryFn: () => dealsService.get(id!),
     enabled: !!id,
   });
 
   const markWon = useMarkWon();
   const markLost = useMarkLost();
+  const markOpen = useMarkOpen();
+  const deleteDeal = useDeleteDeal();
+
+  const invalidateDeal = () => qc.invalidateQueries({ queryKey: dealQueryKey });
 
   if (isLoading) {
     return <div className="flex items-center justify-center py-24"><Spinner /></div>;
@@ -53,7 +61,7 @@ export function DealDetailPage() {
     <div className="space-y-6 max-w-4xl">
       <div className="flex items-center gap-3">
         <button
-          onClick={() => navigate('/pipeline')}
+          onClick={() => navigate(-1)}
           className="text-text-muted hover:text-text-primary transition-colors"
         >
           <ArrowLeft size={18} />
@@ -62,24 +70,79 @@ export function DealDetailPage() {
         <Badge variant={statusVariant[deal.status] ?? 'default'}>
           {statusLabel[deal.status] ?? deal.status}
         </Badge>
+
+        {/* Open → can mark Won or Lost */}
         {deal.status === 'open' && (
           <div className="flex gap-2">
             <Button
               size="sm"
               variant="secondary"
-              onClick={() => markWon.mutate(deal.id, { onSuccess: () => navigate('/pipeline') })}
+              onClick={() => markWon.mutate(deal.id, { onSuccess: invalidateDeal })}
+              disabled={markWon.isPending}
             >
               <Trophy size={13} /> Ganho
             </Button>
             <Button
               size="sm"
-              variant="danger"
+              variant="warning"
               onClick={() => setLostModalOpen(true)}
             >
               <X size={13} /> Perdido
             </Button>
           </div>
         )}
+
+        {/* Won → can reopen or mark Lost */}
+        {deal.status === 'won' && (
+          <div className="flex gap-2">
+            <Button
+              size="sm"
+              variant="ghost"
+              onClick={() => markOpen.mutate(deal.id, { onSuccess: invalidateDeal })}
+              disabled={markOpen.isPending}
+            >
+              <RotateCcw size={13} /> Reabrir
+            </Button>
+            <Button
+              size="sm"
+              variant="warning"
+              onClick={() => setLostModalOpen(true)}
+            >
+              <X size={13} /> Marcar como perdido
+            </Button>
+          </div>
+        )}
+
+        {/* Lost → can reopen or mark Won */}
+        {deal.status === 'lost' && (
+          <div className="flex gap-2">
+            <Button
+              size="sm"
+              variant="ghost"
+              onClick={() => markOpen.mutate(deal.id, { onSuccess: invalidateDeal })}
+              disabled={markOpen.isPending}
+            >
+              <RotateCcw size={13} /> Reabrir
+            </Button>
+            <Button
+              size="sm"
+              variant="secondary"
+              onClick={() => markWon.mutate(deal.id, { onSuccess: invalidateDeal })}
+              disabled={markWon.isPending}
+            >
+              <Trophy size={13} /> Marcar como ganho
+            </Button>
+          </div>
+        )}
+
+        {/* Delete — always visible */}
+        <Button
+          size="sm"
+          variant="danger"
+          onClick={() => setDeleteModalOpen(true)}
+        >
+          <Trash2 size={13} /> Excluir
+        </Button>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
@@ -126,6 +189,27 @@ export function DealDetailPage() {
         </div>
       </div>
 
+      {/* Delete confirmation modal */}
+      <Modal open={deleteModalOpen} onClose={() => setDeleteModalOpen(false)} title="Excluir negócio">
+        <div className="space-y-4">
+          <p className="text-sm text-text-secondary">
+            Tem certeza que deseja excluir <span className="font-semibold text-text-primary">"{deal.title}"</span>?
+            Essa ação é irreversível — o negócio, seu histórico de atividades, notificações e registros de auditoria serão removidos permanentemente.
+          </p>
+          <div className="flex gap-2 justify-end">
+            <Button variant="ghost" onClick={() => setDeleteModalOpen(false)}>Cancelar</Button>
+            <Button
+              variant="danger"
+              onClick={() => deleteDeal.mutate(deal.id, { onSuccess: () => navigate('/deals') })}
+              disabled={deleteDeal.isPending}
+            >
+              {deleteDeal.isPending ? 'Excluindo...' : 'Excluir permanentemente'}
+            </Button>
+          </div>
+        </div>
+      </Modal>
+
+      {/* Lost reason modal — used both when marking lost from open and from won */}
       <Modal open={lostModalOpen} onClose={() => setLostModalOpen(false)} title="Marcar como perdido">
         <div className="space-y-4">
           <div className="flex flex-col gap-1">
@@ -145,7 +229,7 @@ export function DealDetailPage() {
               onClick={() => {
                 markLost.mutate(
                   { id: deal.id, reason: lostReason },
-                  { onSuccess: () => { setLostModalOpen(false); navigate('/pipeline'); } },
+                  { onSuccess: () => { setLostModalOpen(false); invalidateDeal(); } },
                 );
               }}
               disabled={markLost.isPending}
@@ -155,7 +239,6 @@ export function DealDetailPage() {
           </div>
         </div>
       </Modal>
-
     </div>
   );
 }
