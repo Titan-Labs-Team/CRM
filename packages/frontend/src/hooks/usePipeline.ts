@@ -74,9 +74,15 @@ export function useCreateDeal() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: dealsService.create,
-    onSuccess: () => { qc.invalidateQueries({ queryKey: pipelineKeys.all }); toast.success('Negócio criado'); },
+    onSuccess: () => { invalidateDeals(qc); toast.success('Negócio criado'); },
     onError: () => toast.error('Erro ao criar negócio'),
   });
+}
+
+function invalidateDeals(qc: ReturnType<typeof useQueryClient>) {
+  qc.invalidateQueries({ queryKey: pipelineKeys.all });
+  qc.invalidateQueries({ queryKey: ['deals'] });
+  qc.invalidateQueries({ queryKey: ['reports'] });
 }
 
 export function useMoveDeal() {
@@ -84,7 +90,7 @@ export function useMoveDeal() {
   return useMutation({
     mutationFn: ({ id, stageId, position }: { id: string; stageId: string; position?: number }) =>
       dealsService.move(id, stageId, position),
-    onSuccess: () => { qc.invalidateQueries({ queryKey: pipelineKeys.all }); },
+    onSuccess: () => { invalidateDeals(qc); },
   });
 }
 
@@ -92,7 +98,7 @@ export function useMarkWon() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: (id: string) => dealsService.markWon(id),
-    onSuccess: () => { qc.invalidateQueries({ queryKey: pipelineKeys.all }); },
+    onSuccess: () => { invalidateDeals(qc); },
   });
 }
 
@@ -100,7 +106,7 @@ export function useMarkLost() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: ({ id, reason }: { id: string; reason?: string }) => dealsService.markLost(id, reason),
-    onSuccess: () => { qc.invalidateQueries({ queryKey: pipelineKeys.all }); },
+    onSuccess: () => { invalidateDeals(qc); },
   });
 }
 
@@ -108,7 +114,7 @@ export function useMarkOpen() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: (id: string) => dealsService.markOpen(id),
-    onSuccess: () => { qc.invalidateQueries({ queryKey: pipelineKeys.all }); toast.success('Negócio reaberto'); },
+    onSuccess: () => { invalidateDeals(qc); toast.success('Negócio reaberto'); },
     onError: () => toast.error('Erro ao reabrir negócio'),
   });
 }
@@ -117,11 +123,7 @@ export function useDeleteDeal() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: (id: string) => dealsService.delete(id),
-    onSuccess: () => {
-      qc.invalidateQueries({ queryKey: pipelineKeys.all });
-      qc.invalidateQueries({ queryKey: ['deals'] });
-      toast.success('Negócio excluído');
-    },
+    onSuccess: () => { invalidateDeals(qc); toast.success('Negócio excluído'); },
     onError: () => toast.error('Erro ao excluir negócio'),
   });
 }
@@ -131,7 +133,7 @@ export function useUpdateDeal() {
   return useMutation({
     mutationFn: ({ id, input }: { id: string; input: Partial<{ title: string; value: number; expectedClose: string }> }) =>
       dealsService.update(id, input),
-    onSuccess: () => { qc.invalidateQueries({ queryKey: pipelineKeys.all }); toast.success('Negócio atualizado'); },
+    onSuccess: () => { invalidateDeals(qc); toast.success('Negócio atualizado'); },
     onError: () => toast.error('Erro ao atualizar negócio'),
   });
 }

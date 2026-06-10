@@ -275,11 +275,6 @@ export function PipelinePage() {
         >
           <div
             className="flex gap-4 overflow-x-auto pb-4 flex-1"
-            onWheel={(e) => {
-              if (e.deltaY === 0) return;
-              e.preventDefault();
-              e.currentTarget.scrollLeft += e.deltaY;
-            }}
           >
             <SortableContext items={localStages.map((s) => s.id)} strategy={horizontalListSortingStrategy}>
               {localStages.map((stage) => (

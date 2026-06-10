@@ -15,7 +15,6 @@ export function useKpis() {
   return useQuery({
     queryKey: reportKeys.kpis,
     queryFn: () => reportsService.getKpis(),
-    staleTime: 5 * 60 * 1000,
   });
 }
 
@@ -23,7 +22,6 @@ export function useFunnel(pipelineId?: string) {
   return useQuery({
     queryKey: reportKeys.funnel(pipelineId),
     queryFn: () => reportsService.getFunnel(pipelineId),
-    staleTime: 5 * 60 * 1000,
   });
 }
 
@@ -31,7 +29,6 @@ export function useRevenue(period: 'week' | 'month' = 'month') {
   return useQuery({
     queryKey: reportKeys.revenue(period),
     queryFn: () => reportsService.getRevenue(period),
-    staleTime: 5 * 60 * 1000,
   });
 }
 
@@ -39,7 +36,6 @@ export function useActivitiesReport(filters?: { userId?: string; from?: string; 
   return useQuery({
     queryKey: reportKeys.activities(filters),
     queryFn: () => reportsService.getActivities(filters),
-    staleTime: 5 * 60 * 1000,
   });
 }
 
@@ -47,6 +43,5 @@ export function useLeaderboard(filters?: { pipelineId?: string; from?: string; t
   return useQuery({
     queryKey: reportKeys.leaderboard(filters),
     queryFn: () => reportsService.getLeaderboard(filters),
-    staleTime: 5 * 60 * 1000,
   });
 }

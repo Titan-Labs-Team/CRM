@@ -180,7 +180,7 @@ export function ReportsPage() {
                 ))}
               </div>
             </div>
-            {revenueLoading ? <div className="flex justify-center py-10"><Spinner /></div> : <RevenueChart data={revenue ?? []} />}
+            {revenueLoading ? <div className="flex justify-center py-10"><Spinner /></div> : <RevenueChart data={revenue ?? []} period={period} />}
           </div>
 
           <div className="card p-5">

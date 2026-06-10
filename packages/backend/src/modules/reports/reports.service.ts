@@ -16,13 +16,13 @@ export async function getActivitiesReport(
     .groupBy('a.type')
     .select('a.type')
     .count('a.id as total')
-    .sum(db.raw("CASE WHEN a.is_done THEN 1 ELSE 0 END as done"));
+    .select(db.raw("SUM(CASE WHEN a.is_done THEN 1 ELSE 0 END) as done"));
 
   const byUser = await base.clone()
     .groupBy('a.owner_id', 'u.full_name')
     .select('a.owner_id', db.raw("u.full_name as owner_name"))
     .count('a.id as total')
-    .sum(db.raw("CASE WHEN a.is_done THEN 1 ELSE 0 END as done"));
+    .select(db.raw("SUM(CASE WHEN a.is_done THEN 1 ELSE 0 END) as done"));
 
   return {
     byType: byType.map((r) => ({

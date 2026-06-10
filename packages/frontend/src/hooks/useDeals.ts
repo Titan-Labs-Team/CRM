@@ -13,6 +13,5 @@ export function useDeals(filters: DealsFilters = {}) {
   return useQuery({
     queryKey: ['deals', 'list', filters],
     queryFn: () => dealsService.list(filters),
-    staleTime: 30 * 1000,
   });
 }
