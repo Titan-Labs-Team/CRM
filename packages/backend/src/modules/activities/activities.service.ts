@@ -1,5 +1,6 @@
 import { db } from '../../db';
 import { getPaginationParams, paginatedResponse } from '../../shared/utils/paginate';
+import { createNotification } from '../notifications/notifications.service';
 import type { CreateActivityInput, UpdateActivityInput, ListActivitiesQuery } from './activities.schema';
 
 export async function listActivities(tenantId: string, query: ListActivitiesQuery) {
@@ -7,12 +8,14 @@ export async function listActivities(tenantId: string, query: ListActivitiesQuer
 
   let base = db('activities as a')
     .leftJoin('users as u', 'a.user_id', 'u.id')
+    .leftJoin('users as assignee', 'a.assignee_id', 'assignee.id')
     .leftJoin('contacts as c', 'a.contact_id', 'c.id')
     .leftJoin('deals as d', 'a.deal_id', 'd.id')
     .where('a.tenant_id', tenantId)
     .select(
       'a.*',
       db.raw("u.full_name as user_name"),
+      db.raw("assignee.full_name as assignee_name"),
       db.raw("c.full_name as contact_name"),
       db.raw("d.title as deal_title"),
     );
@@ -36,8 +39,9 @@ export async function listActivities(tenantId: string, query: ListActivitiesQuer
 export async function getActivity(tenantId: string, id: string) {
   const activity = await db('activities as a')
     .leftJoin('users as u', 'a.user_id', 'u.id')
+    .leftJoin('users as assignee', 'a.assignee_id', 'assignee.id')
     .where({ 'a.id': id, 'a.tenant_id': tenantId })
-    .select('a.*', db.raw("u.full_name as user_name"))
+    .select('a.*', db.raw("u.full_name as user_name"), db.raw("assignee.full_name as assignee_name"))
     .first();
 
   if (!activity) throw Object.assign(new Error('Activity not found'), { status: 404 });
@@ -51,6 +55,7 @@ export async function createActivity(tenantId: string, userId: string, input: Cr
       user_id: userId,
       deal_id: input.dealId ?? null,
       contact_id: input.contactId ?? null,
+      assignee_id: input.assigneeId ?? null,
       type: input.type,
       title: input.title,
       body: input.body ?? null,
@@ -58,10 +63,23 @@ export async function createActivity(tenantId: string, userId: string, input: Cr
     })
     .returning('*');
 
+  // Notify the assignee if different from the creator
+  if (input.assigneeId && input.assigneeId !== userId) {
+    createNotification({
+      tenantId,
+      userId: input.assigneeId,
+      type: 'activity.assigned',
+      title: `Nova atividade atribuída a você: ${input.title}`,
+      body: input.body,
+      resourceType: 'activity',
+      resourceId: activity.id,
+    }).catch(() => {});
+  }
+
   return activity;
 }
 
-export async function updateActivity(tenantId: string, id: string, input: UpdateActivityInput) {
+export async function updateActivity(tenantId: string, userId: string, id: string, input: UpdateActivityInput) {
   const updates: Record<string, unknown> = { updated_at: new Date() };
   if (input.type !== undefined) updates.type = input.type;
   if (input.title !== undefined) updates.title = input.title;
@@ -69,6 +87,7 @@ export async function updateActivity(tenantId: string, id: string, input: Update
   if (input.dueAt !== undefined) updates.due_at = input.dueAt ?? null;
   if (input.dealId !== undefined) updates.deal_id = input.dealId ?? null;
   if (input.contactId !== undefined) updates.contact_id = input.contactId ?? null;
+  if (input.assigneeId !== undefined) updates.assignee_id = input.assigneeId ?? null;
 
   const [activity] = await db('activities')
     .where({ id, tenant_id: tenantId })
@@ -76,6 +95,18 @@ export async function updateActivity(tenantId: string, id: string, input: Update
     .returning('*');
 
   if (!activity) throw Object.assign(new Error('Activity not found'), { status: 404 });
+
+  if (input.assigneeId && input.assigneeId !== userId) {
+    createNotification({
+      tenantId,
+      userId: input.assigneeId,
+      type: 'activity.assigned',
+      title: `Atividade atribuída a você: ${activity.title}`,
+      resourceType: 'activity',
+      resourceId: activity.id,
+    }).catch(() => {});
+  }
+
   return activity;
 }
 

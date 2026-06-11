@@ -8,6 +8,7 @@ import { useNavigate } from 'react-router-dom';
 import { useNotifications } from '@/hooks/useNotifications';
 import { NotificationPanel } from '@/components/notifications/NotificationPanel';
 import { SearchModal } from '@/components/search/SearchModal';
+import { WorkspaceSwitcher } from './WorkspaceSwitcher';
 import { cn } from '@/lib/utils';
 
 export function Topbar() {
@@ -43,14 +44,17 @@ export function Topbar() {
   return (
     <>
       <header className="h-12 flex items-center justify-between px-4 border-b border-bg-border bg-bg-primary">
-        <button
-          onClick={() => setSearchOpen(true)}
-          className="flex items-center gap-2 px-3 py-1.5 rounded-lg border border-bg-border bg-bg-surface text-text-muted hover:text-text-primary hover:border-accent-green/40 transition-colors text-sm"
-        >
-          <Search size={13} />
-          <span className="hidden sm:inline">Buscar...</span>
-          <kbd className="hidden sm:inline text-[10px] border border-bg-border rounded px-1 ml-1">⌘K</kbd>
-        </button>
+        <div className="flex items-center gap-3">
+          <WorkspaceSwitcher />
+          <button
+            onClick={() => setSearchOpen(true)}
+            className="flex items-center gap-2 px-3 py-1.5 rounded-lg border border-bg-border bg-bg-surface text-text-muted hover:text-text-primary hover:border-accent-green/40 transition-colors text-sm"
+          >
+            <Search size={13} />
+            <span className="hidden sm:inline">Buscar...</span>
+            <kbd className="hidden sm:inline text-[10px] border border-bg-border rounded px-1 ml-1">⌘K</kbd>
+          </button>
+        </div>
 
         <div className="flex items-center gap-2">
           <div className="relative">

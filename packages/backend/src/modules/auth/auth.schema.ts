@@ -26,7 +26,12 @@ export const updateMeSchema = z.object({
   password: z.string().min(8).optional(),
 });
 
+export const switchWorkspaceSchema = z.object({
+  tenantId: z.string().uuid(),
+});
+
 export type RegisterInput = z.infer<typeof registerSchema>;
 export type LoginInput = z.infer<typeof loginSchema>;
 export type RefreshInput = z.infer<typeof refreshSchema>;
 export type UpdateMeInput = z.infer<typeof updateMeSchema>;
+export type SwitchWorkspaceInput = z.infer<typeof switchWorkspaceSchema>;

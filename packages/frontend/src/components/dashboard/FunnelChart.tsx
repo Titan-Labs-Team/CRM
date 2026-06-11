@@ -32,6 +32,7 @@ export function FunnelChart({ data }: FunnelChartProps) {
             fontSize: 12,
           }}
           labelStyle={{ color: '#ffffff' }}
+          itemStyle={{ color: '#72d296' }}
           formatter={(v: number) => [v, 'Negócios']}
           cursor={{ fill: 'rgba(255,255,255,0.03)' }}
         />

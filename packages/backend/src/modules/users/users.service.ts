@@ -49,6 +49,11 @@ export async function inviteUser(tenantId: string, input: z.infer<typeof inviteU
     })
     .returning(['id', 'email', 'full_name', 'role', 'created_at']);
 
+  await db('user_tenants')
+    .insert({ user_id: user.id, tenant_id: tenantId, role: input.role })
+    .onConflict(['user_id', 'tenant_id'])
+    .ignore();
+
   if (env.RESEND_API_KEY) {
     const { Resend } = await import('resend');
     const resend = new Resend(env.RESEND_API_KEY);

@@ -3,6 +3,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { Input } from '@/components/ui/Input';
 import { Button } from '@/components/ui/Button';
+import { useUsers } from '@/hooks/useUsers';
 import type { CreateActivityInput, Activity } from '@/services/activities.service';
 
 const schema = z.object({
@@ -10,6 +11,7 @@ const schema = z.object({
   title: z.string().min(1, 'Título obrigatório'),
   body: z.string().optional(),
   dueAt: z.string().optional(),
+  assigneeId: z.string().optional(),
 });
 
 type FormData = z.infer<typeof schema>;
@@ -33,6 +35,9 @@ const typeOptions = [
 
 export function ActivityForm({ dealId, contactId, defaultValues, onSubmit, onCancel, isSubmitting }: ActivityFormProps) {
   const isEditing = !!defaultValues?.id;
+  const { data: usersData } = useUsers();
+  const users = usersData?.data ?? [];
+
   const { register, handleSubmit, formState: { errors } } = useForm<FormData>({
     resolver: zodResolver(schema),
     defaultValues: {
@@ -40,6 +45,7 @@ export function ActivityForm({ dealId, contactId, defaultValues, onSubmit, onCan
       title: defaultValues?.title ?? '',
       body: defaultValues?.body ?? '',
       dueAt: defaultValues?.due_at ? defaultValues.due_at.slice(0, 16) : '',
+      assigneeId: defaultValues?.assignee_id ?? '',
     },
   });
 
@@ -49,6 +55,7 @@ export function ActivityForm({ dealId, contactId, defaultValues, onSubmit, onCan
       title: data.title,
       body: data.body,
       dueAt: data.dueAt || undefined,
+      assigneeId: data.assigneeId || undefined,
       dealId,
       contactId,
     });
@@ -81,6 +88,17 @@ export function ActivityForm({ dealId, contactId, defaultValues, onSubmit, onCan
           rows={3}
           placeholder="Detalhes da atividade..."
         />
+      </div>
+
+      <div className="flex flex-col gap-1">
+        <label className="text-xs font-medium text-text-secondary">Responsável</label>
+        <select {...register('assigneeId')} className="input-base">
+          <option value="">— Sem responsável</option>
+          {users.map((u) => (
+            <option key={u.id} value={u.id}>{u.full_name}</option>
+          ))}
+        </select>
+        <p className="text-[11px] text-text-muted">O responsável receberá uma notificação.</p>
       </div>
 
       <Input

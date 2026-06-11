@@ -82,6 +82,11 @@ export async function handleGoogleUser(profile: {
     })
     .returning('*');
 
+  await db('user_tenants')
+    .insert({ user_id: user.id, tenant_id: tenant.id, role: user.role })
+    .onConflict(['user_id', 'tenant_id'])
+    .ignore();
+
   const accessToken = await signAccessToken(user.id, tenant.id, user.role, user.email);
   const refreshToken = await signRefreshToken(user.id);
   const { password_hash, ...safeUser } = user;

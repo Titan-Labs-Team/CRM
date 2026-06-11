@@ -54,6 +54,11 @@ export async function register(input: RegisterInput) {
     })
     .returning('*');
 
+  await db('user_tenants')
+    .insert({ user_id: user.id, tenant_id: tenant.id, role: user.role })
+    .onConflict(['user_id', 'tenant_id'])
+    .ignore();
+
   const accessToken = await signAccessToken(user.id, tenant.id, user.role, user.email);
   const refreshToken = await signRefreshToken(user.id);
 
@@ -116,6 +121,32 @@ export async function updateMe(userId: string, input: UpdateMeInput) {
 
   const [user] = await db('users').where({ id: userId }).update(updates).returning('*');
   return sanitizeUser(user);
+}
+
+export async function listWorkspaces(userId: string) {
+  return db('user_tenants as ut')
+    .join('tenants as t', 'ut.tenant_id', 't.id')
+    .where('ut.user_id', userId)
+    .orderBy('t.name', 'asc')
+    .select('t.id', 't.name', 't.slug', 't.plan', 'ut.role');
+}
+
+export async function switchWorkspace(userId: string, tenantId: string) {
+  const membership = await db('user_tenants')
+    .where({ user_id: userId, tenant_id: tenantId })
+    .first();
+
+  if (!membership) throw Object.assign(new Error('No access to this workspace'), { status: 403 });
+
+  const user = await db('users').where({ id: userId, is_active: true }).first();
+  if (!user) throw Object.assign(new Error('User not found'), { status: 404 });
+
+  const accessToken = await signAccessToken(userId, tenantId, membership.role, user.email);
+  const refreshToken = await signRefreshToken(userId);
+
+  const tenant = await db('tenants').where({ id: tenantId }).first();
+
+  return { accessToken, refreshToken, tenantId, tenantName: tenant.name };
 }
 
 function sanitizeUser(user: Record<string, unknown>) {

@@ -28,7 +28,7 @@ export async function createActivity(req: Request, res: Response, next: NextFunc
 export async function updateActivity(req: Request, res: Response, next: NextFunction) {
   try {
     const input = updateActivitySchema.parse(req.body);
-    const data = await ActivitiesService.updateActivity(req.user!.tenantId, req.params.id, input);
+    const data = await ActivitiesService.updateActivity(req.user!.tenantId, req.user!.id, req.params.id, input);
     res.json({ data });
   } catch (err) { next(err); }
 }

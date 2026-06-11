@@ -451,6 +451,53 @@ docker compose -f docker-compose.prod.yml exec backend \
 
 ---
 
+## M13 — Multi-Workspace, UX Fixes e Atividades com Responsável
+
+> Melhorias de produto identificadas no uso: suporte a múltiplos workspaces por usuário, correção de cor no gráfico funil, edição de responsável no negócio e campo de responsável em atividades com notificação.
+
+### T1 — Workspace Switcher (multi-workspace por usuário) ✅
+
+- [x] Migration `20240018_create_user_tenants`: tabela pivot `user_tenants` (user_id, tenant_id, role) + migração dos dados existentes
+- [x] Backend: `GET /auth/workspaces` — lista workspaces do usuário autenticado
+- [x] Backend: `POST /auth/switch-workspace` — emite novo access+refresh token com `tenantId` diferente, valida membership na pivot
+- [x] `inviteUser` e `register` inserem registro em `user_tenants` automaticamente
+- [x] Frontend: `WorkspaceSwitcher` component (Topbar, dropdown com nome/plano/role de cada workspace)
+- [x] Troca de workspace limpa o cache do TanStack Query (`qc.clear()`) para recarregar dados do novo tenant
+
+**Arquivo-chave**: `packages/backend/src/modules/auth/auth.service.ts`, `packages/frontend/src/components/layout/WorkspaceSwitcher.tsx`
+
+---
+
+### T2 — FunnelChart: cor do tooltip ✅
+
+- [x] `itemStyle: { color: '#72d296' }` adicionado ao `<Tooltip>` — valor dos negócios agora exibe em verde em vez de preto ilegível
+
+**Arquivo-chave**: `packages/frontend/src/components/dashboard/FunnelChart.tsx`
+
+---
+
+### T3 — DealDetailPage: responsável editável ✅
+
+- [x] Campo "Responsável" no painel de detalhes do negócio com edição inline (lápis → select → confirmar/cancelar)
+- [x] Usa `useUpdateDeal()` com `ownerId` via `PATCH /deals/:id` (backend já suportava)
+- [x] `dealsService.update` e `useUpdateDeal` expandidos para aceitar `ownerId` e `contactId`
+
+**Arquivo-chave**: `packages/frontend/src/pages/deals/DealDetailPage.tsx`
+
+---
+
+### T4 — Atividades: campo de responsável com notificação ✅
+
+- [x] Migration `20240019_add_assignee_to_activities`: coluna `assignee_id` (FK → users, SET NULL)
+- [x] Backend schema, service e controller atualizados: `assignee_id` persistido no create/update
+- [x] Notificação disparada para o responsável ao criar/atualizar atividade com assignee diferente do criador
+- [x] `ActivityForm`: campo "Responsável" (select de usuários ativos) com hint de notificação
+- [x] `ActivityTimeline`: exibe "resp: NomeDoResponsável" em verde quando diferente do criador
+
+**Arquivo-chave**: `packages/backend/src/modules/activities/activities.service.ts`, `packages/frontend/src/components/activities/ActivityForm.tsx`
+
+---
+
 ## M12 — Bugfixes, Cache e Qualidade ✅
 
 > Correções de bugs encontrados no uso real e ajustes de qualidade pós-deploy.

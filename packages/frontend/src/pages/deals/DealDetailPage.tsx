@@ -1,9 +1,10 @@
 import { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Trophy, X, DollarSign, Calendar, User, RotateCcw, Trash2 } from 'lucide-react';
+import { ArrowLeft, Trophy, X, DollarSign, Calendar, User, RotateCcw, Trash2, Pencil, Check } from 'lucide-react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { dealsService } from '@/services/pipeline.service';
-import { useMarkWon, useMarkLost, useMarkOpen, useDeleteDeal } from '@/hooks/usePipeline';
+import { useMarkWon, useMarkLost, useMarkOpen, useDeleteDeal, useUpdateDeal } from '@/hooks/usePipeline';
+import { useUsers } from '@/hooks/useUsers';
 import { ActivityTimeline } from '@/components/activities/ActivityTimeline';
 import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
@@ -33,6 +34,8 @@ export function DealDetailPage() {
   const [lostModalOpen, setLostModalOpen] = useState(false);
   const [lostReason, setLostReason] = useState('');
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+  const [editingOwner, setEditingOwner] = useState(false);
+  const [pendingOwnerId, setPendingOwnerId] = useState<string>('');
 
   const dealQueryKey = ['deals', id];
 
@@ -46,8 +49,18 @@ export function DealDetailPage() {
   const markLost = useMarkLost();
   const markOpen = useMarkOpen();
   const deleteDeal = useDeleteDeal();
+  const updateDeal = useUpdateDeal();
+  const { data: usersData } = useUsers();
+  const users = usersData?.data ?? [];
 
   const invalidateDeal = () => qc.invalidateQueries({ queryKey: dealQueryKey });
+
+  const handleOwnerSave = () => {
+    updateDeal.mutate(
+      { id: deal!.id, input: { ownerId: pendingOwnerId || null } },
+      { onSuccess: () => { invalidateDeal(); setEditingOwner(false); } },
+    );
+  };
 
   if (isLoading) {
     return <div className="flex items-center justify-center py-24"><Spinner /></div>;
@@ -171,12 +184,49 @@ export function DealDetailPage() {
               </div>
             )}
 
-            {deal.owner_name && (
-              <div className="flex items-center gap-2 text-text-secondary">
-                <User size={14} className="text-text-muted flex-shrink-0" />
-                <span>Responsável: {deal.owner_name}</span>
-              </div>
-            )}
+            <div className="flex items-start gap-2 text-text-secondary">
+              <User size={14} className="text-text-muted flex-shrink-0 mt-0.5" />
+              {editingOwner ? (
+                <div className="flex items-center gap-1.5 flex-1">
+                  <select
+                    className="input-base flex-1 text-sm py-0.5 h-7"
+                    value={pendingOwnerId}
+                    onChange={(e) => setPendingOwnerId(e.target.value)}
+                    autoFocus
+                  >
+                    <option value="">— Sem responsável</option>
+                    {users.map((u) => (
+                      <option key={u.id} value={u.id}>{u.full_name}</option>
+                    ))}
+                  </select>
+                  <button
+                    onClick={handleOwnerSave}
+                    disabled={updateDeal.isPending}
+                    className="p-1 rounded text-accent-green hover:bg-accent-green/10 transition-colors"
+                  >
+                    <Check size={13} />
+                  </button>
+                  <button
+                    onClick={() => setEditingOwner(false)}
+                    className="p-1 rounded text-text-muted hover:text-text-primary hover:bg-bg-border transition-colors"
+                  >
+                    <X size={13} />
+                  </button>
+                </div>
+              ) : (
+                <div className="flex items-center gap-1.5 flex-1 group">
+                  <span className="text-sm">
+                    {deal.owner_name ? `Responsável: ${deal.owner_name}` : 'Sem responsável'}
+                  </span>
+                  <button
+                    onClick={() => { setPendingOwnerId(deal.owner_id ?? ''); setEditingOwner(true); }}
+                    className="opacity-0 group-hover:opacity-100 p-0.5 rounded text-text-muted hover:text-accent-green transition-all"
+                  >
+                    <Pencil size={11} />
+                  </button>
+                </div>
+              )}
+            </div>
           </div>
 
           <div className="pt-2 border-t border-bg-border text-xs text-text-muted space-y-1">

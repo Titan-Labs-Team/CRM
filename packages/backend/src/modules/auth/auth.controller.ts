@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import * as AuthService from './auth.service';
-import { registerSchema, loginSchema, refreshSchema, updateMeSchema } from './auth.schema';
+import { registerSchema, loginSchema, refreshSchema, updateMeSchema, switchWorkspaceSchema } from './auth.schema';
 
 export async function register(req: Request, res: Response, next: NextFunction) {
   try {
@@ -56,6 +56,25 @@ export async function updateMe(req: Request, res: Response, next: NextFunction) 
     const input = updateMeSchema.parse(req.body);
     const user = await AuthService.updateMe(req.user!.id, input);
     res.json({ data: user });
+  } catch (err) {
+    next(err);
+  }
+}
+
+export async function listWorkspaces(req: Request, res: Response, next: NextFunction) {
+  try {
+    const workspaces = await AuthService.listWorkspaces(req.user!.id);
+    res.json({ data: workspaces });
+  } catch (err) {
+    next(err);
+  }
+}
+
+export async function switchWorkspace(req: Request, res: Response, next: NextFunction) {
+  try {
+    const { tenantId } = switchWorkspaceSchema.parse(req.body);
+    const result = await AuthService.switchWorkspace(req.user!.id, tenantId);
+    res.json({ data: result });
   } catch (err) {
     next(err);
   }

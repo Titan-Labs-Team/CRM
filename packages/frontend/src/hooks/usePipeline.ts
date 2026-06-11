@@ -131,7 +131,7 @@ export function useDeleteDeal() {
 export function useUpdateDeal() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: ({ id, input }: { id: string; input: Partial<{ title: string; value: number; expectedClose: string }> }) =>
+    mutationFn: ({ id, input }: { id: string; input: Partial<{ title: string; value: number; expectedClose: string; ownerId: string | null; contactId: string | null }> }) =>
       dealsService.update(id, input),
     onSuccess: () => { invalidateDeals(qc); toast.success('Negócio atualizado'); },
     onError: () => toast.error('Erro ao atualizar negócio'),

@@ -6,6 +6,7 @@ export interface Activity {
   deal_id: string | null;
   contact_id: string | null;
   user_id: string;
+  assignee_id: string | null;
   type: 'note' | 'call' | 'email' | 'meeting' | 'task';
   title: string;
   body: string | null;
@@ -14,6 +15,7 @@ export interface Activity {
   created_at: string;
   updated_at: string;
   user_name: string;
+  assignee_name: string | null;
   contact_name: string | null;
   deal_title: string | null;
 }
@@ -21,6 +23,7 @@ export interface Activity {
 export interface CreateActivityInput {
   dealId?: string;
   contactId?: string;
+  assigneeId?: string;
   type: Activity['type'];
   title: string;
   body?: string;

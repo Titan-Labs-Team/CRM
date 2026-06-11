@@ -85,8 +85,11 @@ export function ActivityTimeline({ dealId, contactId }: ActivityTimelineProps) {
                   <p className="text-xs text-text-secondary mt-0.5 line-clamp-2">{a.body}</p>
                 )}
                 <p className="text-xs text-text-muted mt-1">
-                  {typeLabel[a.type]} · {a.user_name} ·{' '}
-                  {new Date(a.created_at).toLocaleDateString('pt-BR')}
+                  {typeLabel[a.type]} · criado por {a.user_name}
+                  {a.assignee_name && a.assignee_name !== a.user_name && (
+                    <span className="text-accent-green"> · resp: {a.assignee_name}</span>
+                  )}
+                  {' · '}{new Date(a.created_at).toLocaleDateString('pt-BR')}
                 </p>
               </div>
 

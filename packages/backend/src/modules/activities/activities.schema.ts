@@ -3,6 +3,7 @@ import { z } from 'zod';
 export const createActivitySchema = z.object({
   dealId: z.string().uuid().optional(),
   contactId: z.string().uuid().optional(),
+  assigneeId: z.string().uuid().optional(),
   type: z.enum(['note', 'call', 'email', 'meeting', 'task']),
   title: z.string().min(1),
   body: z.string().optional(),

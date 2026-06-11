@@ -281,6 +281,10 @@ Ver detalhes completos em [plan.md](./plan.md) — seções M9 e M10.
 | M11 T3 | Pipeline: scroll horizontal via roda do mouse | ✅ Done |
 | M11 T4 | Deals: transições de status (open↔won↔lost) + toast undo | ✅ Done |
 | M11 T5 | Deals: exclusão com limpeza completa no banco | ✅ Done |
+| M13 T1 | Multi-workspace: `user_tenants` pivot + workspace switcher no Topbar | ✅ Done |
+| M13 T2 | FunnelChart tooltip: cor verde (`#72d296`) | ✅ Done |
+| M13 T3 | DealDetailPage: responsável editável inline | ✅ Done |
+| M13 T4 | Atividades: campo assignee + notificação ao responsável | ✅ Done |
 | M10 T3 | Integração Z-API / Evolution API | 🔲 Pendente |
 | M9 T1 | Webhook Stripe em produção | 🔲 Pendente (aguarda domínio) |
 | M10 T2 | Credenciais Google OAuth em produção | 🔲 Pendente — ver plan.md T2 |
@@ -288,7 +292,10 @@ Ver detalhes completos em [plan.md](./plan.md) — seções M9 e M10.
 ## Key implementation notes (context for future sessions)
 
 - **Produto renomeado para TitanFlow** — browser tab, auth pages, onboarding, landing page e sidebar atualizados; sidebar top-left exibe fixo "TitanFlow" (não mais o nome do tenant)
-- All 8 milestones complete + M9/M10/M11 done. Latest migration: `20240015_nullable_password_hash`
+- All 8 milestones complete + M9/M10/M11/M12/M13 done. Latest migrations: `20240018_create_user_tenants`, `20240019_add_assignee_to_activities`
+- **Multi-workspace**: tabela `user_tenants` (pivot user↔tenant com role). `GET /auth/workspaces` + `POST /auth/switch-workspace` emitem novos tokens para o tenant selecionado. `WorkspaceSwitcher` no Topbar lista workspaces e troca com `qc.clear()`. `register` e `inviteUser` inserem automaticamente em `user_tenants`.
+- **Atividades com responsável**: coluna `assignee_id` em `activities` (FK → users, SET NULL). `ActivityForm` tem select "Responsável" — ao salvar, notificação é disparada para o assignee se diferente do criador. `ActivityTimeline` exibe "resp: Nome" em verde.
+- **Deal responsável editável**: `DealDetailPage` tem inline edit do owner (hover → lápis → select → check/cancel) via `useUpdateDeal({ ownerId })`.
 - `must_change_password` field on `users` — set `true` on invite, cleared on `PATCH /auth/me`
 - `ChangePasswordModal` + `UpgradeModal` mounted in `AppShell` (global)
 - `ErrorBoundary` wraps `<Outlet />` in AppShell — catches all page-level crashes

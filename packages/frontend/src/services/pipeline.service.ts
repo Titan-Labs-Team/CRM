@@ -71,7 +71,7 @@ export const dealsService = {
     title: string; pipelineId: string; stageId: string;
     contactId?: string; ownerId?: string; value?: number; expectedClose?: string;
   }) => api.post('/deals', input).then((r) => r.data.data as Deal),
-  update: (id: string, input: Partial<{ title: string; value: number; expectedClose: string }>) =>
+  update: (id: string, input: Partial<{ title: string; value: number; expectedClose: string; ownerId: string | null; contactId: string | null }>) =>
     api.patch(`/deals/${id}`, input).then((r) => r.data.data as Deal),
   move: (id: string, stageId: string, position?: number) =>
     api.patch(`/deals/${id}/stage`, { stageId, position }).then((r) => r.data.data as Deal),
