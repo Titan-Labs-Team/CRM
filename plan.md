@@ -448,3 +448,35 @@ docker compose -f docker-compose.prod.yml exec backend \
 - [x] Backend: `deleteDeal` roda em transação — deleta `deals` + limpa `audit_logs` (resource_type='deal', resource_id) + `notifications` (resource_id); `activities` cascateia pelo FK `onDelete('CASCADE')`
 - [x] Frontend: modal de confirmação com aviso de irreversibilidade; após excluir redireciona para `/deals`
 - [x] Seta de voltar no `DealDetailPage` usa `navigate(-1)` — volta para onde o usuário veio (pipeline ou lista de negócios)
+
+---
+
+## M12 — Bugfixes, Cache e Qualidade ✅
+
+> Correções de bugs encontrados no uso real e ajustes de qualidade pós-deploy.
+
+### T1 — Cache e reatividade entre rotas ✅
+- [x] `queryClient`: `staleTime: 0` + `refetchOnWindowFocus: true` — dados sempre frescos ao navegar entre rotas (antes ficavam em cache por até 5 min)
+- [x] `usePipeline`: helper `invalidateDeals()` invalida `['pipelines']` + `['deals']` + `['reports']` em todas as mutations de deal (move, markWon, markLost, markOpen, delete, create, update) — gráficos e dashboard atualizam imediatamente sem F5
+- [x] Removidos `staleTime` individuais redundantes de `useReports`, `useDeals`, `useTenant`
+
+### T2 — Gráfico de receita redesenhado ✅
+- [x] `RevenueChart`: substituído `AreaChart` por `ComposedChart` (barras + linha de tendência tracejada)
+- [x] YAxis visível com valores formatados em compact (R$120k)
+- [x] Tooltip rico: valor completo + quantidade de negócios fechados no período
+- [x] Barra do mês/semana de maior receita destacada em verde vivo; demais em verde escuro
+- [x] Modo semanal usa label `dd/MM` em vez de número de semana
+
+### T3 — Bugfixes backend ✅
+- [x] `rateLimiter`: usar `ipKeyGenerator` do `express-rate-limit` — corrige `ERR_ERL_KEY_GEN_IPV6` (IPv6 bypass)
+- [x] `reports.service`: fix SQL — `SUM(CASE WHEN a.is_done THEN 1 ELSE 0 END) as done` com alias fora da função (erro de sintaxe PostgreSQL `42601`)
+
+### T4 — Remoção de scroll horizontal por roda do mouse no Pipeline ✅
+- [x] `PipelinePage`: removido `onWheel` que convertia scroll vertical em horizontal — comportamento confuso
+
+### T5 — Fix build Vercel (TypeScript errors) ✅
+- [x] `DealForm`: removido `watch` não utilizado; parâmetro `c` no `.map()` tipado explicitamente
+- [x] `Sidebar`: removida variável `tenant` declarada mas não utilizada
+
+### T6 — Seed limpo ✅
+- [x] `01_dev_seed.ts`: removidos todos os dados mockados; seed agora apenas limpa as tabelas na ordem correta (respeitando FK constraints)
