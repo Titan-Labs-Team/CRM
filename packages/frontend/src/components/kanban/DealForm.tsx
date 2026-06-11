@@ -29,7 +29,7 @@ interface DealFormProps {
 }
 
 export function DealForm({ stages, defaultStageId, onSubmit, onCancel, isSubmitting }: DealFormProps) {
-  const { register, handleSubmit, setValue, watch, formState: { errors } } = useForm<FormData>({
+  const { register, handleSubmit, setValue, formState: { errors } } = useForm<FormData>({
     resolver: zodResolver(schema),
     defaultValues: { stageId: defaultStageId ?? stages[0]?.id, value: 0 },
   });
@@ -118,7 +118,7 @@ export function DealForm({ stages, defaultStageId, onSubmit, onCancel, isSubmitt
                 {contacts.length === 0 ? (
                   <p className="px-3 py-2 text-xs text-text-muted">Nenhum contato encontrado</p>
                 ) : (
-                  contacts.map((c) => (
+                  contacts.map((c: { id: string; full_name: string; company_name?: string; type: 'lead' | 'contact' | 'client' }) => (
                     <button
                       key={c.id}
                       type="button"

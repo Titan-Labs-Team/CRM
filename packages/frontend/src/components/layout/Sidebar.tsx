@@ -44,7 +44,7 @@ export function Sidebar({ onClose }: SidebarProps) {
   const { sidebarCollapsed, toggleSidebar } = useUIStore();
   const { user } = useAuthStore();
   const { data: billing } = useBilling();
-  const { data: tenant } = useTenant();
+  useTenant();
   const plan = billing?.plan ?? 'free';
   const planBadge = PLAN_BADGE[plan] ?? PLAN_BADGE.free;
 
