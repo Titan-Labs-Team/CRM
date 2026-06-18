@@ -4,7 +4,7 @@ import { useCreateStage, useDeleteStage, useUpdateStage } from '@/hooks/usePipel
 import { Button } from '@/components/ui/Button';
 import { Modal } from '@/components/ui/Modal';
 import { Input } from '@/components/ui/Input';
-import type { StageWithDeals } from '@/services/pipeline.service';
+import type { StageMeta } from '@/services/pipeline.service';
 import { toast } from 'sonner';
 
 const STAGE_COLORS = [
@@ -23,7 +23,7 @@ interface PipelineSettingsModalProps {
   onClose: () => void;
   pipelineId: string;
   pipelineName: string;
-  stages: StageWithDeals[];
+  stages: StageMeta[];
 }
 
 export function PipelineSettingsModal({
@@ -112,9 +112,9 @@ export function PipelineSettingsModal({
                 ) : (
                   <span className="text-text-primary text-sm flex-1">{s.name}</span>
                 )}
-                {s.deals.length > 0 && editingStageId !== s.id && (
+                {s.dealCount > 0 && editingStageId !== s.id && (
                   <span className="text-xs text-text-muted">
-                    {s.deals.length} negócio{s.deals.length !== 1 ? 's' : ''}
+                    {s.dealCount} negócio{s.dealCount !== 1 ? 's' : ''}
                   </span>
                 )}
                 {editingStageId === s.id ? (
@@ -145,7 +145,7 @@ export function PipelineSettingsModal({
                       <Pencil size={13} />
                     </button>
                     <button
-                      onClick={() => handleDelete(s.id, s.deals.length)}
+                      onClick={() => handleDelete(s.id, s.dealCount)}
                       className="p-1 rounded text-text-muted hover:text-status-lost hover:bg-status-lost/10 transition-colors"
                       title="Remover etapa"
                     >

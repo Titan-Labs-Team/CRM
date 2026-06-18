@@ -17,9 +17,22 @@ export interface Stage {
   probability: number;
 }
 
+export interface StageMeta extends Stage {
+  dealCount: number;
+  totalValue: number;
+}
+
 export interface StageWithDeals extends Stage {
   deals: Deal[];
   totalValue: number;
+}
+
+export interface StageDealsPage {
+  deals: Deal[];
+  page: number;
+  limit: number;
+  total: number;
+  hasMore: boolean;
 }
 
 export interface Deal {
@@ -60,7 +73,10 @@ export const pipelineService = {
     api.post(`/pipelines/${pipelineId}/stages/reorder`, { stageIds }),
 
   getKanban: (pipelineId: string) =>
-    api.get('/deals/kanban', { params: { pipeline: pipelineId } }).then((r) => r.data.data as StageWithDeals[]),
+    api.get('/deals/kanban', { params: { pipeline: pipelineId } }).then((r) => r.data.data as StageMeta[]),
+
+  getStageDeals: (stageId: string, page: number) =>
+    api.get(`/deals/kanban-stage/${stageId}`, { params: { page } }).then((r) => r.data.data as StageDealsPage),
 };
 
 export interface DealsListParams {
