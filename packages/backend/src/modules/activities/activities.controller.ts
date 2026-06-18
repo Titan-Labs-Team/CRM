@@ -46,3 +46,12 @@ export async function deleteActivity(req: Request, res: Response, next: NextFunc
     res.status(204).send();
   } catch (err) { next(err); }
 }
+
+export async function exportActivities(req: Request, res: Response, next: NextFunction) {
+  try {
+    const csv = await ActivitiesService.exportActivitiesCsv(req.user!.tenantId);
+    res.setHeader('Content-Type', 'text/csv');
+    res.setHeader('Content-Disposition', 'attachment; filename="activities.csv"');
+    res.send(csv);
+  } catch (err) { next(err); }
+}
