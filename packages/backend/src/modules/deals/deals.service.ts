@@ -67,13 +67,27 @@ export async function listDeals(tenantId: string, query: ListDealsQuery) {
   if (query.stage) base = base.where('d.stage_id', query.stage);
   if (query.status) base = base.where('d.status', query.status);
   if (query.owner) base = base.where('d.owner_id', query.owner);
+  if (query.q) {
+    const term = `%${query.q}%`;
+    base = base.where((b) =>
+      b.whereILike('d.title', term).orWhereILike('c.full_name', term),
+    );
+  }
 
-  const countQ = db('deals').where('tenant_id', tenantId);
-  if (query.pipeline) countQ.where('pipeline_id', query.pipeline);
-  if (query.stage) countQ.where('stage_id', query.stage);
-  if (query.status) countQ.where('status', query.status);
-  if (query.owner) countQ.where('owner_id', query.owner);
-  const [{ count }] = await countQ.count('id as count');
+  const countQ = db('deals as d')
+    .leftJoin('contacts as c', 'd.contact_id', 'c.id')
+    .where('d.tenant_id', tenantId);
+  if (query.pipeline) countQ.where('d.pipeline_id', query.pipeline);
+  if (query.stage) countQ.where('d.stage_id', query.stage);
+  if (query.status) countQ.where('d.status', query.status);
+  if (query.owner) countQ.where('d.owner_id', query.owner);
+  if (query.q) {
+    const term = `%${query.q}%`;
+    countQ.where((b) =>
+      b.whereILike('d.title', term).orWhereILike('c.full_name', term),
+    );
+  }
+  const [{ count }] = await countQ.count('d.id as count');
 
   const deals = await base.orderBy('d.created_at', 'desc').limit(limit).offset(offset);
   return paginatedResponse(deals, Number(count), page, limit);

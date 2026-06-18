@@ -63,8 +63,16 @@ export const pipelineService = {
     api.get('/deals/kanban', { params: { pipeline: pipelineId } }).then((r) => r.data.data as StageWithDeals[]),
 };
 
+export interface DealsListParams {
+  status?: 'open' | 'won' | 'lost';
+  pipeline?: string;
+  q?: string;
+  page?: number;
+  limit?: number;
+}
+
 export const dealsService = {
-  list: (params?: Record<string, unknown>) =>
+  list: (params?: DealsListParams) =>
     api.get('/deals', { params }).then((r) => r.data),
   get: (id: string) => api.get(`/deals/${id}`).then((r) => r.data.data as Deal),
   create: (input: {
