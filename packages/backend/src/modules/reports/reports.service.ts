@@ -5,10 +5,10 @@ export async function getActivitiesReport(
   filters: { userId?: string; from?: string; to?: string } = {},
 ) {
   let base = db('activities as a')
-    .leftJoin('users as u', 'a.owner_id', 'u.id')
+    .leftJoin('users as u', 'a.user_id', 'u.id')
     .where('a.tenant_id', tenantId);
 
-  if (filters.userId) base = base.where('a.owner_id', filters.userId);
+  if (filters.userId) base = base.where('a.user_id', filters.userId);
   if (filters.from) base = base.where('a.created_at', '>=', new Date(filters.from));
   if (filters.to) base = base.where('a.created_at', '<=', new Date(filters.to));
 
@@ -19,8 +19,8 @@ export async function getActivitiesReport(
     .select(db.raw("SUM(CASE WHEN a.is_done THEN 1 ELSE 0 END) as done"));
 
   const byUser = await base.clone()
-    .groupBy('a.owner_id', 'u.full_name')
-    .select('a.owner_id', db.raw("u.full_name as owner_name"))
+    .groupBy('a.user_id', 'u.full_name')
+    .select('a.user_id', db.raw("u.full_name as owner_name"))
     .count('a.id as total')
     .select(db.raw("SUM(CASE WHEN a.is_done THEN 1 ELSE 0 END) as done"));
 
@@ -31,7 +31,7 @@ export async function getActivitiesReport(
       done: Number(r.done),
     })),
     byUser: byUser.map((r) => ({
-      userId: r.owner_id as string,
+      userId: r.user_id as string,
       name: (r.owner_name as string) ?? 'Sem responsável',
       total: Number(r.total),
       done: Number(r.done),

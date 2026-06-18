@@ -144,17 +144,18 @@ export async function exportActivitiesCsv(tenantId: string): Promise<string> {
   const { stringify } = await import('csv-stringify/sync');
   return stringify(activities, {
     header: true,
+    delimiter: ';',
     columns: [
-      { key: 'type', header: 'Type' },
-      { key: 'title', header: 'Title' },
-      { key: 'body', header: 'Description' },
-      { key: 'is_done', header: 'Done' },
-      { key: 'due_at', header: 'Due At' },
-      { key: 'creator_name', header: 'Created By' },
-      { key: 'assignee_name', header: 'Assignee' },
-      { key: 'contact_name', header: 'Contact' },
-      { key: 'deal_title', header: 'Deal' },
-      { key: 'created_at', header: 'Created At' },
+      { key: 'type', header: 'Tipo' },
+      { key: 'title', header: 'Titulo' },
+      { key: 'body', header: 'Descricao' },
+      { key: 'is_done', header: 'Concluida' },
+      { key: 'due_at', header: 'Prazo' },
+      { key: 'creator_name', header: 'Criado por' },
+      { key: 'assignee_name', header: 'Responsavel' },
+      { key: 'contact_name', header: 'Contato' },
+      { key: 'deal_title', header: 'Negocio' },
+      { key: 'created_at', header: 'Criado em' },
     ],
   });
 }
