@@ -1,11 +1,13 @@
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useInfiniteQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { pipelineService, dealsService } from '@/services/pipeline.service';
+import type { StageDealsPage } from '@/services/pipeline.service';
 import { toast } from 'sonner';
 
 export const pipelineKeys = {
   all: ['pipelines'] as const,
   list: () => [...pipelineKeys.all, 'list'] as const,
   kanban: (id: string) => [...pipelineKeys.all, 'kanban', id] as const,
+  stageDeals: (stageId: string) => [...pipelineKeys.all, 'stage-deals', stageId] as const,
 };
 
 export function usePipelines() {
@@ -20,6 +22,16 @@ export function useKanban(pipelineId: string) {
     queryKey: pipelineKeys.kanban(pipelineId),
     queryFn: () => pipelineService.getKanban(pipelineId),
     enabled: !!pipelineId,
+  });
+}
+
+export function useInfiniteStageDeals(stageId: string) {
+  return useInfiniteQuery<StageDealsPage>({
+    queryKey: pipelineKeys.stageDeals(stageId),
+    queryFn: ({ pageParam }) => pipelineService.getStageDeals(stageId, pageParam as number),
+    initialPageParam: 1,
+    getNextPageParam: (lastPage) => lastPage.hasMore ? lastPage.page + 1 : undefined,
+    enabled: !!stageId,
   });
 }
 
@@ -83,6 +95,12 @@ function invalidateDeals(qc: ReturnType<typeof useQueryClient>) {
   qc.invalidateQueries({ queryKey: pipelineKeys.all });
   qc.invalidateQueries({ queryKey: ['deals'] });
   qc.invalidateQueries({ queryKey: ['reports'] });
+}
+
+export function invalidateStageDeals(qc: ReturnType<typeof useQueryClient>, stageIds: string[]) {
+  for (const id of stageIds) {
+    qc.invalidateQueries({ queryKey: pipelineKeys.stageDeals(id) });
+  }
 }
 
 export function useMoveDeal() {

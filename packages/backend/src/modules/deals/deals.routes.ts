@@ -8,6 +8,7 @@ const router = Router();
 
 router.get('/export', requireAuth, requireTier('pro'), DealsController.exportDeals);
 router.get('/kanban', requireAuth, DealsController.getKanban);
+router.get('/kanban-stage/:stageId', requireAuth, DealsController.getStageDeals);
 router.post('/reorder', requireAuth, DealsController.reorderDeals);
 router.get('/', requireAuth, DealsController.listDeals);
 router.post('/', requireAuth, DealsController.createDeal);

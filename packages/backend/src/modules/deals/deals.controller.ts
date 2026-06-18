@@ -18,6 +18,15 @@ export async function getKanban(req: Request, res: Response, next: NextFunction)
   } catch (err) { next(err); }
 }
 
+export async function getStageDeals(req: Request, res: Response, next: NextFunction) {
+  try {
+    const { stageId } = req.params;
+    const page = Math.max(1, Number(req.query.page ?? 1));
+    const data = await DealsService.getStageDeals(req.user!.tenantId, stageId, page);
+    res.json({ data });
+  } catch (err) { next(err); }
+}
+
 export async function listDeals(req: Request, res: Response, next: NextFunction) {
   try {
     const query = listDealsQuerySchema.parse(req.query);

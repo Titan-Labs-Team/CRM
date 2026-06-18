@@ -26,11 +26,43 @@ export async function getKanban(tenantId: string, pipelineId: string) {
     .where({ pipeline_id: pipelineId, tenant_id: tenantId })
     .orderBy('position', 'asc');
 
+  const aggRows = await db('deals')
+    .where({ pipeline_id: pipelineId, tenant_id: tenantId, status: 'open' })
+    .groupBy('stage_id')
+    .select('stage_id')
+    .count('id as deal_count')
+    .sum('value as total_value');
+
+  const aggMap = new Map(aggRows.map((r) => [r.stage_id as string, r]));
+
+  return stages.map((s) => {
+    const agg = aggMap.get(s.id);
+    return {
+      ...s,
+      dealCount: Number(agg?.deal_count ?? 0),
+      totalValue: Number(agg?.total_value ?? 0),
+    };
+  });
+}
+
+const KANBAN_STAGE_LIMIT = 20;
+
+export async function getStageDeals(tenantId: string, stageId: string, page: number) {
+  const limit = KANBAN_STAGE_LIMIT;
+  const offset = (page - 1) * limit;
+
+  const [countRow] = await db('deals')
+    .where({ stage_id: stageId, tenant_id: tenantId, status: 'open' })
+    .count('id as count');
+  const total = Number(countRow.count);
+
   const deals = await db('deals as d')
     .leftJoin('contacts as c', 'd.contact_id', 'c.id')
     .leftJoin('users as u', 'd.owner_id', 'u.id')
-    .where({ 'd.pipeline_id': pipelineId, 'd.tenant_id': tenantId, 'd.status': 'open' })
+    .where({ 'd.stage_id': stageId, 'd.tenant_id': tenantId, 'd.status': 'open' })
     .orderBy('d.position', 'asc')
+    .limit(limit)
+    .offset(offset)
     .select(
       'd.id', 'd.title', 'd.value', 'd.currency', 'd.status',
       'd.stage_id', 'd.owner_id', 'd.expected_close', 'd.position',
@@ -39,15 +71,13 @@ export async function getKanban(tenantId: string, pipelineId: string) {
       db.raw("u.full_name as owner_name"),
     );
 
-  const stagesWithDeals = stages.map((s) => ({
-    ...s,
-    deals: deals.filter((d) => d.stage_id === s.id),
-    totalValue: deals
-      .filter((d) => d.stage_id === s.id)
-      .reduce((sum, d) => sum + Number(d.value), 0),
-  }));
-
-  return stagesWithDeals;
+  return {
+    deals,
+    page,
+    limit,
+    total,
+    hasMore: offset + deals.length < total,
+  };
 }
 
 export async function listDeals(tenantId: string, query: ListDealsQuery) {

@@ -1,12 +1,15 @@
 import { useSortable, SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import { GripVertical, Plus } from 'lucide-react';
-import type { StageWithDeals, Deal } from '@/services/pipeline.service';
+import { GripVertical, Loader2, Plus } from 'lucide-react';
+import type { StageMeta, Deal } from '@/services/pipeline.service';
+import { useInfiniteStageDeals } from '@/hooks/usePipeline';
 import { KanbanCard } from './KanbanCard';
 import { cn } from '@/lib/utils';
 
 interface KanbanColumnProps {
-  stage: StageWithDeals;
+  stage: StageMeta;
+  // Optimistic deals injected during drag (replaces server data while dragging)
+  optimisticDeals?: Deal[];
   onAddDeal: (stageId: string) => void;
   onWon: (id: string, title: string) => void;
   onLost: (id: string, title: string) => void;
@@ -18,7 +21,15 @@ function formatCurrency(value: number) {
   return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value);
 }
 
-export function KanbanColumn({ stage, onAddDeal, onWon, onLost, onDealClick, isCardDragActive }: KanbanColumnProps) {
+export function KanbanColumn({
+  stage,
+  optimisticDeals,
+  onAddDeal,
+  onWon,
+  onLost,
+  onDealClick,
+  isCardDragActive,
+}: KanbanColumnProps) {
   const {
     attributes,
     listeners,
@@ -36,6 +47,14 @@ export function KanbanColumn({ stage, onAddDeal, onWon, onLost, onDealClick, isC
     transform: CSS.Transform.toString(transform),
     transition,
   };
+
+  const { data, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading } =
+    useInfiniteStageDeals(stage.id);
+
+  // Flatten all loaded pages into a single array
+  const serverDeals = data?.pages.flatMap((p) => p.deals) ?? [];
+  // During drag we show optimistic state; otherwise show server data
+  const deals = optimisticDeals ?? serverDeals;
 
   return (
     <div
@@ -69,7 +88,7 @@ export function KanbanColumn({ stage, onAddDeal, onWon, onLost, onDealClick, isC
             </div>
           </div>
           <span className="ml-2 flex-shrink-0 text-xs font-semibold text-text-muted bg-bg-border px-2 py-0.5 rounded-full">
-            {stage.deals.length}
+            {stage.dealCount}
           </span>
         </div>
       </div>
@@ -81,17 +100,36 @@ export function KanbanColumn({ stage, onAddDeal, onWon, onLost, onDealClick, isC
           isOver && isCardDragActive ? 'bg-accent-green/5 ring-1 ring-accent-green/30' : 'bg-transparent',
         )}
       >
-        <SortableContext items={stage.deals.map((d) => d.id)} strategy={verticalListSortingStrategy}>
-          {stage.deals.map((deal) => (
-            <KanbanCard
-              key={deal.id}
-              deal={deal}
-              onWon={(id, title) => onWon(id, title)}
-              onLost={(id, title) => onLost(id, title)}
-              onClick={onDealClick}
-            />
-          ))}
-        </SortableContext>
+        {isLoading ? (
+          <div className="flex items-center justify-center py-6">
+            <Loader2 size={16} className="animate-spin text-text-muted" />
+          </div>
+        ) : (
+          <SortableContext items={deals.map((d) => d.id)} strategy={verticalListSortingStrategy}>
+            {deals.map((deal) => (
+              <KanbanCard
+                key={deal.id}
+                deal={deal}
+                onWon={(id, title) => onWon(id, title)}
+                onLost={(id, title) => onLost(id, title)}
+                onClick={onDealClick}
+              />
+            ))}
+          </SortableContext>
+        )}
+
+        {hasNextPage && !optimisticDeals && (
+          <button
+            onClick={() => fetchNextPage()}
+            disabled={isFetchingNextPage}
+            className="w-full flex items-center justify-center gap-2 px-2 py-2 rounded text-xs text-text-muted hover:text-text-primary hover:bg-bg-surface transition-colors disabled:opacity-50"
+          >
+            {isFetchingNextPage ? (
+              <Loader2 size={12} className="animate-spin" />
+            ) : null}
+            {isFetchingNextPage ? 'Carregando...' : 'Carregar mais'}
+          </button>
+        )}
 
         <button
           onClick={() => onAddDeal(stage.id)}
