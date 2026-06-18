@@ -4,6 +4,43 @@ This file documents everything an AI assistant needs to know to contribute effec
 
 ---
 
+## Workflow obrigatório (seguir sempre, sem precisar ser lembrado)
+
+### Ao iniciar qualquer sessão
+1. Ler este `CLAUDE.md` e o `plan.md` para se contextualizar
+2. Ler `memory/project-state.md` e `memory/feedback-dev-workflow.md`
+
+### Ao iniciar qualquer feature ou modificação
+1. Criar branch `feat/mXX-descricao-curta` antes de qualquer alteração
+2. Implementar o que foi pedido
+3. Rodar build do frontend (`npm run build --workspace=packages/frontend`) para confirmar zero erros TS antes de commitar
+
+### Quando o usuário disser "pode commitar"
+Executar **tudo isso automaticamente, sem precisar ser pedido**:
+1. `git add` nos arquivos alterados
+2. `git commit` com mensagem descritiva no padrão `feat(MXX-TX): descrição`
+3. Atualizar `CLAUDE.md` — marcar milestone como `✅ Done` e atualizar seção **Key implementation notes**
+4. Atualizar `memory/project-state.md` — refletir o estado atual do projeto
+5. Commit das atualizações de documentação: `docs: atualiza CLAUDE.md e memória pós MXX-TX`
+6. `git push` da branch
+7. Abrir PR para `main` via `gh pr create`
+8. Mergear PR: `gh pr merge --merge --delete-branch`
+9. `git checkout main` + `git branch -d <branch>` (branch local)
+
+### Quando o usuário disser "atualize a memória"
+1. Atualizar `memory/project-state.md` com estado atual, últimas decisões e próximas tarefas
+2. Atualizar `MEMORY.md` se necessário
+3. Commitar: `docs: atualiza memória do projeto`
+
+### Docker — nome do serviço correto
+O serviço do banco neste projeto se chama `postgres` (não `db`):
+```bash
+docker compose exec postgres psql -U postgres -d titancrm
+```
+Sempre rodar comandos Docker da **raiz do repositório**.
+
+---
+
 ## Project Overview
 
 **TitanFlow** (formerly Titan Labs CRM) is a multi-tenant SaaS CRM for managing leads, contacts, deals, and sales pipelines. Companies sign up and get an isolated workspace. The product replaces scattered tools (WhatsApp, spreadsheets) with a centralized Kanban-first platform.
