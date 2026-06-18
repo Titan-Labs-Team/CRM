@@ -536,7 +536,7 @@ docker compose -f docker-compose.prod.yml exec backend \
 
 ---
 
-### T1 — Deals: busca por texto + paginação real 🔲
+### T1 — Deals: busca por texto + paginação real ✅
 
 **Objetivo**: `DealsListPage` hoje carrega fixo 50 itens sem busca textual. Com volume real isso torna a lista inutilizável.
 
@@ -548,14 +548,16 @@ docker compose -f docker-compose.prod.yml exec backend \
 
 ---
 
-### T2 — Export de atividades CSV 🔲
+### T2 — Export de atividades CSV ✅
 
 **Objetivo**: Relatórios exportam contatos e deals mas não atividades — dado valioso para gestores.
 
-- [ ] Backend: `GET /activities/export` — query com joins (contact, deal, assignee), gera CSV; `requireTier('starter')`
-- [ ] Frontend: botão "Exportar atividades" na aba Export da `ReportsPage`
+- [x] Backend: `GET /activities/export` — query com joins (contact, deal, assignee), gera CSV; `requireTier('starter')`
+- [x] Frontend: botão "Exportar atividades" na aba Export da `ReportsPage`; Free vê cadeado → `UpgradeModal`
+- [x] Bug corrigido: `reports.service.ts` usava `a.owner_id` → corrigido para `a.user_id` (erro 42703)
+- [x] Delimiter `;` (pt-BR) e headers sem acentos
 
-**Arquivos**: `activities.routes.ts`, `activities.service.ts`, `activities.controller.ts`, `ReportsPage.tsx`
+**Arquivos**: `activities.routes.ts`, `activities.service.ts`, `activities.controller.ts`, `ReportsPage.tsx`, `reports.service.ts`
 
 ---
 
