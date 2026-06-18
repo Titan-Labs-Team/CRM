@@ -69,19 +69,25 @@ export function ReportsPage() {
   const { data: activities, isLoading: activitiesLoading } = useActivitiesReport();
   const { data: leaderboard, isLoading: leaderboardLoading } = useLeaderboard();
 
-  const handleDownload = async (type: 'contacts' | 'deals') => {
+  const handleDownload = async (type: 'contacts' | 'deals' | 'activities') => {
     setDownloading(type);
     try {
-      const blob = type === 'contacts'
-        ? await contactsService.exportCsv()
-        : await api.get('/deals/export', { responseType: 'blob' }).then((r) => r.data as Blob);
+      let blob: Blob;
+      if (type === 'contacts') {
+        blob = await contactsService.exportCsv();
+      } else if (type === 'deals') {
+        blob = await api.get('/deals/export', { responseType: 'blob' }).then((r) => r.data as Blob);
+      } else {
+        blob = await api.get('/activities/export', { responseType: 'blob' }).then((r) => r.data as Blob);
+      }
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
       a.download = `${type}.csv`;
       a.click();
       URL.revokeObjectURL(url);
-      toast.success(`${type === 'contacts' ? 'Contatos' : 'Negócios'} exportados com sucesso`);
+      const labels: Record<string, string> = { contacts: 'Contatos', deals: 'Negócios', activities: 'Atividades' };
+      toast.success(`${labels[type]} exportados com sucesso`);
     } catch {
       toast.error('Erro ao exportar. Verifique se seu plano suporta exportação.');
     } finally {
@@ -370,10 +376,33 @@ export function ReportsPage() {
             Exporte seus dados como CSV para usar em outras ferramentas. Importação de contatos também disponível.
           </p>
           <p className="text-xs text-text-muted bg-bg-surface border border-bg-border rounded px-3 py-2">
-            Exportação e importação requerem plano <strong>Pro</strong>.
+            Exportação de atividades e negócios requer plano <strong>Starter</strong>. Exportação e importação de contatos requerem plano <strong>Pro</strong>.
           </p>
 
           <div className="space-y-3">
+            {/* Activities export */}
+            <div className="card p-4 flex items-center justify-between gap-4">
+              <div>
+                <p className="text-sm font-medium text-text-primary">Atividades</p>
+                <p className="text-xs text-text-muted mt-0.5">Exporta todas as atividades com tipo, contato, negócio e responsável</p>
+              </div>
+              {hasStarterPlus ? (
+                <Button
+                  size="sm"
+                  variant="secondary"
+                  onClick={() => handleDownload('activities')}
+                  disabled={downloading === 'activities'}
+                >
+                  <Download size={14} />
+                  {downloading === 'activities' ? 'Exportando…' : 'Exportar CSV'}
+                </Button>
+              ) : (
+                <Button size="sm" variant="secondary" onClick={() => showUpgrade('starter')}>
+                  <Lock size={14} /> Starter+
+                </Button>
+              )}
+            </div>
+
             {/* Contacts export */}
             <div className="card p-4 flex items-center justify-between gap-4">
               <div>

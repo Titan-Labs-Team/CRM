@@ -124,3 +124,38 @@ export async function deleteActivity(tenantId: string, id: string) {
   const deleted = await db('activities').where({ id, tenant_id: tenantId }).delete();
   if (!deleted) throw Object.assign(new Error('Activity not found'), { status: 404 });
 }
+
+export async function exportActivitiesCsv(tenantId: string): Promise<string> {
+  const activities = await db('activities as a')
+    .leftJoin('users as u', 'a.user_id', 'u.id')
+    .leftJoin('users as assignee', 'a.assignee_id', 'assignee.id')
+    .leftJoin('contacts as c', 'a.contact_id', 'c.id')
+    .leftJoin('deals as d', 'a.deal_id', 'd.id')
+    .where('a.tenant_id', tenantId)
+    .orderBy('a.created_at', 'desc')
+    .select(
+      'a.type', 'a.title', 'a.body', 'a.is_done', 'a.due_at', 'a.created_at',
+      db.raw("u.full_name as creator_name"),
+      db.raw("assignee.full_name as assignee_name"),
+      db.raw("c.full_name as contact_name"),
+      db.raw("d.title as deal_title"),
+    );
+
+  const { stringify } = await import('csv-stringify/sync');
+  return stringify(activities, {
+    header: true,
+    delimiter: ';',
+    columns: [
+      { key: 'type', header: 'Tipo' },
+      { key: 'title', header: 'Titulo' },
+      { key: 'body', header: 'Descricao' },
+      { key: 'is_done', header: 'Concluida' },
+      { key: 'due_at', header: 'Prazo' },
+      { key: 'creator_name', header: 'Criado por' },
+      { key: 'assignee_name', header: 'Responsavel' },
+      { key: 'contact_name', header: 'Contato' },
+      { key: 'deal_title', header: 'Negocio' },
+      { key: 'created_at', header: 'Criado em' },
+    ],
+  });
+}
