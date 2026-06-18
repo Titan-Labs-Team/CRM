@@ -444,7 +444,7 @@ export function LandingPage() {
 
       {/* WhatsApp floating button */}
       <a
-        href="https://wa.me/5511999999999?text=Ol%C3%A1%21+Tenho+uma+d%C3%BAvida+sobre+o+TitanFlow."
+        href="https://wa.me/5516992386188?text=Ol%C3%A1%21+Tenho+uma+d%C3%BAvida+sobre+o+TitanFlow."
         target="_blank"
         rel="noopener noreferrer"
         className="fixed bottom-6 right-6 z-50 flex items-center gap-2 bg-[#25D366] hover:bg-[#1ebe5d] text-white px-4 py-3 rounded-full shadow-lg transition-all hover:scale-105 group"

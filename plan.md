@@ -527,3 +527,43 @@ docker compose -f docker-compose.prod.yml exec backend \
 
 ### T6 — Seed limpo ✅
 - [x] `01_dev_seed.ts`: removidos todos os dados mockados; seed agora apenas limpa as tabelas na ordem correta (respeitando FK constraints)
+
+---
+
+## M14 — Deals em lista, Export de Atividades, Kanban Lazy Load
+
+> Melhorias de usabilidade e performance identificadas após uso real: busca e paginação na lista de negócios, export CSV de atividades e carregamento sob demanda no Kanban.
+
+---
+
+### T1 — Deals: busca por texto + paginação real 🔲
+
+**Objetivo**: `DealsListPage` hoje carrega fixo 50 itens sem busca textual. Com volume real isso torna a lista inutilizável.
+
+- [x] Backend: campo `q` adicionado ao `listDealsQuerySchema` (Zod) e ao `listDeals` service — ILIKE em `d.title` e `c.full_name`; COUNT corrigido para incluir o join com contacts ao filtrar por `q`
+- [x] Frontend: campo de busca com ícone lupa na `DealsListPage`; paginação com Anterior/Próxima + indicador "Página X de Y — N negócios"; reset de página ao mudar qualquer filtro; `limit` fixo de 50 substituído por 20 com paginação real
+- [x] `useDeals.ts`: campo `q` adicionado ao tipo `DealsFilters`; removido `[key: string]: unknown` (index signature desnecessário)
+
+**Arquivos**: `deals.schema.ts`, `deals.service.ts`, `DealsListPage.tsx`, `useDeals.ts`
+
+---
+
+### T2 — Export de atividades CSV 🔲
+
+**Objetivo**: Relatórios exportam contatos e deals mas não atividades — dado valioso para gestores.
+
+- [ ] Backend: `GET /activities/export` — query com joins (contact, deal, assignee), gera CSV; `requireTier('starter')`
+- [ ] Frontend: botão "Exportar atividades" na aba Export da `ReportsPage`
+
+**Arquivos**: `activities.routes.ts`, `activities.service.ts`, `activities.controller.ts`, `ReportsPage.tsx`
+
+---
+
+### T3 — Kanban: lazy load por coluna 🔲
+
+**Objetivo**: `GET /deals/kanban` traz todos os deals de todas as colunas. Com 50+ deals por stage o kanban fica pesado.
+
+- [ ] Backend: endpoint `GET /pipeline-stages/:stageId/deals?page=&limit=` — retorna deals paginados de uma stage + `hasMore: boolean`
+- [ ] Frontend: `KanbanColumn` exibe os N primeiros + botão "Carregar mais" no rodapé; `useInfiniteQuery` por stage
+
+**Arquivos**: `deals.routes.ts`, `deals.service.ts`, `KanbanColumn.tsx`, `usePipeline.ts`
