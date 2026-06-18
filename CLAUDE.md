@@ -324,7 +324,7 @@ Ver detalhes completos em [plan.md](./plan.md) — seção M14.
 | M13 T4 | Atividades: campo assignee + notificação ao responsável | ✅ Done |
 | M14 T1 | Deals lista: busca por texto (q) + paginação real | ✅ Done |
 | M14 T2 | Export de atividades CSV | ✅ Done |
-| M14 T3 | Kanban: lazy load por coluna | 🔲 Pendente |
+| M14 T3 | Kanban: lazy load por coluna | ✅ Done |
 | M14 T4 | Calendário: redesign completo com EventManager customizado | ✅ Done |
 | M10 T3 | Integração Z-API / Evolution API | 🔲 Pendente |
 | M9 T1 | Webhook Stripe em produção | 🔲 Pendente (aguarda domínio) |
@@ -333,7 +333,8 @@ Ver detalhes completos em [plan.md](./plan.md) — seção M14.
 ## Key implementation notes (context for future sessions)
 
 - **Produto renomeado para TitanFlow** — browser tab, auth pages, onboarding, landing page e sidebar atualizados; sidebar top-left exibe fixo "TitanFlow" (não mais o nome do tenant)
-- All 8 milestones complete + M9/M10/M11/M12/M13/M14(T1+T2+T4) done. Latest migrations: `20240018_create_user_tenants`, `20240019_add_assignee_to_activities`
+- All 8 milestones complete + M9/M10/M11/M12/M13/M14(T1+T2+T3+T4) done. Latest migrations: `20240018_create_user_tenants`, `20240019_add_assignee_to_activities`
+- **Kanban lazy load (M14 T3)**: `GET /deals/kanban` retorna apenas metadados dos stages (`dealCount`, `totalValue` via agregação SQL, sem deals). Novo `GET /deals/kanban-stage/:stageId?page=N` retorna deals paginados (20/pág) com `hasMore`. Frontend: `useInfiniteStageDeals(stageId)` com `useInfiniteQuery`; `KanbanColumn` busca seus próprios deals e exibe botão "Carregar mais". `PipelinePage` usa `optimisticDealsMap` (snapshot dos caches por stage) durante drag para manter estado visual fluido sem depender do `localStages.deals`. `StageMeta` (sem deals) substituiu `StageWithDeals` nas props do `KanbanColumn` e `PipelineSettingsModal` — este último usa `dealCount` em vez de `deals.length`.
 - **Export atividades (M14 T2)**: `GET /activities/export` com joins em contact, deal, creator (`user_id`) e assignee; delimiter `;` (pt-BR); headers sem acentos; `requireTier('starter')`. Frontend: card na aba Export da `ReportsPage`, Free vê cadeado → `UpgradeModal`. Bug corrigido em `reports.service.ts`: `a.owner_id` → `a.user_id` (causava erro 42703 na aba Atividades dos Relatórios).
 - **Deals lista (M14 T1)**: `DealsListPage` tem busca textual (`q`) por título e nome do contato (ILIKE), paginação real (20/página, Anterior/Próxima, indicador de página). Backend `listDeals` aceita `q`; COUNT corrigido com join em contacts. `useDeals` tipado sem index signature.
 - **Calendário redesign (M14 T4)**: FullCalendar removido e substituído por `EventManagerCalendar` customizado (`src/components/calendar/EventManagerCalendar.tsx`). 4 views (Mês/Semana/Dia/Lista), toolbar com navegação e switcher, painel lateral deslizante para criar/editar/excluir. Campo "fim" substituído por select de Duração. `DateTimePicker` (`src/components/ui/DateTimePicker.tsx`) usa `react-day-picker` + `createPortal` — abre modal centralizado na tela com calendário à esquerda e lista de horas (00:00–23:00, 1h em 1h) à direita. Zero dependência de shadcn/ui; design 100% TitanFlow dark.

@@ -561,14 +561,17 @@ docker compose -f docker-compose.prod.yml exec backend \
 
 ---
 
-### T3 — Kanban: lazy load por coluna 🔲
+### T3 — Kanban: lazy load por coluna ✅
 
 **Objetivo**: `GET /deals/kanban` traz todos os deals de todas as colunas. Com 50+ deals por stage o kanban fica pesado.
 
-- [ ] Backend: endpoint `GET /pipeline-stages/:stageId/deals?page=&limit=` — retorna deals paginados de uma stage + `hasMore: boolean`
-- [ ] Frontend: `KanbanColumn` exibe os N primeiros + botão "Carregar mais" no rodapé; `useInfiniteQuery` por stage
+- [x] Backend: `GET /deals/kanban` retorna apenas metadados dos stages (`dealCount`, `totalValue` via agregação SQL)
+- [x] Backend: novo `GET /deals/kanban-stage/:stageId?page=` retorna deals paginados (20/pág) com `hasMore`, `total`, `page`
+- [x] Frontend: `useInfiniteStageDeals(stageId)` hook com `useInfiniteQuery` por stage
+- [x] Frontend: `KanbanColumn` busca seus próprios deals e exibe botão "Carregar mais" no rodapé
+- [x] Frontend: `PipelinePage` usa `optimisticDealsMap` para drag & drop fluido sem depender de `localStages.deals`
 
-**Arquivos**: `deals.routes.ts`, `deals.service.ts`, `KanbanColumn.tsx`, `usePipeline.ts`
+**Arquivos**: `deals.routes.ts`, `deals.service.ts`, `deals.controller.ts`, `KanbanColumn.tsx`, `usePipeline.ts`, `PipelinePage.tsx`, `pipeline.service.ts`, `PipelineSettingsModal.tsx`
 
 ---
 
