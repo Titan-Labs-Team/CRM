@@ -567,3 +567,24 @@ docker compose -f docker-compose.prod.yml exec backend \
 - [ ] Frontend: `KanbanColumn` exibe os N primeiros + botão "Carregar mais" no rodapé; `useInfiniteQuery` por stage
 
 **Arquivos**: `deals.routes.ts`, `deals.service.ts`, `KanbanColumn.tsx`, `usePipeline.ts`
+
+---
+
+### T4 — Calendário: redesign completo com EventManager customizado ✅
+
+**Objetivo**: Substituir FullCalendar (biblioteca pesada, CSS externo difícil de customizar) por solução 100% própria integrada ao design TitanFlow.
+
+- [x] `EventManagerCalendar` (`src/components/calendar/EventManagerCalendar.tsx`) — componente principal sem dependências externas de calendário
+- [x] 4 views: **Mês** (grid 7×6 com chips de evento), **Semana** (grid hora×dia), **Dia** (lista por hora), **Lista** (agrupada por data)
+- [x] Toolbar integrado: navegação prev/next/hoje, switcher de view, busca em tempo real (título, descrição, contato, negócio), botão "Novo evento"
+- [x] Painel lateral deslizante (320px) abre ao clicar em evento ou célula — criar/editar/excluir sem sair da página
+- [x] Campo "Fim" removido do formulário; substituído por select de **Duração** (15min → 8h); `endAt` calculado automaticamente
+- [x] `DateTimePicker` (`src/components/ui/DateTimePicker.tsx`) — picker customizado via `react-day-picker` + `createPortal`
+  - Modal centralizado na viewport (fora de qualquer `overflow: hidden`), overlay com backdrop-blur
+  - Calendário à esquerda + lista de horas (00:00–23:00, intervalo de 1h) à direita
+  - Footer com preview em linguagem natural ("segunda, 20 de junho às 09:00") + botão Confirmar
+  - Fecha com Escape ou clique fora; hora selecionada faz scroll automático ao abrir
+- [x] `react-day-picker@^10` instalado; `FullCalendar` + plugins removidos do uso (pacotes podem ser desinstalados futuramente)
+- [x] Design 100% TitanFlow: dark mode, `accent-green`, `bg-surface`, `bg-border` — zero shadcn/ui
+
+**Arquivos**: `CalendarPage.tsx`, `EventManagerCalendar.tsx` (novo), `DateTimePicker.tsx` (novo), `package.json`

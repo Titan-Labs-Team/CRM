@@ -77,7 +77,7 @@ cd packages/frontend && npm run dev
 | UI primitives | Radix UI |
 | Charts | Recharts |
 | Drag and drop | @dnd-kit/core + @dnd-kit/sortable |
-| Calendar | FullCalendar (React adapter) |
+| Calendar | react-day-picker (DateTimePicker) — FullCalendar removido |
 | Icons | Lucide React |
 | HTTP client | Axios (with interceptors) |
 | Toasts | Sonner |
@@ -259,9 +259,9 @@ See [plan.md](./plan.md) for current progress.
 | M7 — Billing & Premium Tiers | ✅ Done |
 | M8 — Polish, Search, Deployment | ✅ Done |
 
-## Next: pendências restantes
+## Next: M14 T2 — Export de atividades CSV
 
-Ver detalhes completos em [plan.md](./plan.md) — seções M9 e M10.
+Ver detalhes completos em [plan.md](./plan.md) — seção M14.
 
 | Task | Descrição | Status |
 |---|---|---|
@@ -288,6 +288,7 @@ Ver detalhes completos em [plan.md](./plan.md) — seções M9 e M10.
 | M14 T1 | Deals lista: busca por texto (q) + paginação real | ✅ Done |
 | M14 T2 | Export de atividades CSV | 🔲 Pendente |
 | M14 T3 | Kanban: lazy load por coluna | 🔲 Pendente |
+| M14 T4 | Calendário: redesign completo com EventManager customizado | ✅ Done |
 | M10 T3 | Integração Z-API / Evolution API | 🔲 Pendente |
 | M9 T1 | Webhook Stripe em produção | 🔲 Pendente (aguarda domínio) |
 | M10 T2 | Credenciais Google OAuth em produção | 🔲 Pendente — ver plan.md T2 |
@@ -295,8 +296,9 @@ Ver detalhes completos em [plan.md](./plan.md) — seções M9 e M10.
 ## Key implementation notes (context for future sessions)
 
 - **Produto renomeado para TitanFlow** — browser tab, auth pages, onboarding, landing page e sidebar atualizados; sidebar top-left exibe fixo "TitanFlow" (não mais o nome do tenant)
-- All 8 milestones complete + M9/M10/M11/M12/M13/M14(T1) done. Latest migrations: `20240018_create_user_tenants`, `20240019_add_assignee_to_activities`
+- All 8 milestones complete + M9/M10/M11/M12/M13/M14(T1+T4) done. Latest migrations: `20240018_create_user_tenants`, `20240019_add_assignee_to_activities`
 - **Deals lista (M14 T1)**: `DealsListPage` tem busca textual (`q`) por título e nome do contato (ILIKE), paginação real (20/página, Anterior/Próxima, indicador de página). Backend `listDeals` aceita `q`; COUNT corrigido com join em contacts. `useDeals` tipado sem index signature.
+- **Calendário redesign (M14 T4)**: FullCalendar removido e substituído por `EventManagerCalendar` customizado (`src/components/calendar/EventManagerCalendar.tsx`). 4 views (Mês/Semana/Dia/Lista), toolbar com navegação e switcher, painel lateral deslizante para criar/editar/excluir. Campo "fim" substituído por select de Duração. `DateTimePicker` (`src/components/ui/DateTimePicker.tsx`) usa `react-day-picker` + `createPortal` — abre modal centralizado na tela com calendário à esquerda e lista de horas (00:00–23:00, 1h em 1h) à direita. Zero dependência de shadcn/ui; design 100% TitanFlow dark.
 - **Multi-workspace**: tabela `user_tenants` (pivot user↔tenant com role). `GET /auth/workspaces` + `POST /auth/switch-workspace` emitem novos tokens para o tenant selecionado. `WorkspaceSwitcher` no Topbar lista workspaces e troca com `qc.clear()`. `register` e `inviteUser` inserem automaticamente em `user_tenants`.
 - **Atividades com responsável**: coluna `assignee_id` em `activities` (FK → users, SET NULL). `ActivityForm` tem select "Responsável" — ao salvar, notificação é disparada para o assignee se diferente do criador. `ActivityTimeline` exibe "resp: Nome" em verde.
 - **Deal responsável editável**: `DealDetailPage` tem inline edit do owner (hover → lápis → select → check/cancel) via `useUpdateDeal({ ownerId })`.
