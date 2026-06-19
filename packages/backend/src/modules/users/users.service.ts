@@ -55,27 +55,35 @@ export async function inviteUser(tenantId: string, input: z.infer<typeof inviteU
     .ignore();
 
   if (env.RESEND_API_KEY) {
+    const tenant = await db('tenants').where({ id: tenantId }).select('name').first();
+    const workspaceName = tenant?.name ?? 'TitanFlow';
+
     const { Resend } = await import('resend');
     const resend = new Resend(env.RESEND_API_KEY);
     await resend.emails.send({
-      from: 'Titan Labs CRM <onboarding@resend.dev>',
+      from: 'TitanFlow <onboarding@resend.dev>',
       to: input.email,
-      subject: 'Você foi convidado para o Titan Labs CRM',
+      subject: `Você foi convidado para ${workspaceName} no TitanFlow`,
       html: `
-        <div style="font-family:sans-serif;max-width:480px;margin:0 auto;padding:32px">
-          <h2 style="color:#72d296;margin-bottom:8px">Bem-vindo ao Titan Labs CRM</h2>
-          <p style="color:#374151">Olá, <strong>${input.fullName}</strong>!</p>
-          <p style="color:#374151">Você foi convidado para acessar o CRM. Use as credenciais abaixo para entrar:</p>
-          <div style="background:#f3f4f6;border-radius:8px;padding:16px;margin:20px 0">
-            <p style="margin:0 0 8px;color:#6b7280;font-size:13px">E-mail</p>
-            <p style="margin:0 0 16px;font-weight:600;color:#111827">${input.email}</p>
-            <p style="margin:0 0 8px;color:#6b7280;font-size:13px">Senha temporária</p>
-            <p style="margin:0;font-weight:600;color:#111827;letter-spacing:2px">${tempPassword}</p>
+        <div style="font-family:sans-serif;max-width:480px;margin:0 auto;padding:32px;background:#ffffff">
+          <div style="margin-bottom:24px">
+            <span style="font-size:20px;font-weight:700;color:#0c0f15">Titan<span style="color:#72d296">Flow</span></span>
           </div>
-          <a href="${env.FRONTEND_URL}/login" style="display:inline-block;background:#72d296;color:#0c0f15;padding:12px 24px;border-radius:6px;text-decoration:none;font-weight:600">
-            Acessar CRM
+          <h2 style="color:#111827;font-size:22px;margin:0 0 8px">Você foi convidado!</h2>
+          <p style="color:#374151;margin:0 0 16px">Olá, <strong>${input.fullName}</strong>!</p>
+          <p style="color:#374151;margin:0 0 20px"><strong>${workspaceName}</strong> convidou você para acessar o TitanFlow. Use as credenciais abaixo para entrar:</p>
+          <div style="background:#f9fafb;border:1px solid #e5e7eb;border-radius:8px;padding:20px;margin:0 0 24px">
+            <p style="margin:0 0 4px;color:#6b7280;font-size:12px;text-transform:uppercase;letter-spacing:0.05em">E-mail</p>
+            <p style="margin:0 0 16px;font-weight:600;color:#111827;font-size:15px">${input.email}</p>
+            <p style="margin:0 0 4px;color:#6b7280;font-size:12px;text-transform:uppercase;letter-spacing:0.05em">Senha temporária</p>
+            <p style="margin:0;font-weight:700;color:#111827;font-size:18px;letter-spacing:3px">${tempPassword}</p>
+          </div>
+          <a href="${env.FRONTEND_URL}/login" style="display:inline-block;background:#72d296;color:#0c0f15;padding:13px 28px;border-radius:6px;text-decoration:none;font-weight:700;font-size:15px">
+            Acessar o TitanFlow
           </a>
-          <p style="color:#9ca3af;font-size:12px;margin-top:24px">Recomendamos trocar sua senha após o primeiro acesso.</p>
+          <p style="color:#9ca3af;font-size:12px;margin-top:28px;border-top:1px solid #f3f4f6;padding-top:20px">
+            Por segurança, troque sua senha no primeiro acesso. Se não esperava esse convite, ignore este e-mail.
+          </p>
         </div>
       `,
     });
