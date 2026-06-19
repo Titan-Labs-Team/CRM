@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { UserPlus, Shield, ShieldCheck, Briefcase, ToggleLeft, ToggleRight, Zap, ExternalLink, CreditCard } from 'lucide-react';
+import { UserPlus, Shield, ShieldCheck, Briefcase, ToggleLeft, ToggleRight, Zap, ExternalLink, CreditCard, MessageCircle } from 'lucide-react';
 import { ApiKeysSection } from '@/components/integrations/ApiKeysSection';
 import { WebhooksSection } from '@/components/integrations/WebhooksSection';
 import { useUsers, useInviteUser, useUpdateUser } from '@/hooks/useUsers';
@@ -331,6 +331,28 @@ export function SettingsPage() {
       {/* Integrations sections — gated by starter tier */}
       <WebhooksSection isAdmin={isAdmin} />
       <ApiKeysSection isAdmin={isAdmin} />
+
+      {/* WhatsApp support */}
+      <div className="card overflow-hidden">
+        <div className="px-5 py-4 border-b border-bg-border">
+          <p className="text-sm font-medium text-text-primary">Suporte via WhatsApp</p>
+          <p className="text-xs text-text-muted mt-0.5">Fale diretamente com nossa equipe</p>
+        </div>
+        <div className="px-5 py-5 flex items-center justify-between gap-4">
+          <p className="text-sm text-text-secondary">
+            Tire dúvidas, reporte problemas ou solicite ajuda com a configuração do TitanFlow.
+          </p>
+          <a
+            href="https://wa.me/5516992386188"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex-shrink-0 flex items-center gap-2 px-4 py-2 rounded-lg bg-[#25D366] hover:bg-[#1ebe5d] text-white text-sm font-medium transition-colors"
+          >
+            <MessageCircle size={16} />
+            Abrir WhatsApp
+          </a>
+        </div>
+      </div>
 
       {/* Invite modal */}
       <Modal open={inviteOpen} onClose={() => setInviteOpen(false)} title="Convidar membro">

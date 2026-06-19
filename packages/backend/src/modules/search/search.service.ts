@@ -27,7 +27,7 @@ export async function globalSearch(tenantId: string, q: string): Promise<SearchR
 
     db('activities')
       .where({ tenant_id: tenantId })
-      .whereRaw('title ILIKE ? OR notes ILIKE ?', [like, like])
+      .whereRaw('title ILIKE ? OR body ILIKE ?', [like, like])
       .limit(5)
       .select('id', 'title', 'type', 'due_at'),
   ]);

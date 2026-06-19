@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Outlet } from 'react-router-dom';
-import { Menu, MessageCircle } from 'lucide-react';
+import { Menu } from 'lucide-react';
 import { Sidebar } from './Sidebar';
 import { Topbar } from './Topbar';
 import { ChangePasswordModal } from '@/components/auth/ChangePasswordModal';
@@ -8,15 +8,9 @@ import { UpgradeModal } from '@/components/billing/UpgradeModal';
 import { ErrorBoundary } from '@/components/ui/ErrorBoundary';
 import { useTenant } from '@/hooks/useTenant';
 
-const WA_NUMBER = '5511999999999';
-
 export function AppShell() {
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
-  const { data: tenant } = useTenant();
-  const waMessage = encodeURIComponent(
-    `Olá! Sou da ${tenant?.name ?? 'minha empresa'} e preciso de ajuda com o TitanFlow.`,
-  );
-  const waUrl = `https://wa.me/${WA_NUMBER}?text=${waMessage}`;
+  useTenant();
 
   return (
     <div className="flex h-screen overflow-hidden bg-bg-primary">
@@ -60,17 +54,6 @@ export function AppShell() {
 
       <ChangePasswordModal />
       <UpgradeModal />
-
-      {/* WhatsApp support button */}
-      <a
-        href={waUrl}
-        target="_blank"
-        rel="noopener noreferrer"
-        className="fixed bottom-5 right-5 z-50 flex items-center justify-center w-12 h-12 bg-[#25D366] hover:bg-[#1ebe5d] text-white rounded-full shadow-lg transition-all hover:scale-110"
-        aria-label="Suporte via WhatsApp"
-      >
-        <MessageCircle size={22} />
-      </a>
     </div>
   );
 }

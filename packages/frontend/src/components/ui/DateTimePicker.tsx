@@ -5,6 +5,10 @@ import { ptBR } from 'react-day-picker/locale';
 import { ChevronLeft, ChevronRight, CalendarDays, X, Clock } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
+function capitalizeFirst(s: string) {
+  return s.charAt(0).toUpperCase() + s.slice(1);
+}
+
 // ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
@@ -44,8 +48,21 @@ function DateTimeModal({ value, onChange, onClose, title }: DateTimeModalProps) 
   const parsed = parseLocalInput(value);
   const [tempDate, setTempDate] = useState<Date | undefined>(parsed ?? undefined);
   const [tempHour, setTempHour] = useState<number>(parsed?.getHours() ?? 9);
+  const [currentMonth, setCurrentMonth] = useState<Date>(parsed ?? new Date());
 
   const hourListRef = useRef<HTMLDivElement>(null);
+
+  function prevMonth() {
+    setCurrentMonth((m) => new Date(m.getFullYear(), m.getMonth() - 1, 1));
+  }
+
+  function nextMonth() {
+    setCurrentMonth((m) => new Date(m.getFullYear(), m.getMonth() + 1, 1));
+  }
+
+  const monthLabel = capitalizeFirst(
+    currentMonth.toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' }),
+  );
 
   // Scroll selected hour into view on mount
   useEffect(() => {
@@ -56,11 +73,12 @@ function DateTimeModal({ value, onChange, onClose, title }: DateTimeModalProps) 
   // Close on Escape
   useEffect(() => {
     function handler(e: KeyboardEvent) {
-      if (e.key === 'Escape') onClose();
+      if (e.key === 'Escape') handleConfirmOrClose();
     }
     document.addEventListener('keydown', handler);
     return () => document.removeEventListener('keydown', handler);
-  }, [onClose]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [tempDate, tempHour]);
 
   function handleDaySelect(day: Date | undefined) {
     if (!day) return;
@@ -71,12 +89,17 @@ function DateTimeModal({ value, onChange, onClose, title }: DateTimeModalProps) 
     setTempHour(h);
   }
 
-  function handleConfirm() {
-    if (!tempDate) return;
-    const result = new Date(tempDate);
-    result.setHours(tempHour, 0, 0, 0);
-    onChange(toLocalInputValue(result));
+  function handleConfirmOrClose() {
+    if (tempDate) {
+      const result = new Date(tempDate);
+      result.setHours(tempHour, 0, 0, 0);
+      onChange(toLocalInputValue(result));
+    }
     onClose();
+  }
+
+  function handleConfirm() {
+    handleConfirmOrClose();
   }
 
   function handleClear() {
@@ -91,25 +114,44 @@ function DateTimeModal({ value, onChange, onClose, title }: DateTimeModalProps) 
   return createPortal(
     <div
       className="fixed inset-0 z-[9999] flex items-center justify-center p-4"
-      onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
     >
-      {/* Overlay */}
-      <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" />
+      {/* Overlay — clique fora confirma e fecha */}
+      <div
+        className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+        onClick={handleConfirmOrClose}
+      />
 
       {/* Modal card */}
       <div className="relative z-10 flex flex-col rounded-2xl border border-bg-border bg-bg-surface shadow-2xl overflow-hidden w-full max-w-[520px]">
 
-        {/* Header */}
-        <div className="flex items-center justify-between px-5 py-4 border-b border-bg-border flex-shrink-0">
-          <div className="flex items-center gap-2">
+        {/* Header — [← prev] [icon + title + next →] [spacer] [✕] */}
+        <div className="flex items-center gap-1 px-3 py-3 border-b border-bg-border flex-shrink-0">
+          <button
+            onClick={prevMonth}
+            className="h-8 w-8 flex items-center justify-center rounded-lg text-text-muted hover:bg-bg-border hover:text-text-primary transition-colors flex-shrink-0"
+          >
+            <ChevronLeft className="h-4 w-4" />
+          </button>
+
+          <div className="flex items-center gap-1.5 flex-shrink-0">
             <CalendarDays className="h-4 w-4 text-accent-green" />
             <span className="text-sm font-semibold text-text-primary">
               {title ?? 'Selecionar data e hora'}
             </span>
           </div>
+
+          <button
+            onClick={nextMonth}
+            className="h-8 w-8 flex items-center justify-center rounded-lg text-text-muted hover:bg-bg-border hover:text-text-primary transition-colors flex-shrink-0"
+          >
+            <ChevronRight className="h-4 w-4" />
+          </button>
+
+          <div className="flex-1" />
+
           <button
             onClick={onClose}
-            className="text-text-muted hover:text-text-primary transition-colors p-1 rounded hover:bg-bg-border"
+            className="h-8 w-8 flex items-center justify-center rounded-lg text-text-muted hover:text-text-primary hover:bg-bg-border transition-colors flex-shrink-0"
           >
             <X className="h-4 w-4" />
           </button>
@@ -120,29 +162,27 @@ function DateTimeModal({ value, onChange, onClose, title }: DateTimeModalProps) 
 
           {/* Calendar */}
           <div className="flex-1 p-5">
+            {/* Month label inside the calendar body */}
+            <div className="text-center text-sm font-semibold text-text-primary mb-3 capitalize">
+              {monthLabel}
+            </div>
+
             <DayPicker
               mode="single"
               selected={tempDate}
               onSelect={handleDaySelect}
-              defaultMonth={tempDate ?? new Date()}
+              month={currentMonth}
+              onMonthChange={setCurrentMonth}
               locale={ptBR}
               showOutsideDays={false}
+              disableNavigation
               classNames={{
                 root: 'w-full',
                 months: 'flex flex-col',
                 month: 'w-full',
-                month_caption: 'relative mx-8 mb-3 flex h-8 items-center justify-center',
-                caption_label: 'text-sm font-semibold text-text-primary capitalize',
-                nav: 'absolute top-0 flex w-full justify-between',
-                button_previous: cn(
-                  'h-8 w-8 flex items-center justify-center rounded-lg text-text-muted',
-                  'hover:bg-bg-border hover:text-text-primary transition-colors',
-                ),
-                button_next: cn(
-                  'h-8 w-8 flex items-center justify-center rounded-lg text-text-muted',
-                  'hover:bg-bg-border hover:text-text-primary transition-colors',
-                ),
-                weeks: 'mt-1',
+                month_caption: 'hidden',
+                nav: 'hidden',
+                weeks: '',
                 weekdays: 'flex',
                 weekday:
                   'flex-1 flex items-center justify-center h-8 text-[11px] font-medium text-text-muted uppercase tracking-wider',
@@ -161,12 +201,6 @@ function DateTimeModal({ value, onChange, onClose, title }: DateTimeModalProps) 
                 today: '',
                 selected: '',
                 hidden: 'invisible',
-              }}
-              components={{
-                Chevron: ({ orientation }) =>
-                  orientation === 'left'
-                    ? <ChevronLeft className="h-4 w-4" />
-                    : <ChevronRight className="h-4 w-4" />,
               }}
             />
           </div>
