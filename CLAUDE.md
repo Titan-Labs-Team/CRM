@@ -329,6 +329,7 @@ Ver detalhes completos em [plan.md](./plan.md) — seção M14.
 | M10 T3 | Integração Z-API / Evolution API | 🔲 Pendente |
 | M9 T1 | Webhook Stripe em produção | 🔲 Pendente (aguarda domínio) |
 | M10 T2 | Credenciais Google OAuth em produção | 🔲 Pendente — ver plan.md T2 |
+| M15 T1 | Resend: configurar RESEND_API_KEY + atualizar e-mail convite para TitanFlow | 🔲 Pendente |
 
 ## Key implementation notes (context for future sessions)
 
@@ -344,7 +345,9 @@ Ver detalhes completos em [plan.md](./plan.md) — seção M14.
 - `must_change_password` field on `users` — set `true` on invite, cleared on `PATCH /auth/me`
 - `ChangePasswordModal` + `UpgradeModal` mounted in `AppShell` (global)
 - `ErrorBoundary` wraps `<Outlet />` in AppShell — catches all page-level crashes
-- `GET /search?q=` — ILIKE search across contacts, deals, activities (min 2 chars)
+- `GET /search?q=` — ILIKE search across contacts, deals, activities (min 2 chars); bug corrigido: `activities` usa coluna `body` (não `notes`) — causava erro 42703 na busca global
+- **Resend (convite de usuários)**: integração já pronta em `users.service.ts` — basta adicionar `RESEND_API_KEY=re_xxx` no `packages/backend/.env`. Sem a chave, a senha temporária retorna na resposta da API. No plano Free do Resend (3.000 e-mails/mês, gratuito), sem domínio verificado só envia para o próprio e-mail da conta Resend — para enviar para qualquer destinatário é necessário verificar um domínio. E-mail de convite ainda usa "Titan Labs CRM" — pendente atualizar para TitanFlow + nome do workspace.
+- **Usuário local de teste**: `teste2@gmail.com` / senha `Admin@1234`, tenant `teste` no plano `pro` — concedido manualmente via UPDATE no banco local
 - `GET /notifications`, `PATCH /notifications/:id/read`, `POST /notifications/read-all`, `GET /notifications/unread-count`
 - Notifications auto-fired on `deal.won`, `deal.lost`, `deal.stage_changed` — notifies all tenant users except the actor
 - Cmd+K triggers `SearchModal` (global keyboard listener in Topbar)
