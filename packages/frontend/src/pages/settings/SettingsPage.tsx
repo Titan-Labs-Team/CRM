@@ -1,11 +1,11 @@
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { UserPlus, Shield, ShieldCheck, Briefcase, ToggleLeft, ToggleRight, Zap, ExternalLink, CreditCard, MessageCircle } from 'lucide-react';
+import { UserPlus, Shield, ShieldCheck, Briefcase, ToggleLeft, ToggleRight, Zap, ExternalLink, CreditCard, MessageCircle, MoreHorizontal, Mail, Trash2 } from 'lucide-react';
 import { ApiKeysSection } from '@/components/integrations/ApiKeysSection';
 import { WebhooksSection } from '@/components/integrations/WebhooksSection';
-import { useUsers, useInviteUser, useUpdateUser } from '@/hooks/useUsers';
+import { useUsers, useInviteUser, useUpdateUser, useResendInvite, useDeleteUser } from '@/hooks/useUsers';
 import { useBilling, useCreateCheckoutSession, useCreatePortalSession } from '@/hooks/useBilling';
 import { useAuthStore } from '@/store/authStore';
 import { Button } from '@/components/ui/Button';
@@ -143,6 +143,116 @@ const inviteSchema = z.object({
 });
 
 type InviteFormData = z.infer<typeof inviteSchema>;
+
+function UserActionsMenu({ member, currentUserId }: { member: TeamMember; currentUserId: string }) {
+  const [open, setOpen] = useState(false);
+  const [confirmDelete, setConfirmDelete] = useState(false);
+  const [menuPos, setMenuPos] = useState({ top: 0, right: 0 });
+  const btnRef = useRef<HTMLButtonElement>(null);
+  const menuRef = useRef<HTMLDivElement>(null);
+  const resendInvite = useResendInvite();
+  const deleteUser = useDeleteUser();
+
+  useEffect(() => {
+    function handleClickOutside(e: MouseEvent) {
+      if (
+        menuRef.current && !menuRef.current.contains(e.target as Node) &&
+        btnRef.current && !btnRef.current.contains(e.target as Node)
+      ) {
+        setOpen(false);
+        setConfirmDelete(false);
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  if (member.id === currentUserId) return null;
+
+  const handleOpen = () => {
+    if (btnRef.current) {
+      const rect = btnRef.current.getBoundingClientRect();
+      setMenuPos({ top: rect.bottom + 4, right: window.innerWidth - rect.right });
+    }
+    setOpen((v) => !v);
+    setConfirmDelete(false);
+  };
+
+  const handleResend = async () => {
+    setOpen(false);
+    const result = await resendInvite.mutateAsync(member.id);
+    if (result?.tempPassword) {
+      toast.success(`Senha temporária: ${result.tempPassword}`, { duration: 15000 });
+    } else {
+      toast.success('Convite reenviado por e-mail');
+    }
+  };
+
+  const handleDelete = async () => {
+    setOpen(false);
+    setConfirmDelete(false);
+    await deleteUser.mutateAsync(member.id);
+  };
+
+  return (
+    <>
+      <button
+        ref={btnRef}
+        onClick={handleOpen}
+        className="p-1 rounded text-text-muted hover:text-text-primary hover:bg-bg-border transition-colors"
+        title="Ações"
+      >
+        <MoreHorizontal size={16} />
+      </button>
+
+      {open && (
+        <div
+          ref={menuRef}
+          style={{ position: 'fixed', top: menuPos.top, right: menuPos.right, zIndex: 9999 }}
+          className="w-48 bg-bg-surface border border-bg-border rounded-lg shadow-xl py-1"
+        >
+          <button
+            onClick={handleResend}
+            disabled={resendInvite.isPending}
+            className="w-full flex items-center gap-2 px-3 py-2 text-sm text-text-secondary hover:text-text-primary hover:bg-bg-border transition-colors"
+          >
+            <Mail size={14} />
+            Reenviar convite
+          </button>
+
+          {!confirmDelete ? (
+            <button
+              onClick={() => setConfirmDelete(true)}
+              className="w-full flex items-center gap-2 px-3 py-2 text-sm text-status-lost hover:bg-status-lost/10 transition-colors"
+            >
+              <Trash2 size={14} />
+              Excluir usuário
+            </button>
+          ) : (
+            <div className="px-3 py-2 border-t border-bg-border mt-1">
+              <p className="text-xs text-text-muted mb-2">Confirmar exclusão?</p>
+              <div className="flex gap-2">
+                <button
+                  onClick={handleDelete}
+                  disabled={deleteUser.isPending}
+                  className="flex-1 text-xs py-1 rounded bg-status-lost text-white hover:bg-red-600 transition-colors"
+                >
+                  Excluir
+                </button>
+                <button
+                  onClick={() => setConfirmDelete(false)}
+                  className="flex-1 text-xs py-1 rounded bg-bg-border text-text-secondary hover:text-text-primary transition-colors"
+                >
+                  Cancelar
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+    </>
+  );
+}
 
 export function SettingsPage() {
   const currentUser = useAuthStore((s) => s.user);
@@ -307,18 +417,21 @@ export function SettingsPage() {
 
                   {isAdmin && (
                     <td className="px-5 py-3">
-                      {m.id !== currentUser?.id && (
-                        <button
-                          onClick={() => handleToggleActive(m)}
-                          className="text-text-muted hover:text-text-primary transition-colors"
-                          title={m.is_active ? 'Desativar usuário' : 'Reativar usuário'}
-                        >
-                          {m.is_active
-                            ? <ToggleRight size={18} className="text-accent-green" />
-                            : <ToggleLeft size={18} />
-                          }
-                        </button>
-                      )}
+                      <div className="flex items-center gap-2 justify-end">
+                        {m.id !== currentUser?.id && (
+                          <button
+                            onClick={() => handleToggleActive(m)}
+                            className="text-text-muted hover:text-text-primary transition-colors"
+                            title={m.is_active ? 'Desativar usuário' : 'Reativar usuário'}
+                          >
+                            {m.is_active
+                              ? <ToggleRight size={18} className="text-accent-green" />
+                              : <ToggleLeft size={18} />
+                            }
+                          </button>
+                        )}
+                        <UserActionsMenu member={m} currentUserId={currentUser?.id ?? ''} />
+                      </div>
                     </td>
                   )}
                 </tr>

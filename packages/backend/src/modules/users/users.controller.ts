@@ -29,3 +29,24 @@ export async function updateUser(req: Request, res: Response, next: NextFunction
     next(err);
   }
 }
+
+export async function resendInvite(req: Request, res: Response, next: NextFunction) {
+  try {
+    const result = await UsersService.resendInvite(req.user!.tenantId, req.params.id);
+    res.json({ data: result });
+  } catch (err) {
+    next(err);
+  }
+}
+
+export async function deleteUser(req: Request, res: Response, next: NextFunction) {
+  try {
+    if (req.params.id === req.user!.id) {
+      throw Object.assign(new Error('Cannot delete your own account'), { status: 400 });
+    }
+    await UsersService.deleteUser(req.user!.tenantId, req.params.id);
+    res.status(204).send();
+  } catch (err) {
+    next(err);
+  }
+}

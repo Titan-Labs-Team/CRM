@@ -37,4 +37,13 @@ export const usersService = {
     const { data } = await api.patch<{ data: TeamMember }>(`/users/${id}`, input);
     return data.data;
   },
+
+  async resendInvite(id: string): Promise<{ id: string; tempPassword?: string }> {
+    const { data } = await api.post<{ data: { id: string; tempPassword?: string } }>(`/users/${id}/resend-invite`);
+    return data.data;
+  },
+
+  async delete(id: string): Promise<void> {
+    await api.delete(`/users/${id}`);
+  },
 };

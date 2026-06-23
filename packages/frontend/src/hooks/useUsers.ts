@@ -38,3 +38,22 @@ export function useUpdateUser() {
     onError: () => toast.error('Erro ao atualizar usuário'),
   });
 }
+
+export function useResendInvite() {
+  return useMutation({
+    mutationFn: (id: string) => usersService.resendInvite(id),
+    onError: () => toast.error('Erro ao reenviar convite'),
+  });
+}
+
+export function useDeleteUser() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) => usersService.delete(id),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: userKeys.list });
+      toast.success('Usuário removido');
+    },
+    onError: () => toast.error('Erro ao remover usuário'),
+  });
+}
