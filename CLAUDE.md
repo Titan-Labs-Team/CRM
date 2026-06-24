@@ -296,7 +296,7 @@ See [plan.md](./plan.md) for current progress.
 | M7 — Billing & Premium Tiers | ✅ Done |
 | M8 — Polish, Search, Deployment | ✅ Done |
 
-## Next: M14 T3 — Kanban lazy load por coluna
+## Next: M16 — Redesign da Landing Page (Conversão + GSAP)
 
 Ver detalhes completos em [plan.md](./plan.md) — seção M14.
 
@@ -330,6 +330,7 @@ Ver detalhes completos em [plan.md](./plan.md) — seção M14.
 | M9 T1 | Webhook Stripe em produção | 🔲 Pendente (aguarda domínio) |
 | M10 T2 | Credenciais Google OAuth em produção | 🔲 Pendente — ver plan.md T2 |
 | M15 T1 | Resend: configurar RESEND_API_KEY + atualizar e-mail convite para TitanFlow | ✅ Done |
+| M16 | Redesign Landing Page — GSAP cinematic, Framer-style, conversão | 🔲 Pendente |
 
 ## Key implementation notes (context for future sessions)
 
@@ -347,6 +348,8 @@ Ver detalhes completos em [plan.md](./plan.md) — seção M14.
 - `ErrorBoundary` wraps `<Outlet />` in AppShell — catches all page-level crashes
 - `GET /search?q=` — ILIKE search across contacts, deals, activities (min 2 chars); bug corrigido: `activities` usa coluna `body` (não `notes`) — causava erro 42703 na busca global
 - **Resend (convite de usuários)**: integração ativa em `users.service.ts`. `RESEND_API_KEY` já configurado no `.env`. E-mail de convite usa remetente `TitanFlow <onboarding@resend.dev>`, subject dinâmico com nome do workspace (`tenants.name`) e template com branding TitanFlow. Sem domínio verificado no Resend: só entrega para o próprio e-mail da conta Resend (limitação do plano Free) — para enviar para qualquer destinatário, verificar domínio próprio nos DNS do Resend.
+- **M16 — Landing Page redesign (pendente)**: plano completo em `plan.md` seção M16. Contexto estratégico em `PRODUCT.md` (raiz do repo — lido pela skill `/impeccable`). Branch: `feat/m16-landing-page-redesign`. Stack: GSAP + ScrollTrigger, fontes Sora + Geist, design Framer-style. 8 tasks definidas (T1–T8). Para iniciar: criar branch, rodar `npm install gsap --workspace=packages/frontend`, e começar pela T2 (Hero). A skill `/impeccable` deve ser invocada com `node scripts/load-context.mjs` para carregar o PRODUCT.md antes de qualquer trabalho de design.
+- **Equipe (SettingsPage)**: menu `...` por membro com **Reenviar convite** (`POST /users/:id/resend-invite` — regera senha + reenvia e-mail) e **Excluir usuário** (`DELETE /users/:id` — confirmação inline, protegido contra auto-exclusão). Dropdown usa `position: fixed` + `getBoundingClientRect` para escapar do `overflow: hidden`. Fix: `import bcrypt from 'bcryptjs'` estático (corrige `TypeError: bcrypt.hash is not a function` no import dinâmico).
 - **Usuário local de teste**: `teste2@gmail.com` / senha `Admin@1234`, tenant `teste` no plano `pro` — concedido manualmente via UPDATE no banco local
 - `GET /notifications`, `PATCH /notifications/:id/read`, `POST /notifications/read-all`, `GET /notifications/unread-count`
 - Notifications auto-fired on `deal.won`, `deal.lost`, `deal.stage_changed` — notifies all tenant users except the actor

@@ -593,3 +593,94 @@ docker compose -f docker-compose.prod.yml exec backend \
 - [x] Design 100% TitanFlow: dark mode, `accent-green`, `bg-surface`, `bg-border` — zero shadcn/ui
 
 **Arquivos**: `CalendarPage.tsx`, `EventManagerCalendar.tsx` (novo), `DateTimePicker.tsx` (novo), `package.json`
+
+---
+
+## M16 — Redesign da Landing Page (Conversão + GSAP)
+
+> Refatoração completa da `LandingPage.tsx` com foco em conversão, design cinemático inspirado em Framer.com, animações GSAP ScrollTrigger e layout assimétrico. Contexto estratégico em `PRODUCT.md` (raiz do repo).
+
+### Contexto de design (ver PRODUCT.md para detalhes completos)
+
+- **Registro**: brand (a página de marketing É o produto neste contexto)
+- **Público**: donos de PMEs, gerentes e vendedores no Brasil — chegam desconfiantes, saem de WhatsApp/planilha
+- **Referência**: Framer.com — hero dramático, gradientes escuros, mockup animado, movimento expressivo
+- **Anti-referências**: Pipedrive/HubSpot (azul corporativo estático), SaaS-genérico brasileiro (fundo branco + ícones Flaticon)
+- **Personalidade da marca**: confiante, direto, moderno
+- **Motion**: GSAP cinematic completo — ScrollTrigger por seção, timeline de entrada no hero, counters animados, stagger diagonal nas features
+- **Cor**: estratégia "Committed" — fundo `oklch(0.10 0.01 160)`, acento `#72d296` (verde existente), bloom verde no hero
+- **Tipografia**: Sora (display) + Geist (body) — importar via Google Fonts
+
+### Diagnóstico da landing atual (o que está ruim)
+
+- Hero centralizado com bullets genéricos, sem mockup do produto visível
+- 6 cards de features idênticos (ícone + título + texto) — template puro
+- Zero animação — página estática
+- Depoimentos placeholders visíveis sem foto real
+- Pricing sem ancoragem visual (PRO não se destaca)
+- Nenhuma prova visual do produto (sem screenshot ou demo)
+
+### Estrutura de seções (nova)
+
+| # | Seção | Objetivo de conversão | Motion GSAP |
+|---|---|---|---|
+| 1 | **Hero** | Capturar + CTA primário | Timeline: logo → headline → sub → CTA → mockup (stagger) |
+| 2 | **Social proof bar** | Credibilidade imediata | Counters animados (gsap.to com snap inteiro) |
+| 3 | **Dor / Solução** | Identificação do problema | Pin + scroll horizontal "Antes → Depois" (ScrollTrigger scrub) |
+| 4 | **Mockup em destaque** | Mostrar o produto | Parallax no screenshot do Kanban (ScrollTrigger) |
+| 5 | **Features assimétricas** | Provar as capacidades | Stagger diagonal — 1 feature grande + 2 pequenas, alternando |
+| 6 | **Pricing** | Decisão de compra | Border glow animado no card PRO ao entrar na viewport |
+| 7 | **FAQ** | Eliminar objeções | Accordion com animação de altura suave (GSAP height tween) |
+| 8 | **CTA final** | Conversão de saída | Full-bleed com gradiente animado + botão pulsante sutil |
+| 9 | **Footer** | Links legais | Estático |
+
+### Decisões visuais
+
+```
+Cores (OKLCH):
+  fundo principal:  oklch(0.10 0.01 160)   — quase preto com tint verde
+  superfícies:      oklch(0.14 0.008 160)  — cards e modais
+  acento:           #72d296                — verde existente do design system
+  bloom hero:       radial-gradient verde no canto superior direito
+
+Tipografia:
+  display: Sora 700/800 — clamp(48px, 6vw, 80px)
+  body:    Geist 400/500 — 16px/1.6
+  importar: @import via Google Fonts no index.css
+
+Motion (GSAP):
+  Hero timeline (gsap.timeline):
+    t=0.0  logo       fadeUp  0.4s ease-out-quart
+    t=0.2  headline   slideUp 0.6s ease-out-quart
+    t=0.5  subheadline fade   0.4s
+    t=0.7  CTA button scaleFrom(0.95) + fade 0.3s
+    t=0.9  mockup     slideUp(40px) + fade 0.8s
+
+  ScrollTrigger por seção:
+    features:  stagger 0.15s, translateY(30px)→0
+    dor/sol:   pin com scrub horizontal
+    pricing:   border glow no card PRO
+    counters:  gsap.to com snap inteiro
+```
+
+### Tasks de implementação
+
+- [ ] **T1** — Setup: `npm install gsap` + fontes Sora/Geist + hook `useGsapContext()`
+- [ ] **T2** — Hero cinemático: headline left-aligned, bloom verde, mockup do Kanban, timeline GSAP completa
+- [ ] **T3** — Social proof bar: counters animados (negócios/usuários)
+- [ ] **T4** — Seção Dor/Solução: pin + scroll horizontal ScrollTrigger (desativado em mobile)
+- [ ] **T5** — Features assimétricas: layout alternado 1-grande + 2-pequenas, stagger diagonal
+- [ ] **T6** — Pricing: card PRO com glow animado, badge "Mais popular", ancoragem visual clara
+- [ ] **T7** — `prefers-reduced-motion`: hook que substitui GSAP por opacity fade simples
+- [ ] **T8** — Mobile: mockup some no hero, pin desativado, features em coluna única
+
+### Arquivos-chave
+
+- `packages/frontend/src/pages/landing/LandingPage.tsx` — arquivo principal (refatorar)
+- `packages/frontend/src/index.css` — adicionar fontes + tokens de cor do hero
+- `packages/frontend/package.json` — adicionar `gsap`
+- `PRODUCT.md` — contexto estratégico de design (lido pela skill impeccable)
+
+### Branch
+
+`feat/m16-landing-page-redesign`
