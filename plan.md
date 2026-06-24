@@ -665,14 +665,14 @@ Motion (GSAP):
 
 ### Tasks de implementação
 
-- [ ] **T1** — Setup: `npm install gsap` + fontes Sora/Geist + hook `useGsapContext()`
-- [ ] **T2** — Hero cinemático: headline left-aligned, bloom verde, mockup do Kanban, timeline GSAP completa
-- [ ] **T3** — Social proof bar: counters animados (negócios/usuários)
-- [ ] **T4** — Seção Dor/Solução: pin + scroll horizontal ScrollTrigger (desativado em mobile)
-- [ ] **T5** — Features assimétricas: layout alternado 1-grande + 2-pequenas, stagger diagonal
-- [ ] **T6** — Pricing: card PRO com glow animado, badge "Mais popular", ancoragem visual clara
-- [ ] **T7** — `prefers-reduced-motion`: hook que substitui GSAP por opacity fade simples
-- [ ] **T8** — Mobile: mockup some no hero, pin desativado, features em coluna única
+- [x] **T1** — Setup: `gsap@3.15` instalado + fontes Sora/Geist (index.html + Tailwind `font-display`/`font-body`) + hook `useGsapContext()` (scope + revert + reduced-motion)
+- [x] **T2** — Hero cinemático: headline left-aligned (Sora), bloom verde, mockup do Kanban fiel ao app, timeline GSAP completa (set+to para evitar opacity:0 preso) + parallax
+- [x] **T3** — Social proof bar: 4 counters animados (`StatCounter` com ScrollTrigger once + fallback se já visível)
+- [x] **T4** — Seção Dor/Solução: 3 linhas antes→depois com reveal stagger; mobile empilha (✕ acima, ✓ abaixo)
+- [x] **T5** — Features assimétricas: bento 1-grande (2col×2row, com mockup embutido) + 5 pequenas; stagger diagonal
+- [x] **T6** — Pricing: card PRO com glow conic animado (`lp-pro-card`), badge "MAIS POPULAR", `-mt-4` ancoragem
+- [x] **T7** — `prefers-reduced-motion`: `useGsapContext` seta tudo visível + counters resolvem instantâneo (verificado via Playwright: zero elementos presos em opacity 0)
+- [x] **T8** — Mobile: headline `clamp(2.1rem…)`, `min-w-0` em colunas/cards (corrige overflow), mockup vira "peek" clipado, features em coluna única
 
 ### Arquivos-chave
 

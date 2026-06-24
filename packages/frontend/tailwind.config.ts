@@ -32,6 +32,9 @@ export default {
           '-apple-system',
           'sans-serif',
         ],
+        // Marketing surfaces (landing). Sora carries display, Geist carries body.
+        display: ['Sora', 'Inter', 'ui-sans-serif', 'system-ui', 'sans-serif'],
+        body: ['Geist', 'Inter', 'ui-sans-serif', 'system-ui', 'sans-serif'],
         mono: ['JetBrains Mono', 'ui-monospace', 'monospace'],
       },
       borderRadius: {
